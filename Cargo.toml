@@ -1,0 +1,20 @@
+[package]
+name = "lunacy"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.43"
+eframe = {
+  version = "0.36.1",
+  features = ["persistence"]
+}
+egui_extras = "0.36.1"
+image = "0.25.10"
+lazy_static = "1.5.0"
+num-format = "0.4.4"
+rfd = "0.17.2"
+tokio = {
+  version = "1.53.1",
+  features = ["full"]
+}

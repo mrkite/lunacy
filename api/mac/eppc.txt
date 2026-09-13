@@ -1,0 +1,35 @@
+AcceptHighLevelEvent(sender: ^TargetID, msgRefcon: ^LongInt, msgBuff: Ptr, msgLen: ^LongInt): OSErr {
+	$3f, $3c, $00, $33, $a8, $8f
+}
+PostHighLevelEvent(theEvent: ^EventRecord, receiverID: Ptr, msgRefcon: LongInt, msgBuff: Ptr, msgLen: LongInt, postingOptions: LongInt): OSErr {
+	$3f, $3c, $00, $34, $a8, $8f
+}
+GetProcessSerialNumberFromPortName(portName: ^PPCPortRec, psn: ^ProcessSerialNumber): OSErr {
+	$3f, $3c, $00, $35, $a8, $8f
+}
+GetSpecificHighLevelEvent(aFlter: GetSpecificFilterProcPtr, yourDataPtr: Ptr, err: OSErr): Boolean {
+	$3f, $3c, $00, $45, $a8, $8f
+}
+GetPortNameFromProcessSerialNumber(portName: ^PPCPortRec, PSN: ^ProcessSerialNumber): OSErr {
+	$3f, $3c, $00, $46, $a8, $8f
+}
+
+GetSpecificFilterProcPtr(yourDataPtr: Ptr, msgBuff: HighLevelEventMsgPtr, sender: ^TargetID): Boolean;
+
+TargetID struct {
+	sessionID: LongInt;
+	name: PPCPortRec;
+	location: LocationNameRec;
+	recvrName: PPCPortRec;
+}
+
+HighLevelEventMsg struct {
+	HighLevelEventMsgHeaderLength: Integer;
+	version: Integer;
+	reserved1: LongInt;
+	theMsgEvent: EventRecord;
+	userRefcon: LongInt;
+	postingOptions: LongInt;
+	msgLength: LongInt;
+}
+HighLevelEventMsgPtr = ^HighLevelEventMsg;

@@ -1,0 +1,24 @@
+SchBootInit() {
+	$a2, $07, $01, $22, $00, $0, $e1
+}
+SchStartUp() {
+	$a2, $07, $02, $22, $00, $0, $e1
+}
+SchShutDown() {
+	$a2, $07, $03, $22, $00, $0, $e1
+}
+SchVersion(): i16 {
+	$a2, $07, $04, $22, $00, $0, $e1
+}
+SchReset() {
+	$a2, $07, $05, $22, $00, $0, $e1
+}
+SchStatus(): bool {
+	$a2, $07, $06, $22, $00, $0, $e1
+}
+SchAddTask(taskPtr: VoidProcPtr): bool {
+	$a2, $07, $09, $22, $00, $0, $e1
+}
+SchFlush() {
+	$a2, $07, $0a, $22, $00, $0, $e1
+}

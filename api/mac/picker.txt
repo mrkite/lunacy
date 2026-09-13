@@ -1,0 +1,45 @@
+Fix2SmallFract(f: Fixed): SmallFract {
+	$3f, $3c, $00, $01, $a8, $2e
+}
+SmallFract2Fix(s: SmallFract): Fixed {
+	$3f, $3c, $00, $02, $a8, $2e
+}
+CMY2RGB(cColor: ^CMYColor, rColor: ^RGBColor) {
+	$3f, $3c, $00, $03, $a8, $2e
+}
+RGB2CMY(rColor: ^RGBColor, cColor: ^CMYColor) {
+	$3f, $3c, $00, $04, $a8, $2e
+}
+HSL2RGB(hColor: ^HSLColor, rColor: ^RGBColor) {
+	$3f, $3c, $00, $05, $a8, $2e
+}
+RGB2HSL(rColor: ^RGBColor, hColor: ^HSLColor) {
+	$3f, $3c, $00, $06, $a8, $2e
+}
+HSV2RGB(hColor: ^HSVColor, rColor: ^RGBColor) {
+	$3f, $3c, $00, $07, $a8, $2e
+}
+RGB2HSV(rColor: ^RGBColor, hColor: ^HSVColor) {
+	$3f, $3c, $00, $08, $a8, $2e
+}
+GetColor(where: Point, prompt: ^Str255, inColor: ^RGBColor, outColor: ^RGBColor): Boolean {
+	$3f, $3c, $00, $09, $a8, $2e
+}
+
+CMYColor struct {
+	cyan: SmallFract;
+	magenta: SmallFract;
+	yellow: SmallFract;
+}
+HSVColor struct {
+	hue: SmallFract;
+	saturation: SmallFract;
+	value: SmallFract;
+}
+HSLColor struct {
+	hue: SmallFract;
+	saturation: SmallFract;
+	lightness: SmallFract;
+}
+
+SmallFract = Integer;

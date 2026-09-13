@@ -1,0 +1,83 @@
+HMGetHelpMenuHandle(mh: ^MenuHandle): OSErr {
+	$30, $3c, $02, $00, $a8, $30
+}
+HMShowBalloon(aHelpMsg: ^HMMessageRecord, tip: Point, alternateRect: RectPtr, tipProc: Ptr, theProc: Integer, variant: Integer, method: Integer): OSErr {
+	$30, $3c, $0b, $01, $a8, $30
+}
+HMRemoveBallon(): OSErr {
+	$30, $3c, $00, $02, $a8, $30
+}
+HMGetBalloons(): Boolean {
+	$30, $3c, $00, $03, $a8, $30
+}
+HMSetBalloons(flag: Boolean): OSErr {
+	$30, $3c, $01, $04, $a8, $30
+}
+HMShowMenuBalloon(itemNum: Integer, itemMenuID: Integer, itemFlags: LongInt, itemReserved: LongInt, tip: Point, alternateRect: RectPtr, tipProc: Ptr, theProc: Integer, variant: Integer): OSErr {
+	$30, $3c, $0e, $05, $a8, $30
+}
+HMGetIndHelpMsg(whichType: ResType, whichResID: Integer, whichMsg: Integer, whichState: Integer, options: ^LongInt, tip: ^Point, altRect: ^Rect, theProc: ^Integer, variant: ^Integer, aHelpMsg: ^HMMessageRecord, count: ^Integer): OSErr {
+	$30, $3c, $13, $06, $a8, $30
+}
+HMIsBalloon(): Boolean {
+	$30, $3c, $00, $07, $a8, $30
+}
+HMSetFont(font: Integer): OSErr {
+	$30, $3c, $01, $08, $a8, $30
+}
+HMSetFontSize(fontSize: Integer): OSErr {
+	$30, $3c, $01, $09, $a8, $30
+}
+HMGetFont(font: ^Integer): OSErr {
+	$30, $3c, $02, $0a, $a8, $30
+}
+HMGetFontSize(fontSize: ^Integer): OSErr {
+	$30, $3c, $02, $0b, $a8, $30
+}
+HMSetDialogResID(resID: Integer): OSErr {
+	$30, $3c, $01, $0c, $a8, $30
+}
+HMSetMenuResID(menuID: Integer, resID: Integer): OSErr {
+	$30, $3c, $02, $0d, $a8, $30
+}
+HMBalloonRect(aHelpMsg: ^HMMessageRecord, coolRect: ^Rect): OSErr {
+	$30, $3c, $04, $0e, $a8, $30
+}
+HMBalloonPict(aHelpMsg: ^HMMessageRecord, coolPict: PicHandle): OSErr {
+	$30, $3c, $04, $0f, $a8, $30
+}
+HMScanTemplateItems(whichID: Integer, whichResFile: Integer, whichType: ResType): OSErr {
+	$30, $3c, $04, $10, $a8, $30
+}
+HMExtractHelpMsg(whichType: ResType, whichResID: Integer, whichMsg: Integer, whichState: Integer, aHelpMsg: ^HMMessageRecord): OSErr {
+	$30, $3c, $07, $11, $a8, $30
+}
+HMGetDialogResID(resID: ^Integer): OSErr {
+	$30, $3c, $02, $13, $a8, $30
+}
+HMGetMenuResID(menuID: Integer, resID: ^Integer): OSErr {
+	$30, $3c, $03, $14, $a8, $30
+}
+HMGetBalloonWindow(window: ^WindowPtr): OSErr {
+	$30, $3c, $02, $15, $a8, $30
+}
+
+HMMessageRecord struct {
+	hmmHelpType: Integer;
+	hmmData: HMHelp;
+}
+
+HMHelp union {
+	khmmString: Str255;
+	khmmPict: Integer;
+	khmmStringRes: HMStringResType;
+	khmmTEHandle: TEHandle;
+	khmmPictHandle: PicHandle;
+	khmmTERes: Integer;
+	khmmSTRRes: Integer;
+}
+
+HMStringResType struct {
+	hmmResID: Integer;
+	hmmIndex: Integer;
+}

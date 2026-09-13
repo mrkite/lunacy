@@ -1,0 +1,202 @@
+AEInstallSpecialHandler(functionClass: AEKeyword, handler: ProcPtr, isSysHandler: Boolean): OSErr {
+	$30, $3c, $05, $00, $a8, $16
+}
+AERemoveSpecialHandler(functionClass: AEKeyword, handler: ProcPtr, isSysHandler: Boolean): OSErr {
+	$30, $3c, $05, $01, $a8, $16
+}
+AECoercePtr(typeCode: DescType, dataPtr: Ptr, dataSize: Size, toType: DescType, result: ^AEDesc): OSErr {
+	$30, $3c, $0a, $02, $a8, $16
+}
+AECoerceDesc(theAEDesc: ^AEDesc,toType: DescType, result: ^AEDesc): OSErr {
+	$30, $3c, $06, $03, $a8, $16
+}
+AEDisposeDesc(theAEDesc: ^AEDesc): OSErr {
+	$30, $3c, $02, $04, $a8, $16
+}
+AEDuplicateDesc(theAEDesc: ^AEDesc, result: ^AEDesc): OSErr {
+	$30, $3c, $04, $05, $a8, $16
+}
+AECreateList(factoringPtr: Ptr, factoredSize: Size, isRecord: Boolean, resultList: ^AEDescList): OSErr {
+	$30, $3c, $07, $06, $a8, $16
+}
+AECountItems(theAEDescList: ^AEDescList, theCount: LongInt): OSErr {
+	$30, $3c, $04, $07, $a8, $16
+}
+AEPutPtr(theAEDescList: ^AEDescList, index: LongInt, typeCode: DescType, dataPtr: Ptr, dataSize: Size): OSErr {
+	$30, $3c, $0a, $08, $a8, $16
+}
+AEPutDesc(theAEDescList: ^AEDescList, index: LongInt, theAEDesc: ^AEDesc): OSErr {
+	$30, $3c, $06, $09, $a8, $16
+}
+AEGetNthPtr(theAEDescList: ^AEDescList, index: LongInt, desiredType: DescType, theAEKeyword: ^AEKeyword, typeCode: ^DescType, dataPtr: Ptr, maximumSize: Size, actualSize: ^Size): OSErr {
+	$30, $3c, $10, $0a, $a8, $16
+}
+AEGetNthDesc(theAEDescList: ^AEDescList, index: LongInt, desiredType: DescType, theAEKeyword: ^AEKeyword, result: ^AEDesc): OSErr {
+	$30, $3c, $0a, $0b, $a8, $16
+}
+AEGetArray(theAEDescList: ^AEDescList, arrayType: AEArrayType, arrayPtr: AEArrayDataPointer, maximumSize: Size, itemType: ^DescType, itemSize: ^Size, itemCount: ^LongInt): OSErr {
+	$30, $3c, $0d, $0c, $a8, $16
+}
+AEPutArray(theAEDescList: ^AEDescList, arrayType: AEArrayType, arrayPtr: AEArrayDataPointer, itemType: DescType, itemSize: Size, itemCount: LongInt): OSErr {
+	$30, $3c, $0b, $0d, $a8, $16
+}
+AEDeleteItem(theAEDescList: ^AEDescList, index: LongInt): OSErr {
+	$30, $3c, $04, $0e, $a8, $16
+}
+AEPutParamPtr(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, typeCode: DescType, dataPtr: Ptr, dataSize: Size): OSErr {
+	$30, $3c, $0a, $0f, $a8, $16
+}
+AEPutParamDesc(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, theAEDesc: ^AEDesc): OSErr {
+	$30, $3c, $06, $10, $a8, $16
+}
+AEGetParamPtr(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, desiredType: DescType, typeCode: ^DescType, dataPtr: Ptr, maximumSize: Size, actualSize: ^Size): OSErr {
+	$30, $3c, $0e, $11, $a8, $16
+}
+AEGetParamDesc(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, desiredType: DescType, result: ^AEDesc): OSErr {
+	$30, $3c, $08, $12, $a8, $16
+}
+AEDeleteParam(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword): OSErr {
+	$30, $3c, $04, $13, $a8, $16
+}
+AECreateAppleEvent(theAEEventClass: AEEventClass, theAEEventID: AEEventID, target: ^AEAddressDesc, returnID: Integer, transactionID: LongInt, result: ^AppleEvent): OSErr {
+	$30, $3c, $0b, $14, $a8, $16
+}
+AEGetAttributePtr(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, desiredType: DescType, typeCode: ^DescType, dataPtr: Ptr, maximumSize: Size, actualSize: ^Size): OSErr {
+	$30, $3c, $0e, $15, $a8, $16
+}
+AEPutAttributePtr(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, typeCode: DescType, dataPtr: Ptr, dataSize: Size): OSErr {
+	$30, $3c, $0a, $16, $a8, $16
+}
+AESend(theAppleEvent: ^AppleEvent, reply: ^AppleEvent, sendMode: AESendMode, sendPriority: AESendPriority, timeOutInTicks: LongInt, idleProc: IdleProcPtr, filterProc: EventFilterProcPtr): OSErr {
+	$30, $3c, $0d, $17, $a8, $16
+}
+AEResumeTheCurrentEvent(theAppleEvent: ^AppleEvent, reply: ^AppleEvent, disptcher: EventHandlerProcPtr, handlerRefcon: LongInt): OSErr {
+	$30, $3c, $08, $18, $a8, $16
+}
+AEResetTimer(reply: ^AppleEvent): OSErr {
+	$30, $3c, $02, $19, $a8, $16
+}
+AEGetTheCurrentEvent(theAppleEvent: ^AppleEvent): OSErr {
+	$30, $3c, $02, $1a, $a8, $16
+}
+AEProcessAppleEvent(theEventRecord: ^EventRecord): OSErr {
+	$30, $3c, $02, $1b, $a8, $16
+}
+AEInteractWithUser(timeOutInTicks: LongInt, nmReqPtr: NMRecPtr, idleProc: IdleProcPtr): OSErr {
+	$30, $3c, $06, $1c, $a8, $16
+}
+AEGetInteractionAllowed(level: ^AEInteractAllowed): OSErr {
+	$30, $3c, $02, $1d, $a8, $16
+}
+AESetInteractionAllowed(level: AEInteractAllowed): OSErr {
+	$30, $3c, $01, $1e, $a8, $16
+}
+AEInstallEventHandler(theAEEventClass: AEEventClass, theAEEventID: AEEventID, handler: EventHandlerProcPtr, handlerRefcon: LongInt, isSysHandler: Boolean): OSErr {
+	$30, $3c, $09, $1f, $a8, $16
+}
+AERemoveEventHandler(theAEEventClass: AEEventClass, theAEEventID: AEEventID, handler: EventHandlerProcPtr, isSysHandler: Boolean): OSErr {
+	$30, $3c, $07, $20, $a8, $16
+}
+AEGetEventHandler(theAEEventClass: AEEventClass, theAEEventID: AEEventID, handler: ^EventHandlerProcPtr, handlerRefcon: ^LongInt, isSysHandler: Boolean): OSErr {
+	$30, $3c, $09, $21, $a8, $16
+}
+AEInstallCoercionHandler(fromType: DescType, toType: DescType, handler: ProcPtr, handlerRefcon: LongInt, fromTypeIsDesc: Boolean, isSysHandler: Boolean): OSErr {
+	$30, $3c, $0a, $22, $a8, $16
+}
+AERemoveCoercionHandler(fromType: DescType, toType: DescType, handler: ProcPtr, isSysHandler: Boolean): OSErr {
+	$30, $3c, $07, $23, $a8, $16
+}
+AEGetCoercionHandler(fromType: DescType, toType: DescType, handler: ^ProcPtr, handlerRefcon: ^LongInt, fromTypeIsDesc: ^Boolean, isSysHandler: Boolean): OSErr {
+	$30, $3c, $0b, $24, $a8, $16
+}
+AECreateDesc(typeCode: DescType, dataPtr: Ptr, dataSize: Size, result: ^AEDesc): OSErr {
+	$30, $3c, $08, $25, $a8, $16
+}
+AEGetAttributeDesc(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, desiredType: DescType, result: ^AEDesc): OSErr {
+	$30, $3c, $08, $26, $a8, $16
+}
+AEPutAttributeDesc(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, theAEDesc: ^AEDesc): OSErr {
+	$30, $3c, $06, $27, $a8, $16
+}
+AESizeOfAttribute(theAppleEvent: ^AppleEvent, theAEKeyword: AEKeyword, typeCode: ^DescType, dataSize: ^Size): OSErr {
+	$30, $3c, $08, $28, $a8, $16
+}
+AESizeOfParam(theAERecord: ^AERecord, theAEKeyword: AEKeyword, typeCode: ^DescType, dataSize: ^Size): OSErr {
+	$30, $3c, $08, $29, $a8, $16
+}
+AESizeOfNthItem(theAEDescList: ^AEDescList, index: LongInt, typeCode: ^DescType, dataSize: ^Size): OSErr {
+	$30, $3c, $08, $2a, $a8, $16
+}
+AESuspendTheCurrentEvent(theAppleEvent: ^AppleEvent): OSErr {
+	$30, $3c, $02, $2b, $a8, $16
+}
+AESetTheCurrentEvent(theAppleEvent: ^AppleEvent): OSErr {
+	$30, $3c, $02, $2c, $a8, $16
+}
+AEGetSpecialHandler(functionClass: AEKeyword, handler: ^ProcPtr, isSysHandler: Boolean): OSErr {
+	$30, $3c, $05, $2d, $a8, $16
+}
+
+AEInteractAllowed enum<Integer> {
+	kAEInteractWithSelf,
+	kAEInteractWithLocal,
+	kAEInteractWithAll
+}
+
+AppleEvent = AERecord;
+AERecord = AEDescList;
+AEDescList = AEDesc;
+AEAddressDesc = AEDesc;
+DescType = ResType;
+AEEventClass = Char[4];
+AEKeyword = Char[4];
+AEEventID = Char[4];
+
+AEDesc struct {
+	descriptorType: DescType;
+	dataHandle: Handle;
+}
+
+AEKeyDesc struct {
+	descKey: AEKeyword;
+	descContent: AEDesc;
+}
+
+AEArrayData union {
+	kAEDataArray: Integer[];
+	kAEPackedArray: Char[];
+	kAEHandleArray: Handle[];
+	kAEDescArray: AEDesc[];
+	kAEKeyDescArray: AEKeyDesc[];
+}
+AEArrayDataPointer = ^AEArrayData;
+
+AEArrayType enum<Integer> {
+	kAEDataArray,
+	kAEPackedArray,
+	kAEHandleArray,
+	kAEDescArray,
+	kAEKeyDescArray,
+}
+
+AESendMode enum<LongInt> {
+	kAENoReply = 1,
+	kAEQueueReply = $2,
+	kAEWaitReply = $3,
+	kAENeverInteract = $10,
+	kAECanInteract = $20,
+	kAEAlwaysInteract = $30,
+	kAECanSwitchLayer = $40,
+	kAEDontReconnect = $80,
+	kAEDontRecord = $1000,
+	kAEDontExecute = $2000,
+}
+
+AESendPriority enum<Integer> {
+	kAENormalPriority,
+	kAEHighPriority,
+}
+
+EventHandlerProcPtr(theAppleEvent: ^AppleEvent, reply: ^AppleEvent, handlerRefcon: LongInt): OSErr;
+IdleProcPtr = ProcPtr;
+EventFilterProcPtr(event: ^EventRecord, returnID: LongInt, transactionID: LongInt, sender: ^AEAddressDesc): Boolean;

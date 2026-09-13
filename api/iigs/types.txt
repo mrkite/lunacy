@@ -1,0 +1,48 @@
+Rect union {
+	struct {
+		top: i16;
+		left: i16;
+		bottom: i16;
+		right: i16;
+	};
+	struct {
+		topLeft: Point;
+		botRight: Point;
+	};
+}
+
+Point struct {
+	v: i16;
+	h: i16;
+}
+
+CStringHndl = ^CStringPtr;
+CStringPtr = ^i8[];
+StringPtr = ^i8[];
+String255Hndl = ^^String255;
+String255 = i8[255];
+
+bool = u16;
+
+Ptr = ^u8[];
+Handle = ^Ptr;
+VoidProcPtr();
+
+Fixed = u32;
+Frac = u32;
+Extended = u32;
+
+
+RefDescriptor enum<u16> {
+	refIsPointer = 0,
+	refIsHandle = 1,
+	refIsResource = 2,
+	refIsNewHandle = 3,
+}
+
+Ref union {
+	refIsPointer: Ptr;
+	refIsHandle: Handle;
+	refIsResource: ResID;
+	refIsNewHandle: Handle;
+}

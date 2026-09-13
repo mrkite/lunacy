@@ -1,0 +1,916 @@
+TerminateProgram int $20 {
+}
+Terminate int $21 {
+	ah 0
+	cs PSP
+}
+ReadKeyboardCharacterAndEcho int $21 {
+	ah $1
+	output
+	al character read 
+}
+CharacterOutput int $21 {
+	ah $2
+	dl character
+}
+AuxiliaryCharacterInput int $21 {
+	ah $3
+	output
+	al character read
+}
+AuxiliaryCharacterOutput int $21 {
+	ah $4
+	dl character
+}
+PrinterCharacterOutput int $21 {
+	ah $5
+	dl character
+}
+DirectConsoleCharacterInput int $21 {
+	ah $6
+	dl $ff
+	output
+	al character
+}
+DirectConsoleCharacterOutput int $21 {
+	ah $6
+	dl character
+}
+DirectConsoleCharacterInputWithoutEcho int $21 {
+	ah $7
+	output
+	al character
+}
+ConsoleCharacterInputWithoutEcho int $21 {
+	ah $8
+	output
+	al character
+}
+PrintString int $21 {
+	ah $9
+	ds:bx ^string
+}
+BufferedInput int $21 {
+	ah $a
+	ds:bx ^buffer
+}
+CheckStandardInputStatus int $21 {
+	ah $b
+	output
+	al $ff if char available
+}
+ClearInputBufferThenCall int $21 {
+	ah $c
+	al function
+	output
+	al input character
+}
+DiskReset int $21 {
+	ah $0d
+}
+SelectDefaultDrive int $21 {
+	ah $0e
+	dl drive number
+	output
+	al Number of logical drives
+}
+OpenFileFCB int $21 {
+	ah $0f
+	ds:dx ^FCB
+	output
+	al IOError
+}
+CloseFileFCB int $21 {
+	ah $10
+	ds:dx ^FCB
+	output
+	al IOError
+}
+SearchForFirstFile int $21 {
+	ah $11
+	ds:dx ^FCB
+	output
+	al IOError
+}
+SearchForNextFile int $21 {
+	ah $12
+	ds:dx ^FCB
+	output
+	al IOError
+}
+DeleteFileFCB int $21 {
+	ah $13
+	ds:dx ^FCB
+	output
+	al IOError
+}
+SequentialReadFCB int $21 {
+	ah $14
+	ds:dx ^FCB
+	output
+	al IOError
+}
+SequentialWriteFCB int $21 {
+	ah $15
+	ds:dx ^FCB
+	output
+	al IOError
+}
+CreateFileFCB int $21 {
+	ah $16
+	ds:dx ^FCB
+	output
+	al IOError
+}
+RenameFileFCB int $21 {
+	ah $17
+	ds:dx ^FCB
+	output
+	al IOError
+}
+GetCurrentDisk int $21 {
+	ah $19
+	output
+	al Default drive
+}
+SetDTA int $21 {
+	ah $1a
+	ds:bx DTA address
+}
+GetFATForCurrentDrive int $21 {
+	ah $1b
+	output
+	al sectorsPerCluster
+	cx sectorSize
+	dx totalNumberOfClusters
+	ds:bx pointer to FATID
+}
+GetFATForSpecifiedDrive int $21 {
+	ah $1c
+	dl drive number
+	output
+	al sectorsPerCluster
+	cx sectorSize
+	dx totalNumberOfClusters
+	ds:bx pointer to FATID
+}
+RandomReadFCB int $21 {
+	ah $21
+	ds:bx ^FCB
+	output
+	al IOError
+}
+RandomWriteFCB int $21 {
+	ah $22
+	ds:bx ^FCB
+	output
+	al IOError
+}
+GetFileSizeFCB int $21 {
+	ah $23
+	ds:bx ^FCB
+	output
+	al IOError
+}
+SetRandomRecordFCB int $21 {
+	ah $24
+	ds:bx ^FCB
+}
+SetInterruptVector int $21 {
+	ah $25
+	al interrupt number
+	ds:bx address of handler
+}
+CreateProgramSegment int $21 {
+	ah $26
+	dx New PSP segment
+	cs PSP to copy from
+}
+RandomBlockReadFCB int $21 {
+	ah $27
+	cx Num records to read
+	ds:bx ^FCB
+	output
+	al IOError
+	cx Num records read
+}
+RandomBlockWriteFCB int $21 {
+	ah $28
+	cx Num records to write
+	ds:bx ^FCB
+	output
+	al IOError
+	cx Num records written
+}
+ParseFilename int $21 {
+	ah $29
+	al ParseFlags
+	ds:si ^string
+	es:di ^FCB
+	output
+	al ParseResult
+}
+GetSystemDate int $21 {
+	ah $2a
+	output
+	al day of the week (0 = sunday)
+	cx year (1980-2099)
+	dh month (1-12)
+	dl day (1-31)
+}
+SetSystemDate int $21 {
+	ah $2b
+	cx year (1980-2099)
+	dh month (1-12)
+	dl day (1-31)
+	output
+	al error
+}
+GetSystemTime int $21 {
+	ah $2c
+	output
+	ch hour (0-23)
+	cl minutes (0-59)
+	dh seconds (0-59)
+	dl hundredths (0-99)
+}
+SetSystemTime int $21 {
+	ah $2d
+	ch hour (0-23)
+	cl minutes (0-59)
+	dh seconds (0-59)
+	dl hundredths (0-99)
+	output
+	al error
+}
+ResetVerifySwitch int $21 {
+	ah $2e
+	al $0
+	dl $0
+}
+SetVerifySwitch int $21 {
+	ah $2e
+	al $1
+	dl $0
+}
+GetDTA int $21 {
+	ah $2f
+	output
+	es:bx current DTA
+}
+GetDOSVersion int $21 {
+	ah $30
+	output
+	al major versoin
+	ah minor version
+}
+TerminateAndStayResident int $21 {
+	ah $31
+	al return code
+	dx size of resident portion in paragraphs
+}
+GetCtlBreakStatus int $21 {
+	ah $33
+	al $0
+	output
+	dl break status
+}
+SetCtlBreakStatus int $21 {
+	ah $33
+	al $1
+	dl break status
+}
+GetInterruptVector int $21 {
+	ah $35
+	al interrupt number
+	output
+	es:bx Pointer to routine
+}
+GetDiskFreeSpace int $21 {
+	ah $36
+	dl drive number
+	output
+	ax sectors per cluster
+	bx number of available clusters
+	cx bytes per sector
+	dx total number of clusters
+}
+GetCountryDependentInfo int $21 {
+	ah $38
+	al country code (0 = current)
+	bx word country code if al=ff
+	ds:dx ^CountryInfo
+	output
+	ax error if cf set
+	bx country code
+	ds:dx ^CountryInfo
+}
+SetCountryDependentInfo int $21 {
+	ah $38
+	al country code
+	bx word country code if al=ff
+	dx $ffff
+	output
+	ah error if cf is set
+}
+CreateDirectory int $21 {
+	ah $39
+	ds:dx directory name
+	output
+	ax IOError
+}
+RemoveDirectory int $21 {
+	ah $3a
+	ds:dx directory name
+	output
+	ax IOError
+}
+ChangeDirectory int $21 {
+	ah $3b
+	ds:dx directory name
+	output
+	ax IOError
+}
+CreateFile int $21 {
+	ah $3c
+	cx FileAttribute
+	ds:dx file name
+	output
+	ax IOError
+	
+}
+OpenFile int $21 {
+	ah $3d
+	al mode
+	ds:dx file name
+	output
+	ax IOError
+}
+CloseFile int $21 {
+	ah $3e
+	bx file handle
+	output
+	ax IOError
+}
+ReadFromFile int $21 {
+	ah $3f
+	bx file handle
+	cx number of bytes to read
+	ds:dx buffer
+	output
+	ax IOError
+}
+WriteToFile int $21 {
+	ah $40
+	bx file handle
+	cx number of bytes to write
+	ds:dx buffer
+	output
+	ax IOError
+}
+DeleteFile int $21 {
+	ah $41
+	ds:dx filename
+	output
+	ax IOError
+}
+MoveFilePointer int $21 {
+	ah $42
+	bx file handle
+	cx:dx offset, signed
+	al move mode
+	output
+	dx:ax new location
+	ax IOError
+}
+GetFileAttrs int $21 {
+	ah $43
+	al 0
+	ds:bx filename
+	output
+	cx FileAttribute
+	ax IOError
+}
+SetFileAttrs int $21 {
+	ah $43
+	al $1
+	cx FileAttribute
+	ds:bx filename
+	output
+	ax IOError
+}
+IOCTL int $21 {
+	ah $44
+	al subfunction
+	bx file handle
+	bl drive number
+	cx number of bytes to read or write
+	ds:dx buffer
+}
+GetDeviceInfo int $21 {
+	ah $44
+	al $0
+	bx device or file handle
+	output
+	ax error
+	dx device info
+}
+SetDeviceInfo int $21 {
+	ah $44
+	al $01
+	bx device handle
+	dh 0
+	dl device info
+	output
+	ax error
+}
+ReadFromCharacterDevice int $21 {
+	ah $44
+	al $02
+	bx device handle
+	cx number of bytes to read
+	ds:dx buffer
+	output
+	ax error
+}
+WriteToCharacterDevice int $21 {
+	ah $44
+	al $3
+	bx device handle
+	cx number of bytes to write
+	ds:dx buffer
+	output
+	ax error
+}
+ReadFromBlockDevice int $21 {
+	ah $44
+	al $4
+	bl drive number
+	cx number of bytes to read
+	ds:dx buffer
+	output
+	ax number of bytes read or error if cf set
+}
+WriteToBlockDevice int $21 {
+	ah $44
+	al $5
+	bl drive number
+	cx number of bytes to write
+	ds:dx buffer
+	output
+	ax number of bytes written or error if cf
+}
+GetInputStatus int $21 {
+	ah $44
+	al $6
+	bx device or file handle
+	output
+	al ready
+}
+GetOutputStatus int $21 {
+	ah $44
+	al $7
+	bx device or handle
+	output
+	al ready
+}
+IsDeviceRemovable int $21 {
+	ah $44
+	al $8
+	bl drive number
+	output
+	ax removable (0) or fixed (1)
+}
+IsLogicalDeviceRemote int $21 {
+	ah $44
+	al $9
+	bl drive number
+	output
+	dx bit 12 if local
+	
+}
+IsHandleRemote int $21 {
+	ah $44
+	al $a
+	bx drive handle
+	output
+	ax bit 15 if remote
+}
+ChangeSharingRetryCount int $21 {
+	ah $44
+	al $b
+	cx number of times to delay
+	dx number of retries
+	output
+	ax error if cf
+}
+GenericIOCTLRequest int $21 {
+	ah $44
+	al $d
+	bl drive number
+	ch 8
+	cl opcode
+	ds:dx param block
+}
+GetLogicalDrive int $21 {
+	ah $44
+	al $e
+	bl drive number
+	output
+	al drive letter
+}
+SetLogicalDrive int $21 {
+	ah $44
+	al $0f
+	bl drive number
+	output
+	al drive letter
+}
+DuplicateFile int $21 {
+	ah $45
+	bx file handle
+	output
+	ax duplicate file handle
+}
+ForceHandleDuplication int $21 {
+	ah $46
+	bx first file handle
+	cx handle to be changed
+	output
+	ax error if cf
+}
+GetCurrentDirectory int $21 {
+	ah $47
+	bx drive number
+	ds:si buffer
+	output
+	ax error if cf
+}
+AllocateMemory int $21 {
+	ah $48
+	bx number of paragraphs
+	output
+	ax segment address
+}
+FreeAllocatedMemory int $21 {
+	ah $49
+	es address
+	output
+	ax error if cf
+}
+ResizeMemory int $21 {
+	ah $4a
+	bx new block size, in paragraphs
+	es address
+	output
+	ax error if cf
+}
+ExecuteProgram int $21 {
+	ah $4b
+	al 0
+	ds:dx program name
+	es:bx ^ExecParams
+	output
+	ax error if cf
+}
+LoadProgram int $21 {
+	ah $4b
+	al 3
+	ds:dx program name
+	es:bx ^LoadParams
+	output
+	ax error if cf
+}
+TerminateProcess int $21 {
+	ah $4c
+	al return code
+}
+GetReturnCodeOfSubprocess int $21 {
+	ah $4d
+	output
+	ax return code
+}
+FindFirstFile int $21 {
+	ah $4e
+	cx FileAttribute
+	ds:dx filename
+	output
+	ax error if cf
+}
+FindNextFile int $21 {
+	ah $4f
+	output
+	ax error if cf
+}
+GetVerify int $21 {
+	ah $54
+	output
+	al verify
+}
+RenameFile int $21 {
+	ah $56
+	ds:dx original name
+	es:di new name
+	output
+	ax error if cf
+}
+GetFileDateAndTime int $21 {
+	ah $57
+	al 0
+	bx file handle
+	output
+	ax error if cf
+	cx time
+	dx date
+}
+SetFileDateAndTime int $21 {
+	ah $57
+	al 1
+	bx file handle
+	cx time
+	dx date
+	output
+	ax error if cf
+}
+GetExtendedError int $21 {
+	ah $59
+	bx 0
+	output
+	ax ExtendedErrorCode
+	bh ErrorClass
+	bl SuggestedAction
+	ch Locus
+}
+CreateUniqueFile int $21 {
+	ah $5a
+	cx FileAttribute
+	ds:dx path
+	output
+	ds:dx filename
+	ax error if cf
+}
+CreateNewFile int $21 {
+	ah $5b
+	cx FileAttribute
+	ds:dx path
+	output
+	ax handle
+}
+LockFile int $21 {
+	ah $5c
+	al 0
+	bx file handle
+	cx offset of region high word
+	dx offset of region low word
+	si length of region high word
+	di length of region low word
+	output
+	ax error if cf
+}
+UnlockFile int $21 {
+	ah $5c
+	al 1
+	bx file handle
+	cx offset of region high word
+	dx offset of region low word
+	si length of region high word
+	di length of region low word
+	output
+	ax error if cf
+}
+GetMachineName int $21 {
+	ah $5e
+	al 0
+	ds:dx buffer
+	output
+	ch name defined
+	cl netbios number
+	ds:dx name
+	ax error if cf
+}
+SetPrinterSetup int $21 {
+	ah $5e
+	al $2
+	bx redirection list index
+	cx length of setup string
+	ds:dx buffer
+	output
+	ax error if cf
+}
+GetPrinterSetup int $21 {
+	ah $5e
+	al $3
+	bx redirection list index
+	es:di buffer
+	output
+	cx length of setup string
+	es:di setup string
+	ax error if cf
+}
+GetRedirectionListEntry int $21 {
+	ah $5f
+	al $2
+	bx index into redirection list
+	ds:si local device name
+	es:di network name
+	output
+	ax error if cf
+	bh device invalid
+	bl device printer (3) or disk (4)
+	cx parameter from redirect
+}
+RedirectDevice int $21 {
+	ah $5f
+	al $3
+	bl device printer (3) or disk (4)
+	cx saved parameter
+	ds:si local device name
+	es:di network name
+	output
+	ax error if cf
+}
+CancelRedirection int $21 {
+	ah $5f
+	al $4
+	bl device printer (3) or disk (4)
+	cx saved paramter
+	ds:si local or network name
+	output
+	ax error if cf
+}
+GetPSP int $21 {
+	ah $62
+	output
+	bx PSP segment
+}
+absread int $25 {
+	ah drive number
+	cx number of sectors to read
+	dx starting sector
+	ds:dx buffer
+	output
+	ax error if cf
+}
+abswrite int $26 {
+	al drive number
+	cx number of sectors to write
+	dx starting sector
+	ds:dx buffer
+	output
+	ax error if cf
+}
+
+ExecParams struct {
+	segmentOfEnvironment: u16;
+	commandLine: Ptr;
+	firstFCB: Ptr;
+	SecondFCB: Ptr;
+}
+
+LoadParams struct {
+	destinationSegment: u16;
+	relocationFactor: u16;
+}
+
+FileAttribute enum<u16> {
+	Normal = 0,
+	ReadOnly = 1,
+	Hidden = 2,
+	System = 4,
+}
+
+CountryInfo struct {
+	dateFormat: DateFormat;
+	currencySymbol: Str5;
+	ThousandSeparator: Str2;
+	DecimalSeparator: Str2;
+	DateSeparator: Str2;
+	TimeSeparator: Str2;
+	CurrencyFormat: CurrencyFormat;
+	NumberOfCurrencyDigits: u8;
+	Time12Or24: u8;
+	CaseMapping: Ptr;
+	DataListSeparator: Str2;
+	Reserved: u8[10];
+}
+
+DateFormat enum<u16> {
+	USA = 0,
+	Europe = 1,
+	Japan = 2,
+}
+CurrencyFormat enum<u8> {
+	PrecedesValueNoSpace = 0,
+	FollowsValueNoSpace = 1,
+	PrecedesValueOneSpace = 2,
+	FollowsValueOnSpace = 3,
+	ReplacesDecimal = 4,
+}
+
+ParseFlags enum<u8> {
+	IgnoreLeadingSeparators = 1,
+	DriveIDModified = 2,
+	FilenameModified = 4,
+	ExtensionModified = 8,
+}
+ParseResult enum<u8> {
+	Failed = $ff,
+	SuccessNoWildcards = 0,
+	SuccessWildcards = 1,
+}
+
+FCB struct {
+	driveCode: u8;
+	filename: Str8;
+	ext: Str3;
+	currentBlock: u16;
+	recordSize: u16;
+	fileSize: u32;
+	date: u16;
+	time: u16;
+	reserved: u8[8];
+	currentRecord: u8;
+	numberOfRecord: u32;
+}
+
+IOError enum<u8> {
+	success = 0,
+	EmptyFile = 1,
+	DTAtooSmall = 2,
+	UnexpectedEOF = 3,
+	fileNotFound = $ff, 
+}
+
+ExtendedErrorCode enum<u16> {
+	InvalidFunctionNumber = 1,
+	FileNotFound = 2,
+	PathNotFound = 3,
+	TooManyOpenFiles = 4,
+	AccessDenied = 5,
+	InvalidHandle = 6,
+	MemoryControlBlockDestroyed = 7,
+	InsufficientMemory = 8,
+	InvalidMemoryBlockAddress = 9,
+	InvalidEnvironment = $a,
+	InvalidFormat = $b,
+	InvalidAccessCode = $c,
+	InvalidData = $d,
+	InvalidDiskDrive = $f,
+	AttemptToRemoveCurrentDir = $10,
+	NotTheSameDevice = $11,
+	NoMoreFiles = $12,
+	DiskWriteProtected = $13,
+	UnknownUnit = $14,
+	DriveNotReady = $15,
+	UnknownCommand = $16,
+	CRCError = $17,
+	BadRequestLength = $18,
+	SeekError = $19,
+	UnknownMediumType = $1a,
+	SectorNotFound = $1b,
+	PrinterOutOfPaper = $1c,
+	WriteFault = $1d,
+	ReadFault = $1e,
+	GeneralFailure = $1f,
+	SharingViolation = $20,
+	LockViolation = $21,
+	InvalidDiskChange = $22,
+	FCBUnavailable = $23,
+	FileAlreadyExists = $50,
+	CannotMakeDir = $52,
+	CriticalError = $53,
+}
+
+ErrorClass enum<u8> {
+	OutOfResource = 1,
+	TemporaryProblem = 2,
+	AuthorizationProblem = 3,
+	InternalError = 4,
+	HardwareProblem = 5,
+	SystemSoftwareFailure = 6,
+	ApplicationProgramError = 7,
+	FileNotFound = 8,
+	FileInvalid = 9,
+	FileInterlocked = $a,
+	MediaProblem = $b,
+	Collision = $c,
+	Other = $d,
+}
+
+SuggestedAction enum<u8> {
+	Retry = 1,
+	PauseThenRetry = 2,
+	AskUserToResupply = 3,
+	AbortWithCleanup = 4,
+	ImmediateAbort = 5,
+	Ignore = 6,
+	AskUserThenRetry = 7,
+}
+
+Locus enum<u8> {
+	Unknown = 1,
+	BlockDevice = 2,
+	Network = 3,
+	SerialDevice = 4,
+	Memory = 5,
+}

@@ -1,0 +1,274 @@
+InitZone(pGrowZone: ProcPtr, cMoreMasters: Integer, limitPtr: Ptr, startPtr: Ptr) {
+	$a0, $19
+}
+SetZone(hz: THz) {
+	$20, $5f, $a0, $1b
+}
+FreeMem(): LongInt {
+	$a0, $1c, $2e, $80
+}
+DisposePtr(p: Ptr) {
+	$20, $5f, $a0, $1f
+}
+SetPtrSize(p: Ptr, newSize: Size) {
+	$a0, $20
+}
+GetPtrSize(p: Ptr): Size {
+	$a0, $21
+}
+DisposeHandle(h: Handle) {
+	$20, $5f, $a0, $23
+}
+SetHandleSize(h: Handle, newSize: Size) {
+	$a0, $24
+}
+GetHandleSize(h: Handle): Size {
+	$a0, $25
+}
+ReallocateHandle(h: Handle, logicalSize: Size) {
+	$a0, $27
+}
+HLock(h: Handle) {
+	$20, $5f, $a0, $29
+}
+HUnlock(h: Handle) {
+	$20, $5f, $a0, $2a
+}
+EmptyHandle(h: Handle) {
+	$20, $5f, $a0, $2b
+}
+InitApplZone() {
+	$a0, $2c
+}
+SetApplLimit(zoneLimit: Ptr) {
+	$20, $5f, $a0, $2d
+}
+BlockMove(sourcePtr: Ptr, destPtr: Ptr, byteCount: Size) {
+	$a0, $2e
+}
+MoreMasters() {
+	$a0, $36
+}
+ReserveMem(cbNeeded: Size) {
+	$20, $1f, $a0, $40
+}
+HPurge(h: Handle) {
+	$20, $5f, $a0, $49
+}
+HNoPurge(h: Handle) {
+	$20, $5f, $a0, $4a
+}
+SetGrowZone(growZone: GZProcPtr) {
+	$20, $5f, $a0, $4b
+}
+CompactMem(cbNeeded: Size): Size {
+	$a0, $4c
+}
+PurgeMem(cbNeeded: Size) {
+	$20, $1f, $a0, $4d
+}
+StripAddress(theAddress: Ptr): Ptr {
+	$20, $1f, $a0, $55, $2e, $80
+}
+SetApplBase(startPtr: Ptr) {
+	$20, $5f, $a0, $57
+}
+
+HoldMemory(address: Ptr, count: LongInt): OSErr {
+	$70, $00, $a0, $5c
+}
+UnholdMemory(address: Ptr, count: LongInt): OSErr {
+	$70, $01, $a0, $5c
+}
+LockMemory(address: Ptr, count: LongInt): OSErr {
+	$70, $02, $a0, $5c
+}
+UnlockMemory(address: Ptr, count: LongInt): OSErr {
+	$70, $03, $a0, $5c
+}
+LockMemoryContiguous(address: Ptr, count: LongInt): OSErr {
+	$70, $04, $a0, $5c
+}
+GetPhysical() {
+	$70, $05, $a1, $5c
+}
+
+Maxblock(): LongInt {
+	$a0, $61
+}
+MaxApplZone() {
+	$a0, $63
+}
+MoveHHi(h: Handle) {
+	$20, $5f, $a0, $64
+}
+HLockHi(h: Handle) {
+	$20, $5f, $a0, $64, $a0, $29
+}
+StackSpace(): LongInt {
+	$a0, $65
+}
+HSetRBit(h: Handle) {
+	$20, $5f, $a0, $67
+}
+HClrRBit(h: Handle) {
+	$20, $5f, $a0, $68
+}
+HGetState(h: Handle): SignedByte {
+	$a0, $69
+}
+HSetState(h: Handle, flags: SignedByte) {
+	$a0, $6a
+}
+
+DebuggerGetMax(): LongInt {
+	$70, $00, $a0, $8d, $2e, $80
+}
+DebuggerEnter() {
+	$70, $01, $a0, $8d
+}
+DebuggerExit() {
+	$70, $02, $a0, $8d
+}
+DebuggerPoll() {
+	$70, $03, $a0, $8d
+}
+GetPageState(address: Ptr): PageState {
+	$20, $5f, $70, $04, $a0, $8d, $3e, $80
+}
+PageFaultFatal(): Boolean {
+	$70, $05, $a0, $8d, $1e, $80
+}
+EnterSupervisorMode(): StatusRegisterContents {
+	$70, $08, $a0, $8d, $3e, $80
+}
+
+DeferUserFn(userFunction: ProcPtr, argument: Ptr): OSErr {
+	$a0, $8f
+}
+Translate24To32(addr24: Ptr): Ptr {
+	$20, $1f, $a0, $91, $2e, $80
+}
+GetZone(): THz {
+	$a1, $1a, $2e, $88
+}
+MaxMem(grow: ^Size): Size {
+	$a1, $1d
+}
+NewPtr(logicalSize: Size): Ptr {
+	$a1, $1e
+}
+NewHandle(logicalSize: Size): Handle {
+	$a1, $22
+}
+HandleZone(h: Handle): THz {
+	$a1, $26
+}
+RecoverHandle(p: Ptr): Handle {
+	$a1, $28
+}
+PtrZone(p: Ptr): THz {
+	$a1, $48
+}
+PurgeSpace(total: ^LongInt, contig: ^LongInt) {
+	$a1, $62
+}
+NewEmptyHandle(): Handle {
+	$a1, $66
+}
+
+BlockMoveData(srcPtr: Ptr, destPtr: Ptr, byteCount: Size) {
+	$a2, $2e
+}
+
+NewPtrClear(logicalSize: Size): Ptr {
+	$a3, $1e
+}
+NewHandleClear(logicalSize: Size): Handle {
+	$a3, $22
+}
+FreeMemSys(): LongInt {
+	$a4, $1c, $2e, $80
+}
+ReserveMemSys(cbNeeded: Size) {
+	$20, $1f, $a4, $40
+}
+PurgeMemSys(cbNeeded: Size) {
+	$20, $1f, $a4, $4d
+}
+NewPtrSys(logicalSize: Size): Ptr {
+	$a5, $1e
+}
+NewPtrSysClear(logicalSize: Size): Ptr {
+	$a7, $1e
+}
+
+TempMaxMem(grow: ^Size): Size {
+	$3f, $3c, $00, $15, $a8, $8f
+}
+TempTopMem(): Ptr {
+	$3f, $3c, $00, $16, $a8, $8f
+}
+TempFreeMem(): LongInt {
+	$3f, $3c, $00, $18, $a8, $8f
+}
+TempNewHandle(logicalSize: Size, resultCode: ^OSErr): Handle {
+	$3f, $3c, $00, $1d, $a8, $8f
+}
+TempHLock(h: Handle, resultCode: ^OSErr) {
+	$3f, $3c, $00, $1e, $a8, $8f
+}
+TempHUnlock(h: Handle, resultCode: ^OSErr) {
+	$3f, $3c, $00, $1f, $a8, $8f
+}
+TempDisposeHandle(h: Handle, resultCode: ^OSErr) {
+	$3f, $3c, $00, $20, $a8, $8f
+}
+
+TopMem(): Ptr {
+	$2e, $b8, $01, $08
+}
+GetApplLimit(): Ptr {
+	$2e, $b8, $01, $30
+}
+MemError(): OSErr {
+	$3e, $b8, $02, $20
+}
+SystemZone() :THz {
+	$2e, $b8, $02, $a6
+}
+ApplicationZone(): THz {
+	$2e, $b8, $02, $aa
+}
+GZSaveHnd(): Handle {
+	$2e, $b8, $03, $28
+}
+
+GZProcPtr(cbNeeded: Size): LongInt;
+
+THz = ^Zone;
+Zone struct {
+	bkLim: Ptr;
+	purgePtr: Ptr;
+	hFstFree: LongInt;
+	gzProc: ProcPtr;
+	moreMast: Integer;
+	flags: Integer;
+	cntRel: Integer;
+	maxRel: Integer;
+	cntNRel: Integer;
+	maxNRel: Integer;
+	cntEmpty: Integer;
+	cntHandles: Integer;
+	minCBFree: ProcPtr;
+	purgeProc: ProcPtr;
+	sparePtr: Ptr;
+	allocPtr: Ptr;
+	heapData: Integer;
+}
+PageState enum<Integer> {
+	kPageInMemory = 0,
+	kPageOnDisk = 1,
+	kNotPaged = 2,
+}
+StatusRegisterContents = Integer;

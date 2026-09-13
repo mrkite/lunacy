@@ -1,0 +1,119 @@
+GenMask enum<u16> {
+	gen0off = 1,
+	gen1off = 2,
+	gen2off = 4,
+	gen3off = 8,
+	gen4off = $10,
+	gen5off = $20,
+	gen6off = $40,
+	gen7off = $80,
+	gen8off = $100,
+	gen9off = $200,
+	gen10off = $400,
+	gen11off = $800,
+	gen12off = $1000,
+	gen13off = $2000,
+	gen14off = $4000,
+	gen15off = $8000,
+}
+
+GenStatus enum<u16> {
+	genAvail = 0,
+	ffSynth = $100,
+	noteSynth = $200,
+	lastBlock = $8000,
+}
+
+SoundParamBlock struct {
+	waveStart: Ptr;
+	waveSize: u16;
+	freqOffset: u16;
+	docBuffer: u16;
+	bufferSize: u16;
+	nextWavePtr: ^SoundParamBlock;
+	volSetting: u16;
+}
+
+DocRegParamBlk struct {
+	oscGenType: u16;
+	freqLow1: u8;
+	freqHigh1: u8;
+	vol1: u8;
+	tablePtr1: u8;
+	control1: u8;
+	tableSize1: u8;
+	freqLow2: u8;
+	freqHigh2: u8;
+	vol2: u8;
+	tablePtr2: u8;
+	control2: u8;
+	tableSize2: u8;
+}
+
+SoundBootInit() {
+	$a2, $08, $01, $22, $00, $00, $e1
+}
+SoundStartUp(dPageAddr: u16) {
+	$a2, $08, $02, $22, $00, $00, $e1
+}
+SoundShutDown() {
+	$a2, $08, $03, $22, $00, $00, $e1
+}
+SoundVersion(): u16 {
+	$a2, $08, $04, $22, $00, $00, $e1
+}
+SoundReset() {
+	$a2, $08, $05, $22, $00, $00, $e1
+}
+SoundToolStatus(): bool {
+	$a2, $08, $06, $22, $00, $00, $e1
+}
+WriteRamBlock(srcPtr: Ptr, docStart: u16, byteCount: u16) {
+	$a2, $08, $09,
+	$22, $00, $00, $e1
+}
+ReadRamBlock(destPtr: Ptr, docStart: u16, byteCount: u16) {
+	$a2, $08, $0a, $22, $00, $00, $e1
+}
+GetTableAddress(): Ptr {
+	$a2, $08, $0b, $22, $00, $00, $e1
+}
+GetSoundVolume(genNumber: u16): u16 {
+	$a2, $08, $0c, $22, $00, $00, $e1
+}
+SetSoundVolume(volume: u16, genNumber: u16) {
+	$a2, $08, $0d, $22, $00, $00, $e1
+}
+FFStartSound(genNumFFSynth: u16, pBlockPtr: ^SoundParamBlock) {
+	$a2, $08, $0e, $22, $00, $00, $e1
+}
+FFStopSound(genMask: GenMask) {
+	$a2, $08, $0f, $22, $00, $00, $e1
+}
+FFSoundStatus(): u16 {
+	$a2, $08, $10, $22, $00, $00, $e1
+}
+FFGeneratorStatus(genNumber: u16): GenStatus {
+	$a2, $08, $11, $22, $00, $00, $e1
+}
+SetSoundMIRQV(sMasterIRQ: u32) {
+	$a2, $08, $12, $22, $00, $00, $e1
+}
+SetUserSoundIRQV(userIRQVector: u32): Ptr {
+	$a2, $08, $13, $22, $00, $00, $e1
+}
+FFSoundDoneStatus(genNumber: u16): bool {
+	$a2, $08, $14, $22, $00, $00, $e1
+}
+FFSetUpSound(channelGen: u16, paramBlockPtr: ^SoundParamBlock) {
+	$a2, $08, $15, $22, $00, $00, $e1
+}
+FFStartPlaying(genWord: u16) {
+	$a2, $08, $16, $22, $00, $00, $e1
+}
+SetDOCReg(pBlockPtr: ^DocRegParamBlk) {
+	$a2, $08, $17, $22, $00, $00, $e1
+}
+ReadDOCReg(pBlockPtr: ^DocRegParamBlk) {
+	$a2, $08, $18, $22, $00, $00, $e1
+}

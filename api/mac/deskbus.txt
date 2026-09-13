@@ -1,0 +1,31 @@
+CountADBs(): Integer {
+	$a0, $77, $3e, $80
+}
+GetIndADB(info: ^ADBDataBlock, devTableIndex: Integer): ADBAddress {
+	$a0, $78
+}
+GetADBInfo(info: ^ADBDataBlock, adbAddr: ADBAddress): OSErr {
+	$a0, $79
+}
+SetADBInfo(info: ^ADBSetInfoBlock, adbAddr: ADBAddress): OSErr {
+	$a0, $7a
+}
+ADBReInit() {
+	$a0, $7b
+}
+ADBOp(data: Ptr, compRout: ProcPtr, buffer: Ptr, commandNum: Integer): OSErr {
+	$a0, $7c
+}
+
+ADBAddress = SignedByte;
+ADBDataBlock struct {
+	devType: SignedByte;
+	origADBAddr: SignedByte;
+	dbServiceRtPtr: Ptr;
+	dbDataAreaAddr: Ptr;
+}
+
+ADBSetInfoBlock struct {
+	siServiceRtPtr: Ptr;
+	siDataAreaAddr: Ptr;
+}

@@ -1,0 +1,152 @@
+SetVideoMode int $10 {
+	ah 0
+	al VideoMode
+	output
+	al VideoMode
+}
+SetTextModeCursorShape int $10 {
+	ah 1
+	ch scan row start
+	cl scan row end
+}
+SetCursorPosition int $10 {
+	ah 2
+	bh page number
+	output
+	ax 0
+	ch start scan line
+	cl end scan line
+	dh row
+	dl column
+}
+ReadLightPen int $10 {
+	ah 4
+	output
+	ah triggered
+	bx pixel x
+	cx pixel y
+	dh character y
+	dl character x
+}
+SelectActiveDisplayPage int $10 {
+	ah 5
+	al page number
+}
+ScrollUpWindow int $10 {
+	ah 6
+	al lines to scroll
+	bh color
+	ch top row
+	cl left column
+	dh bottom row
+	dl right column
+}
+ScrollDownWindow int $10 {
+	ah 7
+	al lines to scroll
+	bh color
+	ch top row
+	cl left column
+	dh bottom row
+	dl right column
+}
+ReadCharAtCursor int $10 {
+	ah 8
+	bh page number
+	output
+	ah color
+	al character
+}
+WriteCharAtCursor int $10 {
+	ah 9
+	al character
+	bh page number
+	bl color
+	cx number of times to print
+}
+WriteOnlyCharacter int $10 {
+	ah $a
+	al character
+	bh page number
+	cx number of times to print
+}
+SetBackground int $10 {
+	ah $b
+	bh $0
+	bl background color
+}
+SetPalette int $10 {
+	ah $b
+	bh $1
+	bl palette id
+}
+WriteGraphicsPixel int $10 {
+	ah $c
+	al color
+	bh page number
+	cx x
+	dx y
+}
+ReadGraphicsPixel int $10 {
+	ah $d
+	bh page number
+	cx x
+	dx y
+	output
+	al color
+}
+TeletypeOutput int $10 {
+	ah $0e
+	al character
+	bh page number
+	bl color
+}
+GetCurrentVideoMode int $10 {
+	ah $0f
+	output
+	al VideoMode
+	ah number of columns
+	bh active page
+}
+ChangeTextModeCharacterSet int $10 {
+	ah $11
+	bh bytes per character
+	cx number of characters to change
+	dx starting character
+	es:bp offset to character data
+}
+WriteString int $10 {
+	ah $13
+	al write mode
+	bh page number
+	bl color
+	cx number of characters in string
+	dh row
+	dl column
+	es:bp buffer
+}
+SetVesaMode int $10 {
+	ax $4f02
+	bx VideoMode
+}
+
+VideoMode enum<u8> {
+	text40x25_grey = 0,
+	text40x25 = 1,
+	text80x25_grey = 2,
+	text80x25 = 3,
+	gr320x200 = 4,
+	gr320x200_grey = 5,
+	gr640x200_mono = 6,
+	text80x25_mono = 7,
+	gr160x200 = 8,
+	gr320x200 = 9,
+	gr640x200 = $a,
+	gr320x200 = $d,
+	gr640x200 = $e,
+	gr640x350_mono = $f,
+	gr640x350 = $10,
+	gr640x480_mono = $11,
+	gr640x480 = $12,
+	gr320x200 = $13,
+}

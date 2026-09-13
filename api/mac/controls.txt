@@ -1,0 +1,151 @@
+GetControlVariant(theControl: ControlHandle): Integer {
+	$a8, $09
+}
+UpdateControls(theWindow: WindowPtr, updateRgn: RgnHandle) {
+	$a9, $53
+}
+NewControl(theWindow: WindowPtr, boundsRect: ^Rect, title: ^Str255, visible: Boolean, value: Integer, min: Integer, max: Integer, procID: ControlType, refCon: LongInt): ControlHandle {
+	$a9, $54
+}
+DisposeControl(theControl: ControlHandle) {
+	$a9, $55
+}
+KillControls(theWindow: WindowPtr) {
+	$a9, $56
+}
+ShowControl(theControl: ControlHandle) {
+	$a9, $57
+}
+HideControl(theControl: ControlHandle) {
+	$a9, $58
+}
+MoveControl(theControl: ControlHandle, h: Integer, v: Integer) {
+	$a9, $59
+}
+GetControlReference(theControl: ControlHandle): LongInt {
+	$a9, $5a
+}
+SetControlReferene(theControl: ControlHandle, data: LongInt) {
+	$a9, $5b
+}
+SizeControl(theControl: ControlHandle, w: Integer, h: Integer) {
+	$a9, $5c
+}
+HiliteControl(theControl: ControlHandle, hiliteState: Integer) {
+	$a9, $5d
+}
+GetControlTitle(theControl: ControlHandle, title: ^Str255) {
+	$a9, $5e
+}
+SetControlTitle(theControl: ControlHandle, title: ^Str255) {
+	$a9, $5f
+}
+GetControlValue(theControl: ControlHandle): Integer {
+	$a9, $60
+}
+GetControlMinimum(theControl: ControlHandle): Integer {
+	$a9, $61
+}
+GetControlMaximum(theControl: ControlHandle): Integer {
+	$a9, $62
+}
+SetControlValue(theControl: ControlHandle, theValue: Integer) {
+	$a9, $63
+}
+SetControlMinimum(theControl: ControlHandle, minValue: Integer) {
+	$a9, $64
+}
+SetControlMaximum(theControl: ControlHandle, maxValue: Integer) {
+	$a9, $65
+}
+TestControl(theControl: ControlHandle, thePt: Point): Integer {
+	$a9, $66
+}
+DragControl(theControl: ControlHandle, startPt: Point, limitRect: ^Rect, slopRect: ^Rect, axis: Axis) {
+	$a9, $67
+}
+TrackControl(theControl: ControlHandle, thePoint: Point, actionProc: ProcPtr): Integer {
+	$a9, $68
+}
+DrawControls(theWindow: WindowPtr) {
+	$a9, $69
+}
+GetControlAction(theControl: ControlHandle): ProcPtr {
+	$a9, $6a
+}
+SetControlAction(theControl: ControlHandle, actionProc: ProcPtr) {
+	$a9, $6b
+}
+FindControl(thePoint: Point, theWindow: WindowPtr, theControl: ^ControlHandle): CtlPartCode {
+	$a9, $6c
+}
+Draw1Control(theControl: ControlHandle) {
+	$a9, $6d
+}
+GetNewControl(controlID: Integer, owner: WindowPtr): ControlHandle {
+	$a9, $be
+}
+SetControlColor(theControl: ControlHandle, newColorTable: CCTabHandle) {
+	$aa, $43
+}
+GetAuxiliaryControlRecord(theControl: ControlHandle, acHndl: ^AuxCtlHandle): Boolean {
+	$aa, $44
+}
+
+ControlRecord struct {
+	nextControl: ControlHandle;
+	contrlOwner: WindowPtr;
+	contrlRect: Rect;
+	contrlVis: Byte;
+	contrlHilite: Byte;
+	contrlValue: Integer;
+	contrlMin: Integer;
+	contrlMax: Integer;
+	contrlDefProc: Handle;
+	contrlData: Handle;
+	contrlAction: ProcPtr;
+	contrlRefCon: LongInt;
+	contrlTitle: Str255;
+}
+ControlPtr = ^ControlRecord;
+ControlHandle = ^ControlPtr;
+
+AuxCtlRec struct {
+	acNext: AuxCtlHandle;
+	acOwner: ControlHandle;
+	acCTable: CCTabHandle;
+	acFlags: Integer;
+	acReserved: LongInt;
+	acRefCon: LongInt;
+}
+AuxCtlPtr = ^AuxCtlRec;
+AuxCtlHandle = ^AuxCtlPtr;
+
+CtlCTab struct {
+	ccSeed: LongInt;
+	ccRider: Integer;
+	ctSize: Integer;
+	ctTable: ColorSpec[4];
+}
+CCTabPtr = ^CtlCTab;
+CCTabHandle = ^CCTabPtr;
+
+
+CtlPartCode enum<Integer> {
+	inButton = 10,
+	inCheckBox = 11,
+	inUpButton = 20,
+	inDownButton = 21,
+	inPageUp = 22,
+	inPageDown = 23,
+	inThumb = 129,
+}
+
+ControlType enum<Integer> {
+	pushButProc = 0,
+	checkBoxProc = 1,
+	radioButProc = 2,
+	useWFont = 8,
+	scrollBarProc = 16,
+	popupMenuProc = 1008,
+}

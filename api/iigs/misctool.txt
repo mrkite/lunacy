@@ -1,0 +1,345 @@
+VectorRef enum<u16> {
+	toolLoc1,
+	toolLoc2,
+	usrTLoc1,
+	usrTLoc2,
+	intrptMgr,
+	copMgr,
+	abortMgr,
+	sysFailMgr,
+	aTalkIntHnd,
+	sccIntHnd,
+	scLnIntHnd,
+	sndIntHnd,
+	vblIntHnd,
+	mouseIntHnd,
+	qSecIntHnd,
+	kybdIntHnd,
+	adbRBIHnd,
+	adbSRQHnd,
+	descAccHnd,
+	flshBufHnd,
+	kybdMicHnd,
+	oneSecHnd,
+	extVCGHnd,
+	otherIntHnd,
+	crsrUpdtHnd,
+	incBsyFlag,
+	decBsyFlag,
+	bellVector,
+	breakVector,
+	traceVector,
+	stepVector,
+	ctlYVector = $28,
+	proDOSVctr = $2a,
+	osVector,
+	msgPtrVctr,
+}
+
+MouseMode enum<u8> {
+	mouseOff = 0,
+	transparent = 1,
+	moveIntrpt = 3,
+	bttnIntrpt = 5,
+	bttnOrMove = 7,
+	mouseOffVI = 8,
+	transparentVI = 9,
+	moveIntrptVI = $b,
+	bttnIntrptVI = $d,
+	bttnOrMoveVI = $f,
+}
+
+MouseRec struct {
+	mouseMode: MouseMode;
+	mouesStatus: u8;
+	yPos: i16;
+	xPos: i16;
+}
+
+IntSourceRef enum<u16> {
+	kybdEnable = 0,
+	kybdDisable = 1,
+	vblEnable = 2,
+	vblDisable = 3,
+	qSecEnable = 4,
+	qSecDisable = 5,
+	oSecEnable = 6,
+	oSecDisable = 7,
+	adbEnable = $a,
+	adbDisable = $b,
+	scLnEnable = $c,
+	scLnDisable = $d,
+	exVCGEnable = $e,
+	exVCGDisable = $f,
+}
+
+InterruptStateRec struct {
+	irq_A: u16;
+	irq_X: u16;
+	irq_Y: u16;
+	irq_S: u16;
+	irq_D: u16;
+	irq_P: u8;
+	irq_DB: u8;
+	irq_e: u8;
+	irq_K: u8;
+	irq_PC: u16;
+	irq_state: u8;
+	irq_shadow: u16;
+	irq_mslot: u8;
+}
+
+Heartbeat struct {
+	nextHB: ^Heartbeat;
+	vblsBetweenCalls: u16;
+	taskSig: u16;
+	code: u8[];
+}
+
+ClampRec struct {
+	yMaxClamp: i16;
+	yMinClamp: i16;
+	xMacClamp: i16;
+	xMinClamp: i16;
+}
+
+FWRec struct {
+	yRegExit: u16;
+	xRegExit: u16;
+	aRegExit: u16;
+	status: u16;
+}
+
+BatteryParam enum<u16> {
+	p1PrntModem = $0000,
+	p1LineLnth = $0001,
+	p1DelLine = $0002,
+	p1AddLine = $0003,
+	p1Echo = $0004,
+	p1Buffer = $0005,
+	p1Baud = $0006,
+	p1DtStpBits = $0007,
+	p1Parity = $0008,
+	p1DCDHndShk = $0009,
+	p1DSRHndShk = $000a,
+	p1XnfHndShk = $000b,
+	p2PrntModem = $000c,
+	p2LineLnth = $000d,
+	p2DelLine = $000e,
+	p2AddLine = $000f,
+	p2Echo = $0010,
+	p2Buffer = $0011,
+	p2Baud = $0012,
+	p2DtStpBits = $0013,
+	p2Parity = $0014,
+	p2DCDHndShk = $0015,
+	p2DSRHndShk = $0016,
+	p2XnfHndShk = $0017,
+	dspColMono = $0018,
+	dsp40or80 = $0019,
+	dspTxtColor = $001a,
+	dspBckColor = $001b,
+	dspBrdColor = $001c,
+	hrtz50or60 = $001d,
+	userVolume = $001e,
+	bellVolume = $001f,
+	sysSpeed = $0020,
+	slt1intExt = $0021,
+	slt2intExt = $0022,
+	slt3intExt = $0023,
+	slt4intExt = $0024,
+	slt5intExt = $0025,
+	slt6intExt = $0026,
+	slt7intExt = $0027,
+	startupSlt = $0028,
+	txtDspLang = $0029,
+	kybdLng = $002a,
+	kyBdBuffer = $002b,
+	kyBdRepSpd = $002c,
+	kyBdRepDel = $002d,
+	dblClkTime = $002e,
+	flashRate = $002f,
+	shftCpsLCas = $0030,
+	fstSpDelKey = $0031,
+	dualSpeed = $0032,
+	hiMouseRes = $0033,
+	dateFormat = $0034,
+	clockFormat = $0035,
+	rdMinRam = $0036,
+	rdMaxRam = $0037,
+	langCount = $0038,
+	lang1 = $0039,
+	lang2 = $003a,
+	lang3 = $003b,
+	lang4 = $003c,
+	lang5 = $003d,
+	lang6 = $003e,
+	lang7 = $003f,
+	lang8 = $0040,
+	layoutCount = $0041,
+	layout1 = $0042,
+	layout2 = $0043,
+	layout3 = $0044,
+	layout4 = $0045,
+	layout5 = $0046,
+	layout6 = $0047,
+	layout7 = $0048,
+	layout8 = $0049,
+	layout9 = $004a,
+	layout10 = $004b,
+	layout11 = $004c,
+	layout12 = $004d,
+	layout13 = $004e,
+	layout14 = $004f,
+	layout15 = $0050,
+	layout16 = $0051,
+	aTalkModeNo = $0080,
+}
+
+MTBootInit() {
+	$a2, $03, $01, $22, $00, $00, $e1
+}
+MTStartUp() {
+	$a2, $03, $02, $22, $00, $00, $e1
+}
+MTShutDown() {
+	$a2, $03, $03, $22, $00, $00, $e1
+}
+MTVersion(): u16 {
+	$a2, $03, $04, $22, $00, $00, $e1
+}
+MTReset() {
+	$a2, $03, $05, $22, $00, $00, $e1
+}
+MTStatus(): bool {
+	$a2, $03, $06, $22, $00, $00, $e1
+}
+WriteBRam(bufferPtr: Ptr) {
+	$a2, $03, $09, $22, $00, $00, $e1
+}
+ReadBRam(bufferPtr: Ptr) {
+	$a2, $03, $0a, $22, $00, $00, $e1
+}
+WriteBParam(theData: u16, paramRefNum: BatteryParam) {
+	$a2, $03, $0b, $22, $00, $00, $e1
+}
+ReadBParam(paramRefNum: BatteryParam): u16 {
+	$a2, $03, $0c, $22, $00, $00, $e1
+}
+ReadTimeHex(): ^TimeRec {
+	$a2, $03, $0d, $22, $00, $00, $e1
+}
+WriteTimeHex(month: u8, day: u8, curYear: u8, hour: u8, minute: u8, second: u8) {
+	$a2, $03, $0e, $22, $00, $00, $e1
+}
+ReadAsciiTime(bufferPtr: Ptr) {
+	$a2, $03, $0f, $22, $00, $00, $e1
+}
+SetVector(vectorRefNum: VectorRef, vectorPtr: Ptr) {
+	$a2, $03, $10, $22, $00, $00, $e1
+}
+GetVector(vectorRefNum: VectorRef): Ptr {
+	$a2, $03, $11, $22, $00, $00, $e1
+}
+SetHeartBeat(taskPtr: ^Heartbeat) {
+	$a2, $03, $12, $22, $00, $00, $e1
+}
+DelHeartBeat(taskPtr: ^Heartbeat) {
+	$a2, $03, $13, $22, $00, $00, $e1
+}
+ClrHeartBeat() {
+	$a2, $03, $14, $22, $00, $00, $e1
+}
+SysFailMgr(errorCode: u16, str: ^String255) {
+	$a2, $03, $15, $22, $00, $00, $e1
+}
+GetAddr(refNum: u16) {
+	$a2, $03, $16, $22, $00, $00, $e1
+}
+ReadMouse(): ^MouseRec {
+	$a2, $03, $17, $22, $00, $00, $e1
+}
+InitMouse(mouseSlot: u16) {
+	$a2, $03, $18, $22, $00, $00, $e1
+}
+SetMouse(mouseMode: MouseMode) {
+	$a2, $03, $19, $22, $00, $00, $e1
+}
+HomeMouse() {
+	$a2, $03, $1a, $22, $00, $00, $e1
+}
+ClearMouse() {
+	$a2, $03, $1b, $22, $00, $00, $e1
+}
+ClampMouse(xMinClamp: i16, xMaxClamp: i16, yMinClamp: i16, yMaxClamp: i16) {
+	$a2, $03, $1c, $22, $00, $00, $e1
+}
+GetMouseClamp(): ^ClampRec {
+	$a2, $03, $1d, $22, $00, $00, $e1
+}
+PosMouse(xPos: i16, yPos: i16) {
+	$a2, $03, $1e, $22, $00, $00, $e1
+}
+ServeMouse(): u16 {
+	$a2, $03, $1f, $22, $00, $00, $e1
+}
+GetNewID(idTag: u16) {
+	$a2, $03, $20, $22, $00, $00, $e1
+}
+DeleteID(idTag: u16) {
+	$a2, $03, $21, $22, $00, $00, $e1
+}
+StatusID(idTag: u16) {
+	$a2, $03, $22, $22, $00, $00, $e1
+}
+IntSource(srcRefNum: IntSourceRef) {
+	$a2, $03, $23, $22, $00, $00, $e1
+}
+FWEntry(aRegValue: u16, xRegValue: u16, yRegValue: u16, eModeEntryPt: u16): ^FWRec {
+	$a2, $03, $24, $22, $00, $00, $e1
+}
+GetTick(): i32 {
+	$a2, $03, $25, $22, $00, $00, $e1
+}
+PackBytes(srcBuffer: ^Ptr, srcSize: ^u16, dstBuffer: Ptr, dstSize: u16): u16 {
+	$a2, $03, $26, $22, $00, $00, $e1
+}
+UnpackBytes(srcBuffer: Ptr, srcSize: u16, dstBuffer: ^Ptr, dstSize: ^u16): u16 {
+	$a2, $03, $27, $22, $00, $00, $e1
+}
+Munger(destPtr: Ptr, destLenPtr: ^u16, targPtr: Ptr, targLen: u16, replPtr: Ptr, replLen: u16, padPtr: Ptr): u16 {
+	$a2, $03, $28, $22, $00, $00, $e1
+}
+GetIRQEnable(): u16 {
+	$a2, $03, $29, $22, $00, $00, $e1
+}
+SetAbsClamp(xMinClamp: i16, xMaxClamp: i16, yMinClamp: i16, yMaxClamp: i16) {
+	$a2, $03, $2a, $22, $00, $00, $e1
+}
+GetAbsClamp(): ^ClampRec {
+	$a2, $03, $2b, $22, $00, $00, $e1
+}
+SysBeep() {
+	$a2, $03, $2c, $22, $00, $00, $e1
+}
+AddToQueue(newEntryPtr: Ptr, headerPtr: Ptr) {
+	$a2, $03, $2e, $22, $00, $00, $e1
+}
+DeleteFromQueue(entryPtR: Ptr, headerPtr: Ptr) {
+	$a2, $03, $2f, $22, $00, $00, $e1
+}
+SetInterruptState(iStateRec: ^InterruptStateRec, bytesDesired: u16) {
+	$a2, $03, $30, $22, $00, $00, $e1
+}
+GetInterruptState(iStateRec: ^InterruptStateRec, bytesDesired: u16) {
+	$a2, $03, $31, $22, $00, $00, $e1
+}
+GetIntStateRecSize(): u16 {
+	$a2, $03, $32, $22, $00, $00, $e1
+}
+GetCodeResConverter(): VoidProcPtr {
+	$a2, $03, $34, $22, $00, $00, $e1
+}
+GetRomResource(): Ptr {
+	$a2, $03, $35, $22, $00, $00, $e1
+}

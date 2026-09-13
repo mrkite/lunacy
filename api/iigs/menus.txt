@@ -1,0 +1,224 @@
+MenuBarRecHndl = CtlRecHndl;
+
+MenuFlag enum<u16> {
+	mInvis = $4,
+	mCustom = $10,
+	mXor = $20,
+	mSelected = $40,
+	mDisabled = $80,
+}
+
+MenuRec struct {
+	menuID: u16;
+	menuWidth: u16;
+	menuHeight: u16;
+	menuProc: WordProcPtr;
+	menuFlag: MenuFlag;
+	firstItem: u8;
+	numOfItems: u8;
+	titleWidth: u16;
+	titleName: Ptr;
+}
+MenuRecHndl = ^^MenuRec;
+
+MenuBootInit() {
+	$a2, $0f, $01, $22, $00, $00, $e1
+}
+MenuStartUp(userID: i16, dPageAddr: i16) {
+	$a2, $0f, $02, $22, $00, $00, $e1
+}
+MenuShutDown() {
+	$a2, $0f, $03, $22, $00, $00, $e1
+}
+MenuVersion(): i16 {
+	$a2, $0f, $04, $22, $00, $00, $e1
+}
+MenuReset() {
+	$a2, $0f, $05, $22, $00, $00, $e1
+}
+MenuStatus(): bool {
+	$a2, $0f, $06, $22, $00, $00, $e1
+}
+MenuKey(taskRecPtr: ^WmTaskRec, barHandle: MenuBarRecHndl) {
+	$a2, $0f, $09, $22, $00, $00, $e1
+}
+GetMenuBar(): MenuBarRecHndl {
+	$a2, $0f, $0a, $22, $00, $00, $e1
+}
+MenuRefresh(redrawRoutinePtr: VoidProcPtr) {
+	$a2, $0f, $0b, $22, $00, $00, $e1
+}
+FlashMenuBar() {
+	$a2, $0f, $0c, $22, $00, $00, $e1
+}
+InsertMenu(addMenuHandle: MenuRecHndl, insertAfter: i16) {
+	$a2, $0f, $0d, $22, $00, $00, $e1
+}
+DeleteMenu(menuNum: i16) {
+	$a2, $0f, $0e, $22, $00, $00, $e1
+}
+InsertMItem(addItemPtr: Ptr, insertAfter: i16, menuNum: i16) {
+	$a2, $0f, $0f, $22, $00, $00, $e1
+}
+DeleteMItem(itemNum: i16) {
+	$a2, $0f, $10, $22, $00, $00, $e1
+}
+GetSysBar(): MenuBarRecHndl {
+	$a2, $0f, $11, $22, $00, $00, $e1
+}
+SetSysBar(barHandle: MenuBarRecHndl) {
+	$a2, $0f, $12, $22, $00, $00, $e1
+}
+FixMenuBar(): i16 {
+	$a2, $0f, $13, $22, $00, $00, $e1
+}
+CountMItems(menuNum: i16): i16 {
+	$a2, $0f, $14, $22, $00, $00, $e1
+}
+NewMenuBar(theWindowPtr: ^Window): MenuBarRecHndl {
+	$a2, $0f, $15, $22, $00, $00, $e1
+}
+GetMHandle(menuNum: i16): MenuRecHndl {
+	$a2, $0f, $16, $22, $00, $00, $e1
+}
+SetBarColors(newBarColor: i16, newInvertColor: i16, newOutColor: i16) {
+	$a2, $0f, $17, $22, $00, $00, $e1
+}
+GetBarColors(): Ptr {
+	$a2, $0f, $18, $22, $00, $00, $e1
+}
+SetMTitleStart(xStart: i16) {
+	$a2, $0f, $19, $22, $00, $00, $e1
+}
+GetMTitleStart(): i16 {
+	$a2, $0f, $1a, $22, $00, $00, $e1
+}
+GetMenuMsgPort(): ^GrafPort {
+	$a2, $0f, $1b, $22, $00, $00, $e1
+}
+CalcMenuSize(newWidth: i16, newHeight: i16, menuNum: i16) {
+	$a2, $0f, $1c, $22, $00, $00, $e1
+}
+SetMTitleWidth(newWidth: i16, menuNum: i16) {
+	$a2, $0f, $1d, $22, $00, $00, $e1
+}
+GetMTitleWidth(menuNum: i16): i16 {
+	$a2, $0f, $1e, $22, $00, $00, $e1
+}
+SetMenuFlag(newValue: i16, menuNum: i16) {
+	$a2, $0f, $1f, $22, $00, $00, $e1
+}
+GetMenuFlag(menuNum: i16): MenuFlag {
+	$a2, $0f, $20, $22, $00, $00, $e1
+}
+SetMenuTitle(newStr: ^String255, menuNum: i16) {
+	$a2, $0f, $21, $22, $00, $00, $e1
+}
+GetMenuTitle(menuNum: i16): Ptr {
+	$a2, $0f, $22, $22, $00, $00, $e1
+}
+MenuGlobal(menuGlobalMask: i16): i16 {
+	$a2, $0f, $23, $22, $00, $00, $e1
+}
+SetMItem(newItemLine: ^String255, itemNum: i16) {
+	$a2, $0f, $24, $22, $00, $00, $e1
+}
+GetMItem(itemNum: i16): StringPtr {
+	$a2, $0f, $25, $22, $00, $00, $e1
+}
+SetMItemFlag(newValue: i16, itemNum: i16) {
+	$a2, $0f, $26, $22, $00, $00, $e1
+}
+GetMItemFlag(itemNum: i16): i16 {
+	$a2, $0f, $27, $22, $00, $00, $e1
+}
+SetMItemBlink(count: i16) {
+	$a2, $0f, $28, $22, $00, $00, $e1
+}
+MenuNewRes() {
+	$a2, $0f, $29, $22, $00, $00, $e1
+}
+DrawMenuBar() {
+	$a2, $0f, $2a, $22, $00, $00, $e1
+}
+MenuSelect(taskRecPtr: ^WmTaskRec, barHandle: MenuBarRecHndl) {
+	$a2, $0f, $2b, $22, $00, $00, $e1
+}
+HiliteMenu(hiliteFlag: bool, menuNum: i16) {
+	$a2, $0f, $2c, $22, $00, $00, $e1
+}
+NewMenu(menuStringPtr: Ptr): MenuRecHndl {
+	$a2, $0f, $2d, $22, $00, $00, $e1
+}
+DisposeMenu(menuHandle: MenuRecHndl) {
+	$a2, $0f, $2e, $22, $00, $00, $e1
+}
+InitPalette() {
+	$a2, $0f, $2f, $22, $00, $00, $e1
+}
+EnableMItem(itemNum: i16) {
+	$a2, $0f, $30, $22, $00, $00, $e1
+}
+DisableMItem(itemNum: i16) {
+	$a2, $0f, $31, $22, $00, $00, $e1
+}
+CheckMItem(checkedFlag: bool, itemNum: i16) {
+	$a2, $0f, $32, $22, $00, $00, $e1
+}
+SetMItemMark(mark: i16, itemNum: i16) {
+	$a2, $0f, $33, $22, $00, $00, $e1
+}
+GetMItemMark(itemNum: i16): i16 {
+	$a2, $0f, $34, $22, $00, $00, $e1
+}
+SetMItemStyle(theTextStyle: TextStyle, itemNum: i16) {
+	$a2, $0f, $35, $22, $00, $00, $e1
+}
+GetMItemStyle(itemNum: i16): TextStyle {
+	$a2, $0f, $36, $22, $00, $00, $e1
+}
+SetMenuID(newMenuNum: i16, curMenuNum: i16) {
+	$a2, $0f, $37, $22, $00, $00, $e1
+}
+SetMItemID(newItemNum: i16, curItemNum: i16) {
+	$a2, $0f, $38, $22, $00, $00, $e1
+}
+SetMenuBar(barHandle: MenuBarRecHndl) {
+	$a2, $0f, $39, $22, $00, $00, $e1
+}
+SetMItemName(str: ^String255, itemNum: i16) {
+	$a2, $0f, $3a, $22, $00, $00, $e1
+}
+GetPoppDefProc(): Ptr {
+	$a2, $0f, $3b, $22, $00, $00, $e1
+}
+PopUpMenuSelect(selection: i16, currentLeft: i16, currentTop: i16, flag: i16, menuHandle: MenuRecHndl): i16 {
+	$a2, $0f, $3c, $22, $00, $00, $e1
+}
+DrawPopUp(selection: i16, flag: i16, right: i16, bottom: i16, left: i16, top: i16, menUHandle: MenuRecHndl) {
+	$a2, $0f, $3d, $22, $00, $00, $e1
+}
+NewMenu2(refDesc: RefDescriptor, menuTemplateRef: Ref): MenuRecHndl {
+	$a2, $0f, $3e, $22, $00, $00, $e1
+}
+InsertMItem2(refDesc: RefDescriptor, menuTemplateRef: Ref, insertAfter: i16, menuNum: i16) {
+	$a2, $0f, $3f, $22, $00, $00, $e1
+}
+SetMenuTitle2(refDesc: RefDescriptor, titleRef: Ref, menuNum: i16) {
+	$a2, $0f, $40, $22, $00, $00, $e1
+}
+SetMItem2(refDesc: RefDescriptor, menuItemTempRef: Ref, menuItemID: i16) {
+	$a2, $0f, $41, $22, $00, $00, $e1
+}
+SetMItemName2(refDesc: RefDescriptor, titleRef: Ref, menuItemID: i16) {
+	$a2, $0f, $42, $22, $00, $00, $e1
+}
+NewMenuBar2(refDesc: RefDescriptor, menuBarTemplateRef: Ref, windowPortPtr: ^GrafPort): MenuBarRecHndl {
+	$a2, $0f, $43, $22, $00, $00, $e1
+}
+HideMenuBar() {
+	$a2, $0f, $45, $22, $00, $00, $e1
+}
+ShowMenuBar() {
+	$a2, $0f, $46, $22, $00, $00, $e1
+}

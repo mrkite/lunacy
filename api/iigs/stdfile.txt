@@ -1,0 +1,90 @@
+SFReplyRec struct {
+	good: bool;
+	fileType: u16;
+	auxFileType: u32;
+	filename: u8[15];
+	fullPathname: u8[128];
+}
+SFReplyRec2 struct {
+	good: bool;
+	filetype: u16;
+	auxType: u32;
+	nameDesc: RefDescriptor;
+	nameRef: Ref;
+	pathDesc: RefDescriptor;
+	pathRef: Ref;
+}
+
+SFTypeList struct {
+	numEntries: u8;
+	fileTypeEntries: u8[5];
+}
+
+TypeSelector2 struct {
+	flags: u16;
+	fileType: u16;
+	auxType: u32;
+}
+
+SFTypeList2 struct {
+	numEntries: u16;
+	fileTypeEntries: TypeSelector2[5];
+}
+
+SFBootInit() {
+	$a2, $17, $01, $22, $00, $00, $e1
+}
+SFStartUp(userID: i16, dPageAddr: i16) {
+	$a2, $17, $02, $22, $00, $00, $e1
+}
+SFShutDown() {
+	$a2, $17, $03, $22, $00, $00, $e1
+}
+SFVersion(): i16 {
+	$a2, $17, $04, $22, $00, $00, $e1
+}
+SFReset() {
+	$a2, $17, $05, $22, $00, $00, $e1
+}
+SFStatus(): bool {
+	$a2, $17, $06, $22, $00, $00, $e1
+}
+SFGetFile(whereX: i16, whereY: i16, prompt: ^String255, filterProcPtr: WordProcPtr, typeListPtr: ^SFTypeList, replyPtr: ^SFReplyRec) {
+	$a2, $17, $09, $22, $00, $00, $e1
+}
+SFPutFile(whereX: i16, whereY: i16, prompt: ^String255, origName: ^String255, maxLen: i16, replyPtr: ^SFReplyRec) {
+	$a2, $17, $0a, $22, $00, $00, $e1
+}
+SFPGetFile(whereX: i16, whereY: i16, prompt: ^String255, filterProcPtr: WordProcPtr, typeListPtr: ^SFTypeList, dialogTempPtr: ^DialogTemplate, dialogHookPtr: VoidProcPtr, replyPtr: ^SFReplyRec) {
+	$a2, $17, $0b, $22, $00, $00, $e1
+}
+SFPPutFile(whereX: i16, whereY: i16, prompt: ^String255, origName: ^String255, maxLen: i16, dialogTempPtr: ^DialogTemplate, dialogHookPtr: VoidProcPtr, replyPtr: ^SFReplyRec) {
+	$a2, $17, $0c, $22, $00, $00, $e1
+}
+SFAllCaps(allCapsFlag: bool) {
+	$a2, $17, $0d, $22, $00, $00, $e1
+}
+SFGetFile2(whereX: i16, whereY: i16, promptDesc: RefDescriptor, promptRef: Ref, filterProcPtr: WordProcPtr, typeListPtr: ^SFTypeList2, replyPtr: ^SFReplyRec2) {
+	$a2, $17, $0e, $22, $00, $00, $e1
+}
+SFPutFile2(whereX: i16, whereY: i16, promptDesc: RefDescriptor, promptRef: Ref, origNameDesc: RefDescriptor, origNameRef: Ref, replyPtr: ^SFReplyRec2) {
+	$a2, $17, $0f, $22, $00, $00, $e1
+}
+SFPGetFile2(whereX: i16, whereY: i16, itemDrawPtr: VoidProcPtr, promptDesc: RefDescriptor, promptRef: Ref, filterProcPtr: WordProcPtr, typeListPtr: ^SFTypeList2, dialogTempPtr: ^DialogTemplate, dialogHookPtr: VoidProcPtr, replyPtr: ^SFReplyRec2) {
+	$a2, $17, $10, $22, $00, $00, $e1
+}
+SFPPutFile2(whereX: i16, whereY: i16, itemDrawPtr: VoidProcPtr, promptDesc: RefDescriptor, promptRef: Ref, origNameDesc: RefDescriptor, origNameRef: Ref, dialogTempPtr: ^DialogTemplate, dialogHookPtr: VoidProcPtr, replyPtr: ^SFReplyRec2) {
+	$a2, $17, $11, $22, $00, $00, $e1
+}
+SFShowInvisible(invisibleState: bool): bool {
+	$a2, $17, $12, $22, $00, $00, $e1
+}
+SFRefScan(filterProcPtr: VoidProcPtr, typeListPtr: ^SFTypeList2) {
+	$a2, $17, $13, $22, $00, $00, $e1
+}
+SFPMultiGet2(whereX: i16, whereY: i16, itemDrawPtr: VoidProcPtr, promptDesc: RefDescriptor, promptRef: Ref, filterProcPtr: WordProcPtr, typeListPtr: ^SFTypeList2, dialogTempPtr: ^DialogTemplate, dialogHookPtr: VoidProcPtr, replyPtr: ^SFReplyRec2) {
+	$a2, $17, $15, $22, $00, $00, $e1
+}
+SFMultiGet2(whereX: i16, whereY: i16, promptDesc: RefDescriptor, promptRef: Ref, filterProcPtr: WordProcPtr, typeListPtr: ^SFTypeList2, replyPtr: ^SFReplyRec2) {
+	$a2, $17, $14, $22, $00, $00, $e1
+}

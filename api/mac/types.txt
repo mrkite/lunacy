@@ -1,0 +1,35 @@
+Byte = u8;
+Char = i8;
+UnsignedByte = u8;
+SignedByte = Char;
+Integer = i16;
+LongInt = i32;
+Boolean = i8;
+Fixed = i32;
+FixedPtr = ^Fixed;
+Fract = i32;
+OSType = u32;
+ScriptCode = i16;
+Size = LongInt;
+TimeStamp = LongInt;
+
+Extended = i16[4];
+Extended80 struct {
+	w: i16[5];
+}
+
+PackedByte = i8[];
+Ptr = ^PackedByte;
+ProcPtr = Ptr;
+Handle = ^Ptr;
+
+ResType = Char[4];
+
+Str15 = Char[16];
+Str31 = Char[32];
+Str32 = Char[33];
+Str63 = Char[64];
+Str255 = Char[256];
+StringPtr = ^Str255;
+StringHandle = ^StringPtr;
+

@@ -1,0 +1,31 @@
+VInstall(vblTaskPtr: ^VBLTask): OSErr {
+	$20, $5f, $a0, $33, $3e, $80
+}
+VRemove(vblTaskPtr: ^VBLTask): OSErr {
+	$20, $5f, $a0, $34, $3e, $80
+}
+
+SlotVInstall(vblTaskPtr: ^VBLTask, theSlot: Integer): OSErr {
+	$30, $1f, $20, $5f, $a0, $6f, $3e, $80
+}
+SlotVRemove(vblTaskPtr: ^VBLTask, theSlot: Integer): OSErr {
+	$30, $1f, $20, $5f, $a0, $70, $3e, $80
+}
+AttachVBL(theSlot: Integer): OSErr {
+	$30, $1f, $a0, $71, $3e, $80
+}
+DoVBLTask(theSlot: Integer): OSErr {
+	$30, $1f, $a0, $72, $3e, $80
+}
+
+GetVBLQHdr(): QHdrPtr {
+	$2e, $bc, $00, $00, $01, $60
+}
+
+VBLTask struct {
+	qLink: QElemPtr;
+	qType: QType;
+	vblAddr: ProcPtr;
+	vblCount: Integer;
+	vblPhase: Integer;
+}

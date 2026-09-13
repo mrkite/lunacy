@@ -1,0 +1,140 @@
+IntDivRec struct {
+	quotient: i16;
+	remainder: i16;
+}
+
+WordDivRec struct {
+	quotient: u16;
+	remainder: u16;
+}
+
+LongDivRec struct {
+	quotient: u32;
+	remainder: u32;
+}
+
+LongMulRec struct {
+	lsResult: u32;
+	msResult: u32;
+}
+
+IMBootInit() {
+	$a2, $0b, $01, $22, $00, $00, $e1
+}
+IMStartUp() {
+	$a2, $0b, $02, $22, $00, $00, $e1
+}
+IMShutDown() {
+	$a2, $0b, $03, $22, $00, $00, $e1
+}
+IMVersion(): i16 {
+	$a2, $0b, $04, $22, $00, $00, $e1
+}
+IMReset() {
+	$a2, $0b, $05, $22, $00, $00, $e1
+}
+IMStatus(): bool {
+	$a2, $0b, $06, $22, $00, $00, $e1
+}
+Multiply(multiplicand: i16, multiplier: i16): i32 {
+	$a2, $0b, $09, $22, $00, $00, $e1
+}
+SDivide(dividend: i16, divisor: i16): IntDivRec {
+	$a2, $0b, $0a, $22, $00, $00, $e1
+}
+UDivide(dividend: u16, divisor: u16): WordDivRec {
+	$a2, $0b, $0b, $22, $00, $00, $e1
+}
+LongMul(multiplicand: i32, multiplier: i32): ^LongMulRec {
+	$a2, $0b, $0c, $22, $00, $00, $e1
+}
+LongDivide(dividend: i32, divisor: i32): ^LongDivRec {
+	$a2, $0b, $0d, $22, $00, $00, $e1
+}
+FixRatio(numerator: i16, denominator: i16): Fixed {
+	$a2, $0b, $0e, $22, $00, $00, $e1
+}
+FixMul(multiplcand: Fixed, multiplier: Fixed): Fixed {
+	$a2, $0b, $0f, $22, $00, $00, $e1
+}
+FracMul(multiplicand: Frac, multiplier: Frac): Frac {
+	$a2, $0b, $10, $22, $00, $00, $e1
+}
+FixDiv(dividend: i32, divisor: i32): Fixed {
+	$a2, $0b, $11, $22, $00, $00, $e1
+}
+FracDiv(dividend: i32, divisor: i32): Frac {
+	$a2, $0b, $12, $22, $00, $00, $e1
+}
+FixRound(fixedValue: Fixed): i16 {
+	$a2, $0b, $13, $22, $00, $00, $e1
+}
+FracSqrt(fracValue: Frac): Frac {
+	$a2, $0b, $14, $22, $00, $00, $e1
+}
+FracCos(angle: Fixed): Frac {
+	$a2, $0b, $15, $22, $00, $00, $e1
+}
+FracSin(angle: Fixed): Frac {
+	$a2, $0b, $16, $22, $00, $00, $e1
+}
+FixATan2(input1: i32, input2: i32): Fixed {
+	$a2, $0b, $17, $22, $00, $00, $e1
+}
+HiWord(longValue: i32): i16 {
+	$a2, $0b, $18, $22, $00, $00, $e1
+}
+LoWord(longValue: i32): i16 {
+	$a2, $0b, $19, $22, $00, $00, $e1
+}
+Long2Fix(longValue: i32): Fixed {
+	$a2, $0b, $1a, $22, $00, $00, $e1
+}
+Fix2Long(fixedValue: Fixed): i32 {
+	$a2, $0b, $1b, $22, $00, $00, $e1
+}
+Fix2Frac(fixedValue: Fixed): Frac {
+	$a2, $0b, $1c, $22, $00, $00, $e1
+}
+Frac2Fix(fracValue: Frac): Fixed {
+	$a2, $0b, $1d, $22, $00, $00, $e1
+}
+Fix2X(fixedValue: Fixed, extendPtr: ^Extended) {
+	$a2, $0b, $1e, $22, $00, $00, $e1
+}
+Frac2X(fracValue: Frac, extendPtr: ^Extended) {
+	$a2, $0b, $1f, $22, $00, $00, $e1
+}
+X2Fix(extendPtr: ^Extended): i32 {
+	$a2, $0b, $20, $22, $00, $00, $e1
+}
+X2Frac(extendPtr: ^Extended): i32 {
+	$a2, $0b, $21, $22, $00, $00, $e1
+}
+Int2Hex(intValue: i16, strPtr: Ptr, strLength: i16) {
+	$a2, $0b, $22, $22, $00, $00, $e1
+}
+Long2Hex(longValue: i32, strPtr: Ptr, strLength: i16) {
+	$a2, $0b, $23, $22, $00, $00, $e1
+}
+Hex2Int(strPtr: Ptr, strLength: i16): i16 {
+	$a2, $0b, $24, $22, $00, $00, $e1
+}
+Hex2Long(strPtr: Ptr, strLengtH: i16): i32 {
+	$a2, $0b, $25, $22, $00, $00, $e1
+}
+Int2Dec(wordValue: i16, strPtr: Ptr, strLength: i16, signedFlag: bool) {
+	$a2, $0b, $26, $22, $00, $00, $e1
+}
+Long2Dec(longValue: i32, strPtr: Ptr, strLength: i16, signedFlag: bool) {
+	$a2, $0b, $27, $22, $00, $00, $e1
+}
+Dec2Int(strPtr: Ptr, strLength: i16, signedFlag: bool): i16 {
+	$a2, $0b, $28, $22, $00, $00, $e1
+}
+Dec2Long(strPtr: Ptr, strLength: i16, signedFlag: bool): i32 {
+	$a2, $0b, $29, $22, $00, $00, $e1
+}
+HexIt(intValue: i16): i32 {
+	$a2, $0b, $2a, $22, $00, $00, $e1
+}

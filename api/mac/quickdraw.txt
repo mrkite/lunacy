@@ -1,0 +1,965 @@
+CopyMask(srcBits: ^BitMap, maskBits: ^BitMap, dstBits: ^BitMap, srcRect: ^Rect, maskRect: ^Rect, dstRect: ^Rect) {
+	$a8, $17
+}
+
+GetMaskTable(): Ptr {
+	$a8, $36, $2e, $88
+}
+
+CalcMask(srcPtr: Ptr, dstPtr: Ptr, srcRow: Integer, dstRow: Integer, height: Integer, words: Integer) {
+	$a8, $38
+}
+SeedFill(srcPtr: Ptr, dstPtr: Ptr, srcRow: Integer, dstRow: Integer, height: Integer, words: Integer, seedH: Integer, seedV: Integer) {
+	$a8, $39
+}
+
+InitCursor() {
+	$a8, $50
+}
+SetCursor(crsr: ^Cursor) {
+	$a8, $51
+}
+HideCursor() {
+	$a8, $52
+}
+ShowCursor() {
+	$a8, $53
+}
+
+ObscureCursor() {
+	$a8, $56
+}
+
+Random(): Integer {
+	$a8, $61
+}
+ForeColor(color: LongInt) {
+	$a8, $62
+}
+BackColor(color: LongInt) {
+	$a8, $63
+}
+ColorBit(whichBit: Integer) {
+	$a8, $64
+}
+GetPixel(h: Integer, v: Integer): Boolean {
+	$a8, $65
+}
+StuffHex(thingPtr: Ptr, s: ^Str255) {
+	$a8, $66
+}
+
+InitPort(port: GrafPtr) {
+	$a8, $6d
+}
+InitGraf(globalPtr: Ptr) {
+	$a8, $6e
+}
+OpenPort(port: GrafPtr) {
+	$a8, $6f
+}
+LocalToGlobal(pt: ^Point) {
+	$a8, $70
+}
+GlobalToLocal(pt: ^Point) {
+	$a8, $71
+}
+GrafDevice(device: Integer) {
+	$a8, $72
+}
+SetPort(port: GrafPtr) {
+	$a8, $73
+}
+GetPort(port: ^GrafPtr) {
+	$a8, $74
+}
+SetPortBits(bm: ^BitMap) {
+	$a8, $75
+}
+PortSize(width: Integer, height: Integer) {
+	$a8, $76
+}
+MovePortTo(leftGlobal: Integer, topGlobal: Integer) {
+	$a8, $77
+}
+SetOrigin(h: Integer, v: Integer) {
+	$a8, $78
+}
+SetClip(rgn: RgnHandle) {
+	$a8, $79
+}
+GetClip(rgn: RgnHandle) {
+	$a8, $7a
+}
+ClipRect(r: ^Rect) {
+	$a8, $7b
+}
+BackPat(pat: ^Pattern) {
+	$a8, $7c
+}
+ClosePort(port: GrafPtr) {
+	$a8, $7d
+}
+AddPt(srcPt: Point, dstPt: ^Point) {
+	$a8, $7e
+}
+SubPt(srcPt: Point, dstPt: ^Point) {
+	$a8, $7f
+}
+SetPt(pt: ^Point, h: Integer, v: Integer) {
+	$a8, $80
+}
+EqualPt(pt1: Point, pt2: Point): Boolean {
+	$a8, $81
+}
+StdLine(newPt: Point) {
+	$a8, $90
+}
+LineTo(h: Integer, v: Integer) {
+	$a8, $91
+}
+Line(dh: Integer, dv: Integer) {
+	$a8, $92
+}
+MoveTo(h: Integer, v: Integer) {
+	$a8, $93
+}
+Move(dh: Integer, dv: Integer) {
+	$a8, $94
+}
+HidePen() {
+	$a8, $96
+}
+ShowPen() {
+	$a8, $97
+}
+GetPenState(pnState: ^PenState) {
+	$a8, $98
+}
+SetPenState(pnState: ^PenState) {
+	$a8, $99
+}
+GetPen(pt: ^Point) {
+	$a8, $9a
+}
+PenSize(width: Integer, height: Integer) {
+	$a8, $9b
+}
+PenMode(mode: Mode) {
+	$a8, $9c
+}
+PenPat(pat: ^Pattern) {
+	$a8, $9d
+}
+PenNormal() {
+	$a8, $9e
+}
+StdRect(verb: GrafVerb, r: ^Rect) {
+	$a8, $a0
+}
+FrameRect(r: ^Rect) {
+	$a8, $a1
+}
+PaintRect(r: ^Rect) {
+	$a8, $a2
+}
+EraseRect(r: ^Rect) {
+	$a8, $a3
+}
+InvertRect(r: ^Rect) {
+	$a8, $a4
+}
+FillRect(r: ^Rect, pat: ^Pattern) {
+	$a8, $a5
+}
+EqualRect(rect1: ^Rect, rect2: ^Rect): Boolean {
+	$a8, $a6
+}
+SetRect(r: ^Rect, left: Integer, top: Integer, right: Integer, bottom: Integer) {
+	$a8, $a7
+}
+OffsetRect(r: ^Rect, dh: Integer, dv: Integer) {
+	$a8, $a8
+}
+InsetRect(r: ^Rect, dh: Integer, dv: Integer) {
+	$a8, $a9
+}
+SectRect(src1: ^Rect, src2: ^Rect, dstRect: ^Rect): Boolean {
+	$a8, $aa
+}
+UnionRect(src1: ^Rect, src2: ^Rect, dstRect: ^Rect) {
+	$a8, $ab
+}
+Pt2Rect(pt1: Point, pt2: Point, dstRect: ^Rect) {
+	$a8, $ac
+}
+PtInRect(pt: Point, r: ^Rect): Boolean {
+	$a8, $ad
+}
+EmptyRect(r: ^Rect): Boolean {
+	$a8, $ae
+}
+StdRRect(verb: GrafVerb, r: ^Rect, ovalWidth: Integer, ovalHeight: Integer) {
+	$a8, $af
+}
+FrameRoundRect(r: ^Rect, ovalWidth: Integer, ovalHeight: Integer) {
+	$a8, $b0
+}
+PaintRoundRect(r: ^Rect, ovalWidth: Integer, ovalHeight: Integer) {
+	$a8, $b1
+}
+EraseRoundRect(r: ^Rect, ovalWidth: Integer, ovalHeight: Integer) {
+	$a8, $b2
+}
+InvertRoundRect(r: ^Rect, ovalWidth: Integer, ovalHeight: Integer) {
+	$a8, $b3
+}
+FillRoundRect(r: ^Rect, ovalWidth: Integer, ovalHeight: Integer, pat: ^Pattern) {
+	$a8, $b4
+}
+StdOval(verb: GrafVerb, r: ^Rect) {
+	$a8, $b6
+}
+FrameOval(r: ^Rect) {
+	$a8, $b7
+}
+PaintOval(r: ^Rect) {
+	$a8, $b8
+}
+EraseOval(r: ^Rect) {
+	$a8, $b9
+}
+InvertOval(r: ^Rect) {
+	$a8, $ba
+}
+FillOval(r: ^Rect, pat: ^Pattern) {
+	$a8, $bb
+}
+StdArc(verb: GrafVerb, r: ^Rect, startAngle: Integer, arcAngle: Integer) {
+	$a8, $bd
+}
+FrameArc(r: ^Rect, startAngle: Integer, arcAngle: Integer) {
+	$a8, $be
+}
+PaintArc(r: ^Rect, startAngle: Integer, arcAngle: Integer) {
+	$a8, $bf
+}
+EraseArc(r: ^Rect, startAngle: Integer, arcAngle: Integer) {
+	$a8, $c0
+}
+InvertArc(r: ^Rect, startAngle: Integer, arcAngle: Integer) {
+	$a8, $c1
+}
+FillArc(r: ^Rect, startAngle: Integer, arcAngle: Integer, pat: ^Pattern) {
+	$a8, $c2
+}
+PtToAngle(r: ^Rect, pt: Point, angle: ^Integer) {
+	$a8, $c3
+}
+StdPoly(verb: GrafVerb, poly: PolyHandle) {
+	$a8, $c5
+}
+FramePoly(poly: PolyHandle) {
+	$a8, $c6
+}
+PaintPoly(poly: PolyHandle) {
+	$a8, $c7
+}
+ErasePoly(poly: PolyHandle) {
+	$a8, $c8
+}
+InvertPoly(poly: PolyHandle) {
+	$a8, $c9
+}
+FillPoly(poly: PolyHandle, pat: ^Pattern) {
+	$a8, $ca
+}
+OpenPoly(): PolyHandle {
+	$a8, $cb
+}
+ClosePoly() {
+	$a8, $cc
+}
+KillPoly(poly: PolyHandle) {
+	$a8, $cd
+}
+OffsetPoly(poly: PolyHandle, dh: Integer, dv: Integer) {
+	$a8, $ce
+}
+StdRgn(verb: GrafVerb, rgn: RgnHandle) {
+	$a8, $d1
+}
+FrameRgn(rgn: RgnHandle) {
+	$a8, $d2
+}
+PaintRgn(rgn: RgnHandle) {
+	$a8, $d3
+}
+EraseRgn(rgn: RgnHandle) {
+	$a8, $d4
+}
+InvertRgn(rgn: RgnHandle) {
+	$a8, $d5
+}
+FillRgn(rgn: RgnHandle, pat: ^Pattern) {
+	$a8, $d6
+}
+BitMapToRegion(region: RgnHandle, bMap: ^BitMap): OSErr {
+	$a8, $d7
+}
+NewRgn(): RgnHandle {
+	$a8, $d8
+}
+DisposeRgn(rgn: RgnHandle) {
+	$a8, $d9
+}
+OpenRgn() {
+	$a8, $da
+}
+CloseRgn(dstRgn: RgnHandle) {
+	$a8, $db
+}
+CopyRgn(srcRgn: RgnHandle, dstRgn: RgnHandle) {
+	$a8, $dc
+}
+SetEmptyRgn(rgn: RgnHandle) {
+	$a8, $dd
+}
+SetRectRgn(rgn: RgnHandle, left: Integer, top: Integer, right: Integer, bottom: Integer) {
+	$a8, $de
+}
+RectRgn(rgn: RgnHandle, r: ^Rect) {
+	$a8, $df
+}
+OffsetRgn(rgn: RgnHandle, dh: Integer, dv: Integer) {
+	$a8, $e0
+}
+InsetRgn(rgn: RgnHandle, dh: Integer, dv: Integer) {
+	$a8, $e1
+}
+EmptyRgn(rgn: RgnHandle): Boolean {
+	$a8, $e2
+}
+EqualRgn(rgnA: RgnHandle, rgnB: RgnHandle): Boolean {
+	$a8, $e3
+}
+SectRgn(srcRgnA: RgnHandle, srcRgnB: RgnHandle, dstRgn: RgnHandle) {
+	$a8, $e4
+}
+UnionRgn(srcRgnA: RgnHandle, srcRgnB: RgnHandle, dstRgn: RgnHandle) {
+	$a8, $e5
+}
+DiffRgn(srcRgnA: RgnHandle, srcRgnB: RgnHandle, dstRgn: RgnHandle) {
+	$a8, $e6
+}
+XorRgn(srcRgnA: RgnHandle, srcRgnB: RgnHandle, dstRgn: RgnHandle) {
+	$a8, $e7
+}
+PtInRgn(pt: Point, rgn: RgnHandle): Boolean {
+	$a8, $e8
+}
+RectInRgn(r: ^Rect, rgn: RgnHandle): Boolean {
+	$a8, $e9
+}
+SetStdProcs(procs: ^QDProcs) {
+	$a8, $ea
+}
+StdBits(srcBits: ^BitMap, srcRect: ^Rect, dstRect: ^Rect, mode: Mode, maskRgn: RgnHandle) {
+	$a8, $eb
+}
+CopyBits(srcBits: ^BitMap, dstBits: ^BitMap, srcRect: ^Rect, dstRect: ^Rect, mode: Mode, maskRgn: RgnHandle) {
+	$a8, $ec
+}
+StdGetPic(dataPtr: Ptr, byteCount: Integer) {
+	$a8, $ee
+}
+ScrollRect(r: ^Rect, dh: Integer, dv: Integer, updateRgn: RgnHandle) {
+	$a8, $ef
+}
+StdPutPic(dataPtr: Ptr, byteCount: Integer) {
+	$a8, $f0
+}
+StdComment(kind: Integer, dataSize: Integer, dataHandle: Handle) {
+	$a8, $f1
+}
+PicComment(kind: Integer, dataSize: Integer, dataHandle: Handle) {
+	$a8, $f2
+}
+OpenPicture(picFrame: ^Rect): PicHandle {
+	$a8, $f3
+}
+ClosePicture() {
+	$a8, $f4
+}
+KillPicture(myPicture: PicHandle) {
+	$a8, $f5
+}
+DrawPicture(myPicture: PicHandle, dstRect: ^Rect) {
+	$a8, $f6
+}
+ScalePt(pt: ^Point, srcRect: ^Rect, dstRect: ^Rect) {
+	$a8, $f8
+}
+MapPt(pt: ^Point, srcRect: ^Rect, dstRect: ^Rect) {
+	$a8, $f9
+}
+MapRect(r: ^Rect, srcRect: ^Rect, dstRect: ^Rect) {
+	$a8, $fa
+}
+MapRgn(rgn: RgnHandle, srcRect: ^Rect, dstRect: ^Rect) {
+	$a8, $fb
+}
+MapPoly(poly: PolyHandle, srcRect: ^Rect, dstRect: ^Rect) {
+	$a8, $fc
+}
+
+OpenCPort(port: CGrafPtr) {
+	$aa, $00
+}
+InitCPort(port: CGrafPtr) {
+	$aa, $01
+}
+NewPixMap(): PixMapHandle {
+	$aa, $03
+}
+DisposePixMap(pm: PixMapHandle) {
+	$aa, $04
+}
+CopyPixMap(srcPM: PixMapHandle, dstPM: PixMapHandle) {
+	$aa, $05
+}
+SetPortPix(pm: PixMapHandle) {
+	$aa, $06
+}
+NewPixPat(): PixPatHandle {
+	$aa, $07
+}
+DisposePixPat(pp: PixPatHandle) {
+	$aa, $08
+}
+CopyPixPat(srcPP: PixPatHandle, dstPP: PixPatHandle) {
+	$aa, $09
+}
+PenPixPat(ppat: PixPatHandle) {
+	$aa, $0a
+}
+BackPixPat(ppat: PixPatHandle) {
+	$aa, $0b
+}
+GetPixPat(patID: Integer): PixPatHandle {
+	$aa, $0c
+}
+MakeRGBPat(ppat: PixPatHandle, myColor: ^RGBColor) {
+	$aa, $0d
+}
+FillCRect(r: ^Rect, ppat: PixPatHandle) {
+	$aa, $0e
+}
+FillCOval(r: ^Rect, ppat: PixPatHandle) {
+	$aa, $0f
+}
+FillCRoundRect(r: ^Rect, ovalWidth: Integer, ovalHeight: Integer, ppat: PixPatHandle) {
+	$aa, $10
+}
+FillCArc(r: ^Rect, startAngle: Integer, arcAngle: Integer, ppat: PixPatHandle) {
+	$aa, $11
+}
+FillCRgn(rgn: RgnHandle, ppat: PixPatHandle) {
+	$aa, $12
+}
+FillCPoly(poly: PolyHandle, ppat: PixPatHandle) {
+	$aa, $13
+}
+RGBForeColor(color: ^RGBColor) {
+	$aa, $14
+}
+RGBBackColor(color: ^RGBColor) {
+	$aa, $15
+}
+SetCPixel(h: Integer, v: Integer, cPix: ^RGBColor) {
+	$aa, $16
+}
+GetCPixel(h: Integer, v: Integer, cPix: ^RGBColor) {
+	$aa, $17
+}
+GetCTable(ctID: Integer): CTabHandle {
+	$aa, $18
+}
+GetForeColor(color: ^RGBColor) {
+	$aa, $19
+}
+GetBackColor(color: ^RGBColor) {
+	$aa, $1a
+}
+GetCCursor(cursorID: Integer): CCrsrHandle {
+	$aa, $1b
+}
+SetCCursor(cCrsr: CCrsrHandle) {
+	$aa, $1c
+}
+AllocCursor() {
+	$aa, $1d
+}
+GetCIcon(iconID: Integer): CIconHandle {
+	$aa, $1e
+}
+PlotCIcon(theRect: ^Rect, theIcon: CIconHandle) {
+	$aa, $1f
+}
+OpenCPicture(newHeader: ^OpenCPicParams): PicHandle {
+	$aa, $20
+}
+OpColor(color: ^RGBColor) {
+	$aa, $21
+}
+HiliteColor(color: ^RGBColor) {
+	$aa, $22
+}
+DisposeCTable(cTable: CTabHandle) {
+	$aa, $24
+}
+DisposeCIcon(theIcon: CIconHandle) {
+	$aa, $25
+}
+DisposeCCursor(cCrsr: CCrsrHandle) {
+	$aa, $26
+}
+GetMaxDevice(globalRect: ^Rect): GDHandle {
+	$aa, $27
+}
+GetCTSeed(): LongInt {
+	$aa, $28
+}
+GetDeviceList(): GDHandle {
+	$aa, $29
+}
+GetMainDevice(): GDHandle {
+	$aa, $2a
+}
+GetNextDevice(curDevice: GDHandle): GDHandle {
+	$aa, $2b
+}
+TestDeviceAttribute(gdh: GDHandle, attribute: Integer): Boolean {
+	$aa, $2c
+}
+SetDeviceAttribute(gdh: GDHandle, attribute: Integer, value: Boolean) {
+	$aa, $2d
+}
+InitGDevice(gdRefNum: Integer, mode: LongInt, gdh: GDHandle) {
+	$aa, $2e
+}
+NewGDevice(refNum: Integer, mode: LongInt): GDHandle {
+	$aa, $2f
+}
+DisposeGDevice(gdh: GDHandle) {
+	$aa, $30
+}
+SetGDevice(gdH: GDHandle) {
+	$aa, $31
+}
+GetGDevice(): GDHandle {
+	$aa, $32
+}
+Color2Index(myColor: ^RGBColor): LongInt {
+	$aa, $33
+}
+Index2Color(index: LongInt, aColor: ^RGBColor) {
+	$aa, $34
+}
+InvertColor(myColor: ^RGBColor) {
+	$aa, $35
+}
+RealColor(color: ^RGBColor): Boolean {
+	$aa, $36
+}
+GetSubTable(myColors: CTabHandle, iTabRes: Integer, targetTbl: CTabHandle) {
+	$aa, $37
+}
+UpdatePixMap() {
+	$aa, $38
+}
+MakeITable(cTabH: CTabHandle, iTabH: ITabHandle, res: Integer) {
+	$aa, $39
+}
+AddSearch(searchProc: ProcPtr) {
+	$aa, $3a
+}
+AddComp(compProc: ProcPtr) {
+	$aa, $3b
+}
+SetClientID(id: Integer) {
+	$aa, $3c
+}
+ProtectEntry(index: Integer, protect: Boolean) {
+	$aa, $3d
+}
+ReserveEntry(index: Integer, reserve: Boolean) {
+	$aa, $3e
+}
+SetEntries(start: Integer, count: Integer, aTable: CSpecArray) {
+	$aa, $3f
+}
+QDError(): Integer {
+	$aa, $40
+}
+SaveEntries(srcTable: CTabHandle, resultTable: CTabHandle, selection: ^ReqListRec) {
+	$aa, $49
+}
+RestoreEntries(srcTable: CTabHandle, dstTable: CTabHandle, selection: ^ReqListRec) {
+	$aa, $4a
+}
+DelSearch(searchProc: ProcPtr) {
+	$aa, $4c
+}
+DelComp(compProc: ProcPtr) {
+	$aa, $4d
+}
+SetStdCProcs(cProcs: ^CQDProcs) {
+	$aa, $4e
+}
+CalcCMask(srcBits: ^BitMap, dstBits: ^BitMap, srcRect: ^Rect, dstRect: ^Rect, seedRGB: ^RGBColor, matchProc: ProcPtr, matchData: LongInt) {
+	$aa, $4f
+}
+SeedCFill(srcBits: ^BitMap, dstBits: ^BitMap, srcRect: ^Rect, dstRect: ^Rect, seedH: Integer, seedV: Integer, matchProc: ProcPtr, matchData: LongInt) {
+	$aa, $50
+}
+CopyDeepMask(srcBits: ^BitMap, maskBits: ^BitMap, dstBits: ^BitMap, srcRect: ^Rect, maskRect: ^Rect, dstRect: ^Rect, mode: Mode, maskRgn: RgnHandle) {
+	$aa, $51
+}
+
+DeviceLoop(drawingRgn: RgnHandle, drawingProc: DeviceLoopDrwaingProcPtr, userData: LongInt, flags: DeviceLoopFlags) {
+	$ab, $ca
+}
+
+Point struct {
+	v: Integer;
+	h: Integer;
+}
+
+Rect struct {
+	top: Integer;
+	left: Integer;
+	bottom: Integer;
+	right: Integer;
+}
+RectPtr = ^Rect;
+
+Style enum<Integer> {
+	bold = 0,
+	italic,
+	underline,
+	outline,
+	shadow,
+	condense,
+	extend,
+}
+
+GrafPort struct {
+	device: Integer;
+	portBits: BitMap;
+	portRect: Rect;
+	visRgn: RgnHandle;
+	clipRgn: RgnHandle;
+	bkPat: Pattern;
+	fillPat: Pattern;
+	pnLoc: Point;
+	pnSize: Point;
+	pnMode: Integer;
+	pnPat: Pattern;
+	pnVis: Integer;
+	txFont: Integer;
+	txFace: Style;
+	txMode: Integer;
+	txSize: Integer;
+	spExtra: Fixed;
+	fgColor: LongInt;
+	bkColor: LongInt;
+	colrBit: Integer;
+	patStretch: Integer;
+	picSave: Handle;
+	rgnSave: Handle;
+	polySave: Handle;
+	grafProcs: QDProcsPtr;
+}
+GrafPtr = ^GrafPort;
+
+QDProcs struct {
+	textProc: ProcPtr;
+	lineProc: ProcPtr;
+	rectProc: ProcPtr;
+	rRectProc: ProcPtr;
+	ovalProc: ProcPtr;
+	arcProc: ProcPtr;
+	polyProc: ProcPtr;
+	rgnProc: ProcPtr;
+	bitsProc: ProcPtr;
+	commentProc: ProcPtr;
+	txMeasProc: ProcPtr;
+	getPicProc: ProcPtr;
+	putPicProc: ProcPtr;
+}
+QDProcsPtr = ^QDProcs;
+
+Region struct {
+	rgnSize: Integer;
+	rgnBBox: Rect;
+	data: Integer[];
+}
+RgnHandle = ^^Region;
+
+Picture struct {
+	picSize: Integer;
+	picFrame: Rect;
+	data: Byte[];
+}
+PicHandle = ^^Picture;
+
+Pattern = Byte[8];
+PatHandle = ^^Pattern;
+
+BitMap struct {
+	baseAddr: Ptr;
+	rowBytes: Integer;
+	bounds: Rect;
+}
+
+PenState struct {
+	pnLoc: Point;
+	pnSize: Point;
+	pnMode: Integer;
+	pnPat: Pattern;
+}
+
+Polygon struct {
+	polySize: Integer;
+	polyBBox: Rect;
+	polyPoints: Point[];
+}
+PolyPtr = ^Polygon;
+PolyHandle = ^PolyPtr;
+
+RGBColor struct {
+	red: Integer;
+	green: Integer;
+	blue: Integer;
+}
+
+GrafVerb enum<Integer> {
+	frame,
+	paint,
+	erase,
+	invert,
+	fill,
+}
+
+Mode enum<Integer> {
+	srcCopy = 0,
+	srcOr,
+	srcXor,
+	srcBic,
+	notSrcCopy,
+	notSrcOr,
+	notSrcXor,
+	notSrcBic,
+	patCopy,
+	patOr,
+	patXor,
+	patBic,
+	notPatCopy,
+	notPatOr,
+	notPatXor,
+	notPatBic,
+	ditherCopy = 64,
+}
+
+PixPat struct {
+	patType: Integer;
+	patMap: PixMapHandle;
+	patData: Handle;
+	patXData: Handle;
+	patXValid: Integer;
+	patXMap: Handle;
+	pat1Data: Pattern;
+}
+PixPatPtr = ^PixPat;
+PixPatHandle = ^PixPatPtr;
+
+PixMap struct {
+	baseAddr: Ptr;
+	rowBytes: Integer;
+	bounds: Rect;
+	pmVersion: Integer;
+	packType: Integer;
+	packSize: LongInt;
+	hRes: Fixed;
+	vRes: Fixed;
+	pixelType: Integer;
+	pixelSize: Integer;
+	cmpCount: Integer;
+	cmpSize: Integer;
+	planeBytes: LongInt;
+	pmTable: CTabHandle;
+	pmReserved: LongInt;
+}
+PixMapPtr = ^PixMap;
+PixMapHandle = ^PixMapPtr;
+
+CGrafPort struct {
+	device: Integer;
+	portPixMap: PixMapHandle;
+	portVersion: Integer;
+	grafVars: Handle;
+	chExtra: Integer;
+	pnLocHFrac: Integer;
+	portRect: Rect;
+	visRgn: RgnHandle;
+	clipRgn: RgnHandle;
+	bkPixPat: PixPatHandle;
+	rgbFgColor: RGBColor;
+	rgbBkColor: RGBColor;
+	pnLoc: Point;
+	pnSize: Point;
+	pnMode: Integer;
+	pnPixPat: PixPatHandle;
+	fillPixPat: PixPatHandle;
+	pnVis: Integer;
+	txFont: Integer;
+	txFace: Style;
+	txMode: Mode;
+	txSize: Integer;
+	spExtra: Fixed;
+	fgColor: LongInt;
+	bkColor: LongInt;
+	colrBit: Integer;
+	patStretch: Integer;
+	picSave: Handle;
+	rgnSave: Handle;
+	polySave: Handle;
+	grafProcs: CQDProcsPtr;
+}
+CGrafPtr = ^CGrafPort;
+
+CQDProcs struct {
+	textProc: Ptr;
+	lineProc: Ptr;
+	rectProc: Ptr;
+	rRectProc: Ptr;
+	ovalProc: Ptr;
+	arcProc: Ptr;
+	polyProc: Ptr;
+	rgnProc: Ptr;
+	bitsProc: Ptr;
+	commentProc: Ptr;
+	txMeasProc: Ptr;
+	getPicProc: Ptr;
+	putPicProc: Ptr;
+	opcodeProc: Ptr;
+	newProc1: Ptr;
+	newProc2: Ptr;
+	newProc3: Ptr;
+	newProc4: Ptr;
+	newProc5: Ptr;
+	newProc6: Ptr;
+}
+CQDProcsPtr = ^CQDProcs;
+
+ColorSpec struct {
+	value: Integer;
+	rgb: RGBColor;
+}
+
+cSpecArray = ColorSpec[0];
+
+ColorTable struct {
+	ctSeed: LongInt;
+	ctFlags: Integer;
+	ctSize: Integer;
+	ctTable: cSpecArray;
+}
+CTabPtr = ^ColorTable;
+CTabHandle = ^CTabPtr;
+
+GDevice struct {
+	gdRefNum: Integer;
+	gdID: Integer;
+	gdType: Integer;
+	gdITable: ITabHandle;
+	gdResPref: Integer;
+	gdSearchProc: SProcHndl;
+	gdCompProc: CProcHndl;
+	gdFlgas: Integer;
+	gdPMap: PixMapHandle;
+	gdRefCon: LongInt;
+	gdNextGD: GDHandle;
+	gdRect: Rect;
+	gdMode: LongInt;
+	gdCCBytes: Integer;
+	gdCCDepth: Integer;
+	gdCCXData: Handle;
+	gdCCXMask: Handle;
+	gdReserved: LongInt;
+}
+GDPtr = ^GDevice;
+GDHandle = ^GDPtr;
+
+CProcRec struct {
+	nxtComp: CProcHndl;
+	compProc: ProcPtr;
+}
+CProcPtr = ^CProcRec;
+CProcHndl = ^CProcPtr;
+
+ITab struct {
+	iTabSeed: LongInt;
+	iTabres: Integer;
+	iTTable: SignedByte[];
+}
+ITabPtr = ^ITab;
+ITabHandle = ^ITabPtr;
+
+SProcRec struct {
+	nxtSrch: Handle;
+	srchProc: ProcPtr;
+}
+SProcPtr = ^SProcRec;
+SProcHndl = ^SProcPtr;
+
+DeviceLoopFlags enum<Integer> {
+	singleDevices,
+	dontMatchSeeds,
+	allDevices,
+}
+
+DeviceLoopDrwaingProcPtr(depth: Integer, deviceFlgas: Integer, targetDevice: GDHandle, userData: LongInt);
+
+Bits16 = Integer[16];
+
+Cursor struct {
+	data: Bits16;
+	mask: Bits16;
+	hotSpot: Point;
+}
+CursPtr = ^Cursor;
+CursHandle = ^CursPtr;
+
+CCrsr struct {
+	crsrType: Integer;
+	crsrMap: PixMapHandle;
+	crsrData: Handle;
+	crsrXData: Handle;
+	crsrXValid: Integer;
+	crsrXHandle: Handle;
+	crsr1Data: Bits16;
+	crsrMask: Bits16;
+	crsrHotSpot: Point;
+	crsrXTable: LongInt;
+	crsrID: LongInt;
+}
+CCrsrPtr = ^CCrsr;
+CCrsrHandle = ^CCrsrPtr;
+
+CSpecArray = ColorSpec[];
+ReqListRec struct {
+	reqLSize: Integer;
+	reqLData: Integer[];
+}

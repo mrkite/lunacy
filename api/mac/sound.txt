@@ -1,0 +1,414 @@
+SndDisposeChannel(chan: SndChannelPtr, quietNow: Boolean): OSErr {
+	$a8, $01
+}
+SndAddModifier(chan: SndChannelPtr, modifier: ProcPtr, id: Integer, init: LongInt): OSErr {
+	$a8, $02
+}
+SndDoCommand(chan: SndChannelPtr, cmd: ^SndCommand, noWait: Boolean): OSErr {
+	$a8, $03
+}
+SndDoImmediate(chan: SndChannelPtr, cmd: ^SndCommand): OSErr {
+	$a8, $04
+}
+SndPlay(chan: SndChannelPtr, sndHdl: Handle, async: Boolean): OSErr {
+	$a8, $05
+}
+SndControl(id: Synth, cmd: ^SndCommand): OSErr {
+	$a8, $06
+}
+SndNewChannel(chan: ^SndChannelPtr, synth: Synth, init: LongInt, userRoutine: ProcPtr): OSErr {
+	$a8, $07
+}
+
+SndSoundManagerVersion(): NumVersion {
+	$20, $3c, $00, $0c, $00, $08, $a8, $00
+}
+SndChannelStatus(chan: SndChannelPtr, theLength: Integer, theStatus: SCStatusPtr): OSErr {
+	$20, $3c, $00, $10, $00, $08, $a8, $00
+}
+SndManagerStatus(theLength: Integer, theStatus: SMStatusPtr): OSErr {
+	$20, $3c, $00, $14, $00, $08, $a8, $00
+}
+SndGetSysBeepState(sysBeepState: ^SysBeepState) {
+	$20, $3c, $00, $18, $00, $08, $a8, $00
+}
+SndSetSysBeepState(sysBeepState: SysBeepState): OSErr {
+	$20, $3c, $00, $1c, $00, $08, $a8, $00
+}
+SndPlayDoubleBuffer(chan: SndChannelPtr, theParams: SndDoubleBufferHeaderPtr): OSErr {
+	$20, $3c, $00, $20, $00, $08, $a8, $00
+}
+
+SndStartFilePlay(chan: SndChannelPtr, fRefNum: Integer, resNum: Integer, bufferSize: LongInt, theBuffer: Ptr, theSelection: AudioSelectionPtr, theCompletion: FilePlayCompletionProcPtr, async: Boolean): OSErr {
+	$20, $3c, $0d, $00, $00, $08, $a8, $00
+}
+SndPauseFilePlay(chan: SndChannelPtr): OSErr {
+	$20, $3c, $02, $04, $00, $08, $a8, $00
+}
+SndStopFilePlay(chan: SndChannelPtr, quietNow: Boolean): OSErr {
+	$20, $3c, $03, $08, $00, $08, $a8, $00
+}
+
+MACEVersion(): NumVersion {
+	$20, $3c, $00, $00, $00, $10, $a8, $00
+}
+Comp3to1(inBuffer: Ptr, outBuffer: Ptr, cnt: LongInt, inState: Ptr, outState: Ptr, numChannels: LongInt, whichChannel: LongInt) {
+	$20, $3c, $00, $04, $00, $10, $a8, $00
+}
+Exp1to3(inBuffer: Ptr, outBuffer: Ptr, cnt: LongInt, inState: Ptr, outState: Ptr, numChannels: LongInt, whichChannel: LongInt) {
+	$20, $3c, $00, $08, $00, $10, $a8, $00
+}
+Comp6to1(inBuffer: Ptr, outBuffer: Ptr, cnt: LongInt, inState: Ptr, outState: Ptr, numChannels: LongInt, whichChannel: LongInt) {
+	$20, $3c, $00, $0c, $00, $10, $a8, $00
+}
+Exp1to6(inBuffer: Ptr, outBuffer: Ptr, cnt: LongInt, inState: Ptr, outState: Ptr, numChannels: LongInt, whichChannel: LongInt) {
+	$20, $3c, $00, $10, $00, $10, $a8, $00
+}
+
+SPBVersion(): NumVersion {
+	$20, $3c, $00, $00, $00, $14, $a8, $00
+}
+SndRecord(filterProc: ModalFilterProcPtr, corner: Point, quality: OSType, sndHandle: ^Handle): OSErr {
+	$20, $3c, $08, $04, $00, $14, $a8, $00
+}
+SndRecordToFile(filterProc: ModalFilterProcPtr, corner: Point, quality: OSType, fRefNum: Integer): OSErr {
+	$20, $3c, $07, $08, $00, $14, $a8, $00
+}
+SPBOpenDevice(deviceName: ^Str255, permission: Integer, inRefNum: ^LongInt): OSErr {
+	$20, $3c, $05, $18, $00, $14, $a8, $00
+}
+SPBCloseDevice(inRefNum: LongInt): OSErr {
+	$20, $3c, $02, $1c, $00, $14, $a8, $00
+}
+SPBRecord(inParamPtr: SPBPtr, asynchFlag: Boolean): OSErr {
+	$20, $3c, $03, $20, $00, $14, $a8, $00
+}
+SPBRecordToFile(fRefNum: Integer, inParamPtr: SPBPtr, asynchFlag: Boolean): OSErr {
+	$20, $3c, $04, $24, $00, $14, $a8, $00
+}
+SPBPauseRecording(inRefNum: LongInt): OSErr {
+	$20, $3c, $02, $28, $00, $14, $a8, $00
+}
+SPBResumeRecording(inRefNum: LongInt): OSErr {
+	$20, $3c, $02, $2c, $00, $14, $a8, $00
+}
+SPBStopRecording(inRefNum: LongInt): OSErr {
+	$20, $3c, $02, $30, $00, $14, $a8, $00
+}
+SPBGetRecordingStatus(inRefNum: LongInt, recordingStatus: ^Integer, meterLevel: ^Integer, totalSamplesToRecord: ^LongInt, numberOfSamplesRecorded: ^LongInt, totalMsecsToRecord: ^LongInt, numberOfMsecsRecorded: ^LongInt): OSErr {
+	$20, $3c, $0e, $34, $00, $14, $a8, $00
+}
+SPBGetDeviceInfo(inRefNum: LongInt, infoType: OSType, infoData: Ptr): OSErr {
+	$20, $3c, $06, $38, $00, $14, $a8, $00
+}
+SPBSetDeviceInfo(inRefNum: LongInt, infoType: OSType, infoData: Ptr): OSErr {
+	$20, $3c, $06, $3c, $00, $14, $a8, $00
+}
+SetupSndHeader(sndHandle: Handle, numChannels: Integer, sampleRate: SampleRate, sampleSize: Integer, compressionType: OSType, baseFrequency: Integer, numBytes: LongInt, headerLen: ^Integer): OSErr {
+	$20, $3c, $0d, $48, $00, $14, $a8, $00
+}
+SetupAIFFHeader(fRefNum: Integer, numChannels: Integer, sampleRate: SampleRate, sampleSize: Integer, compressionType: OSType, numBytes: LongInt, numFrames: LongInt): OSErr {
+	$20, $3c, $0b, $4c, $00, $14, $a8, $00
+}
+SPBSignInDevice(deviceRefNum: Integer, deviceName: ^Str255): OSErr {
+	$20, $3c, $03, $0c, $00, $14, $a8, $00
+}
+SPBGetIndexedDevice(count: Integer, deviceName: ^Str255, deviceIconHandle: ^Handle): OSErr {
+	$20, $3c, $05, $14, $00, $14, $a8, $00
+}
+SPBSignOutDevice(deviceRefNum: Integer): OSErr {
+	$20, $3c, $01, $10, $00, $14, $a8, $00
+}
+SPBMilliSecondsToBytes(inRefNum: LongInt, milliseconds: ^LongInt): OSErr {
+	$20, $3c, $04, $40, $00, $14, $a8, $00
+}
+SPBBytesToMilliseconds(inRefNum: LongInt, byteCount: ^LongInt): OSErr {
+	$20, $3c, $04, $44, $00, $14, $a8, $00
+}
+
+GetSysBeepVolume(level: ^LongInt): OSErr {
+	$20, $3c, $02, $24, $00, $24, $a8, $00
+}
+SetSysBeepVolume(level: LongInt): OSErr {
+	$20, $3c, $02, $28, $00, $24, $a8, $00
+}
+GetDefaultOutputVolume(level: ^LongInt): OSErr {
+	$20, $3c, $02, $2c, $00, $24, $a8, $00
+}
+SetDefaultOutputVolume(level: LongInt): OSErr {
+	$20, $3c, $02, $30, $00, $24, $a8, $00
+}
+
+FilePlayCompletionProcPtr(chan: SndChannelPtr);
+
+SndCmd enum<Integer> {
+	nullCmd = 0,
+	quietCmd = 3,
+	flushCmd = 4,
+	reInitCmd = 5,
+	waitCmd = 10,
+	pauseCmd = 11,
+	resumeCmd = 12,
+	callBackCmd = 13,
+	syncCmd = 14,
+	availableCmd = 24,
+	versionCmd = 25,
+	totalLoadCmd = 26,
+	loadCmd = 27,
+	freqDurationCmd = 40,
+	restCmd = 41,
+	freqCmd = 42,
+	ampCmd = 43,
+	timbreCmd = 44,
+	getAmpCmd = 45,
+	volumeCmd = 46,
+	getVolumeCmd = 47,
+	waveTableCmd = 60,
+	soundCmd = 80,
+	bufferCmd = 81,
+	rateCmd = 82,
+	getRateCmd = 85,
+}
+
+SndCommand struct {
+	cmd: SndCmd;
+	param1: Integer;
+	param2: LongInt;
+}
+
+AudioSelection struct {
+	unitType: asUnitType;
+	selStart: Fixed;
+	selEnd: Fixed;
+}
+AudioSelectionPtr = ^AudioSelection;
+
+asUnitType enum<LongInt> {
+	unitTypeSeconds = 0,
+	unitTypeNoSelection = $ffff,
+}
+
+Synth enum<Integer> {
+	squareWaveSynth = 1,
+	waveTableSynth = 3,
+	sampledSynth = 5,
+}
+
+SndCallback(theChan: SndChannelPtr, theCmd: ^SndCommand);
+
+SndChannel struct {
+	nextChan: SndChannelPtr;
+	firstMod: Ptr;
+	callBack: SndCallback;
+	userInfo: LongInt;
+	wait: LongInt;
+	cmdInProgress: SndCommand;
+	flags: Integer;
+	qLength: Integer;
+	qHead: Integer;
+	qTail: Integer;
+	queue: SndCommand[128];
+}
+SndChannelPtr = ^SndChannel;
+
+SCStatus struct {
+	scStartTime: Fixed;
+	scEndTime: Fixed;
+	scCurrentTime: Fixed;
+	scChannelBusy: Boolean;
+	scChannelDisposed: Boolean;
+	scChannelPaused: Boolean;
+	scUnused: Boolean;
+	scChannelAttributes: LongInt;
+	scCPULoad: LongInt;
+}
+SCStatusPtr = ^SCStatus;
+
+SMStatus struct {
+	smMaxCPULoad: Integer;
+	smNumChannels: Integer;
+	smCurCPULoad: Integer;
+}
+SMStatusPtr = ^SMStatus;
+
+SysBeepState enum<Integer> {
+	sysBeepDisable = 0,
+	sysBeepEnable,
+}
+
+SampleRate enum<Fixed> {
+	rate44khz = $ac440000,
+	rate22khz = $56ee8ba3,
+	rate11khz = $2b7745d1,
+}
+
+SHEncode enum<Byte> {
+	stdSH = $00,
+	extSH = $ff,
+	cmpSH = $fe,
+}
+
+SoundHeader struct {
+	samplePtr: Ptr;
+	length: LongInt;
+	sampleRate: SampleRate;
+	loopStart: LongInt;
+	loopEnd: LongInt;
+	encode: SHEncode;
+	baseFrequency: Byte;
+	sampleArea: Byte[];
+}
+SoundHeaderPtr = ^SoundHeader;
+
+ExtSoundHeader struct {
+	samplePtr: Ptr;
+	numChannels: LongInt;
+	sampleRate: SampleRate;
+	loopStart: LongInt;
+	loopEnd: LongInt;
+	encode: SHEncode;
+	baseFrequency: Byte;
+	numFrames: LongInt;
+	AIFFSampleRate: Extended80;
+	markerChunk: Ptr;
+	instrumentChunks: Ptr;
+	AESRecording: Ptr;
+	sampleSize: Integer;
+	futureUse1: Integer;
+	futureUse2: LongInt;
+	futureUse3: LongInt;
+	futureUse4: LongInt;
+	sampleArea: Byte[];
+}
+ExtSoundHeaderPtr = ^ExtSoundHeader;
+
+cshCompression enum<Integer> {
+	variableCompression = -2,
+	fixedCompression = -1,
+	notCompressed = 0,
+	threeToOne = 3,
+	sixToOne = 4,
+}
+
+cshPacketSize enum<Integer> {
+	sixToOnePacketSize = 8,
+	threeToOnePacketSize = 16,
+}
+
+DoubleBackProc(chan: SndChannelPtr, exhaustedBuffer: SndDoubleBufferPtr);
+
+SndDoubleBufferHeader struct {
+	dbhNumChannels: Integer;
+	dbhSampleSize: Integer;
+	dbhCompressionID: cshCompression;
+	dbhPacketSize: cshPacketSize;
+	dbhSampleRate: SampleRate;
+	dbhBufferPtr: SndDoubleBufferPtr[1];
+	dbhDoubleBack: DoubleBackProc;
+}
+SndDoubleBufferHeaderPtr = ^SndDoubleBufferHeader;
+
+SndDoubleBufferHeader2 struct {
+	dbhNumChannels: Integer;
+	dbhSmapleSize: Integer;
+	dbhCompressionID: cshCompression;
+	dbhPacketSize: cshPacketSize;
+	dbhSampleRate: SampleRate;
+	dbhBufferPtr: SndDoubleBufferPtr[1];
+	dbhDoubleBack: DoubleBackProc;
+	dbhFormat: OSType;
+}
+SndDoubleBufferHeaderPtr2 = ^SndDoubleBufferHeader2;
+
+sdbFlags enum<LongInt> {
+	dbBufferReady = $1,
+	dbLastBuffer = $4,
+}
+
+SndDoubleBuffer struct {
+	dbNumFrames: LongInt;
+	dbFlags: sdbFlags;
+	dbUserInfo: LongInt[1];
+	dbSoundData: Byte[];
+}
+SndDoubleBufferPtr = ^SndDoubleBuffer;
+
+ID = LongInt;
+
+ChunkHeader struct {
+	ckID: ID;
+	ckSize: LongInt;
+}
+
+ContainerChunk struct {
+	ckID: ID;
+	ckSize: LongInt;
+	formType: ID;
+}
+
+FormatVersionChunk struct {
+	ckID: ID;
+	ckSizE: LongInt;
+	timestamp: LongInt;
+}
+
+CommonChunk struct {
+	ckID: ID;
+	ckSize: LongInt;
+	numChannels: Integer;
+	numSampleFrames: LongInt;
+	sampleSize: Integer;
+	sampleRate: Extended;
+}
+
+ExtCommonChunk struct {
+	ckID: ID;
+	ckSize: LongInt;
+	numChannels: Integer;
+	numSampleFrames: LongInt;
+	sampleSize: Integer;
+	sampleRate: Extended;
+	compressionType: ID;
+	compressionName: Byte[];
+}
+
+SoundDataChunk struct {
+	ckID: ID;
+	ckSize: LongInt;
+	offset: LongInt;
+	blockSize: LongInt;
+}
+
+NumVersion struct {
+	majorRev: SignedByte;
+	minorAndBugRev: SignedByte;
+	stage: SignedByte;
+	nonRelRev: SignedByte;
+}
+
+LeftOverBlock struct {
+	count: LongInt;
+	sampleArea: Byte[32];
+}
+LeftOverBlockPtr = ^LeftOverBlock;
+
+StateBlock struct {
+	stateVar: Integer[64];
+}
+
+SICompletionRoutine(inParamPtr: SPBPtr);
+SIInterruptRoutine();
+
+SPB struct {
+	inRefNum: LongInt;
+	count: LongInt;
+	milliseconds: LongInt;
+	bufferLength: LongInt;
+	bufferPtr: Ptr;
+	completionRoutine: SICompletionRoutine;
+	interruptRoutine: SIInterruptRoutine;
+	userLong: LongInt;
+	error: OSErr;
+	unused1: LongInt;
+}
+SPBPtr = ^SPB;

@@ -1,0 +1,236 @@
+IdleUpdate(): LongInt {
+	$a2, $85
+}
+EnableIdle() {
+	$70, $00, $a4, $85
+}
+DisableIdle() {
+	$70, $01, $a4, $85
+}
+GetCPUSpeed(): LongInt {
+	$70, $ff, $a4, $85, $2e, $80
+}
+
+SleepQInstall(qRecPtr: SleepQRecPtr) {
+	$20, $5f, $a2, $8a
+}
+SleepQRemove(qRecPtr: SleepQRecPtr) {
+	$20, $5f, $a4, $8a
+}
+
+BOn() {
+	$70, $00, $a6, $85
+}
+AOn() {
+	$70, $04, $a6, $85
+}
+AOnIgnoreModem() {
+	$70, $05, $a6, $85
+}
+BOff() {
+	$70, $80, $a6, $85
+}
+AOff() {
+	$70, $84, $a6, $85
+}
+
+PMgr(pbp: PMgrPBPtr) {
+	$20, $5f, $a0, $85, $3e, $80
+}
+
+PMSelectorCount(): Integer {
+	$70, $00, $a0, $9e
+}
+PMFeatures(): PMFeaturesFlags {
+	$70, $01, $a0, $9e
+}
+GetSleepTimeout(): Byte {
+	$70, $02, $a0, $9e
+}
+SetSleepTimeout(timeout: Byte) {
+	$70, $03, $a0, $9e
+}
+GetHardDiskTimeout(): Byte {
+	$70, $04, $a0, $9e
+}
+SetHardDiskTimeout(timeout: Byte) {
+	$70, $05, $a0, $9e
+}
+HardDiskPowered(): Byte {
+	$70, $06, $a0, $9e
+}
+SpinDownHardDisk() {
+	$70, $07, $a0, $9e
+}
+IsSpindownDisabled(): Boolean {
+	$70, $08, $a0, $9e
+}
+SetSpindownDisable(setDisable: Boolean) {
+	$70, $09, $a0, $9e
+}
+HardDiskQInstall(theElement: ^HDQueueElement): OSErr {
+	$70, $0a, $a0, $9e
+}
+HardDiskQRemove(theElement: ^HDQueueElement): OSErr {
+	$70, $0b, $a0, $9e
+}
+GetScaledBatteryInfo(whichBattery: Integer, theInfo: ^BatteryInfo) {
+	$70, $0c, $a0, $9e
+}
+AutoSleepControl(enableSleep: Boolean) {
+	$70, $0d, $a0, $9e
+}
+SetIntModemState(theState: Integer) {
+	$70, $0e, $a0, $9e
+}
+GetIntModemInfo(): ModemInfoFlags {
+	$70, $0f, $a0, $9e
+}
+MaximumProcessorSpeed(): Integer {
+	$70, $10, $a0, $9e
+}
+CurrentProcessorSpeed(): Integer {
+	$70, $11, $a0, $9e
+}
+FullProcessorSpeed(): Boolean {
+	$70, $12, $a0, $9e
+}
+SetProcessorSpeed(fullSpeed: Boolean): Boolean {
+	$70, $13, $a0, $9e
+}
+GetSCSIDiskModeAddress(): Integer {
+	$70, $14, $a0, $9e
+}
+SetSCSIDiskModeAddress(scsiAddress: Integer) {
+	$70, $15, $a0, $9e
+}
+GetWakeupTimer(theTime: ^WakeupTime) {
+	$70, $16, $a0, $9e
+}
+SetWakeupTimer(theTime: ^WakeupTime) {
+	$70, $17, $a0, $9e
+}
+IsProcessorCyclingEnabled(): Boolean {
+	$70, $18, $a0, $9e
+}
+EnableProcessorCycling(enable: Boolean) {
+	$70, $19, $a0, $9e
+}
+BatteryCount(): Integer {
+	$70, $1a, $a0, $9e
+}
+GetBatteryVoltage(whichBattery: Integer): Fixed {
+	$48, $40, $70, $1b, $a0, $9e
+}
+GetBatteryTimes(whichBattery: Integer, theTimes: ^BatteryTimeRec) {
+	$48, $40, $70, $1c, $a0, $9e
+}
+GetDimmingTimeout(): Byte {
+	$70, $1d, $a0, $9e
+}
+SetDimmingTimeout(timeout: Byte) {
+	$70, $1e, $a0, $9e
+}
+DimmingControl(enableDimming: Boolean) {
+	$70, $1f, $a0, $9e
+}
+
+
+BIFlags enum<Byte> {
+	batteryInstalled = $80,
+	batteryCharging = $40,
+	chargerConnected = $20,
+}
+
+BatteryInfo struct {
+	flags: BIFlags;
+	warningLevel: Byte;
+	reserved: Byte;
+	batteryLevel: Byte;
+}
+
+BatteryTimeRec struct {
+	expectedBatteryTime: LongInt;
+	minimumBatteryTime: LongInt;
+	maximumBatteryTime: LongInt;
+	timeUntilCharged: LongInt;
+}
+
+WakeupTime struct {
+	wakeTime: LongInt;
+	wakeEnabled: Byte;
+}
+
+HDQueueElement struct {
+	hdQLink: Ptr;
+	hdQType: QType;
+	hdFlgas: Integer;
+	hdProc: ProcPtr;
+	hdUser: LongInt;
+}
+
+SleepQRec struct {
+	sleepQLink: SleepQRecPtr;
+	sleepQType: QType;
+	sleepQProc: ProcPtr;
+	sleepQFlags: Integer;
+}
+SleepQRecPtr = ^SleepQRec;
+
+ModemInfoFlags enum<LongInt> {
+	hasInternalModem = $1,
+	intModemRingDetect = $2,
+	intModemOffHook = $4,
+	intModemRingWakeEnb = $8,
+	extModemSelected = $10,
+	modemSetBit = $8000,
+}
+
+PMFeaturesFlags enum<LongInt> {
+	hasWakeupTimer = $1,
+	hasSharedModemPort = $2,
+	hasProcessorCycling = $4,
+	mustProcessorCycle = $8,
+	hasReducedSpeed = $10,
+	dynamicSpeedChange = $20,
+	hasSCSIDiskMode = $40,
+	canGetBatteryTime = $80,
+	canWakupOnRing = $100,
+	hasDimmingSupport = $200,
+}
+
+PMgrPBlock struct {
+	pmgrCmd: Integer;
+	pmgrCnt: Integer;
+	pmgrXPtr: Ptr;
+	pmgrRPtr: Ptr;
+}
+PMgrPBPtr = ^PMgrPBlock;
+
+UsrIdleUpdate() {
+	$20, $3c, $00, $01, $00, $01, $a0, $9f
+}
+NetIdleUpdate() {
+	$20, $3c, $00, $02, $00, $01, $a0, $9f
+}
+HDIdleUpdate() {
+	$20, $3c, $00, $03, $00, $01, $a0, $9f
+}
+IdleEnable() {
+	$70, $05, $a0, $9f
+}
+IdleDisable() {
+	$70, $06, $a0, $9f
+}
+GetBrightnessButton() {
+	$20, $3c, $00, $00, $00, $0f, $a0, $9f
+}
+GetContrastButton() {
+	$20, $3c, $00, $01, $00, $0f, $a0, $9f
+}
+SpinDownHardDrive() {
+	$20, $3c, $00, $00, $00, $10, $a0, $9f
+}
+SpinUpHardDrive() {
+	$20, $3c, $00, $01, $00, $10, $a0, $9f
+}

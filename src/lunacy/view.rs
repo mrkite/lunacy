@@ -100,6 +100,12 @@ impl View {
         }
     }
 
+    pub fn menu(&mut self, ui: &mut egui::Ui, ctx: Context) {
+        if let Some(sel) = self.supported.get_mut(self.selected) {
+            sel.widget.menu(ui, ctx);
+        }
+    }
+
     pub fn save(&self, out: &mut std::fs::File, ctx: Context) -> Result<(), std::io::Error> {
         if let Some(sel) = self.supported.get(self.selected) {
             sel.widget.save(out, ctx)

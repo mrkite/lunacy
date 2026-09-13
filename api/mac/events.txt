@@ -1,0 +1,227 @@
+WaitNextEvent(eventMask: EventMask, theEvent: ^EventRecord, sleep: LongInt, mouseRgn: RgnHandle): Boolean {
+	$a8, $60
+}
+GetNextEvent(eventMask: EventMask, theEvent: ^EventRecord): Boolean {
+	$a9, $70
+}
+EventAvail(eventMask: EventMask, theEvent: ^EventRecord): Boolean {
+	$a9, $71
+}
+GetMouse(mouseLoc: ^Point) {
+	$a9, $72
+}
+StillDown(): Boolean {
+	$a9, $73
+}
+Button(): Boolean {
+	$a9, $74
+}
+TickCount(): LongInt {
+	$a9, $75
+}
+GetKeys(theKeys: ^KeyMap) {
+	$a9, $76
+}
+WaitMouseUp(): Boolean {
+	$a9, $77
+}
+KeyTranslate(transData: Ptr, keycode: Integer, state: ^LongInt): LongInt {
+	$a9, $c3
+}
+
+SetEventMask(theMask: EventMask) {
+	$31, $df, $01, $44
+}
+GetEvQHdr(): QHdrPtr {
+	$2e, $bc, $00, $00, $01, $4a
+}
+GetDblTime(): LongInt {
+	$2e, $b8, $02, $f0
+}
+GetCaretTime(): LongInt {
+	$2e, $b8, $02, $f4
+}
+
+PostEvent(eventNum: EventType, eventMsg: LongInt): OSErr {
+	$a0, $2f
+}
+OSEventAvail(mask: EventMask, theEvent: ^EventRecord): Boolean {
+	$a0, $30
+}
+GetOSEvent(mask: EventMask, theEvent: ^EventRecord): Boolean {
+	$a0, $31
+}
+FlushEvents(whichMask: EventMask, stopMask: EventMask) {
+	$20, $1f, $a0, $32
+}
+PPostEvent(eventCode: EventType, eventMsg: LongInt, qEl: EvQElPtr): OSErr {
+	$a1, $2f
+}
+
+KeyMap = Boolean[128];
+
+EventType enum<Integer> {
+	nullEvent = 0,
+	mouseDown = 1,
+	mouseUp = 2,
+	keyDown = 3,
+	keyUp = 4,
+	autoKey = 5,
+	updateEvt = 6,
+	diskEvt = 7,
+	activateEvt = 8,
+	app1Evt = 12,
+	app2Evt = 13,
+	app3Evt = 14,
+	osEvt = 15,
+	kHighLevelEvent = 23,
+}
+
+EventMask enum<Integer> {
+	mDownMask = 2,
+	mUpMask = 4,
+	keyDownMask = 8,
+	keyUpMask = $10,
+	autoKeyMask = $20,
+	updateMask = $40,
+	diskMask = $80,
+	activeMask = $100,
+	highLevelEventMask = $400,
+	app1Mask = $1000,
+	app2Mask = $2000,
+	app3Mask = $4000,
+	osMask = $8000,
+	everyEvent = $ffff,
+}
+
+EventModifiers enum<Integer> {
+	active = 1,
+	btnState = $80,
+	cmdKey = $100,
+	shiftKey = $200,
+	alphaLock = $400,
+	optionKey = $800,
+	controlKey = $1000,
+}
+
+EventRecord struct {
+	what: EventType;
+	message: LongInt;
+	when: LongInt;
+	where: Point;
+	modifiers: EventModifiers;
+}
+
+EvQEl struct {
+	qLink: QElemPtr;
+	qType: QType;
+	evtQWhat: EventType;
+	evtQMessage: LongInt;
+	evtQWhen: LongInt;
+	evtQWhere: Point;
+	evtQModifiers: EventModifiers;
+}
+EvQElPtr = ^EvQEl;
+
+KeyCode enum<Byte> {
+	Esc = 53,
+	F1 = 122,
+	F2 = 120,
+	F3 = 99,
+	F4 = 118,
+	F5 = 96,
+	F6 = 97,
+	F7 = 98,
+	F8 = 100,
+	F9 = 101,
+	F10 = 109,
+	F11 = 103,
+	F12 = 111,
+	PrintScrn = 105,
+	ScrollLock = 107,
+	Pause = 113,
+	Backtick = 50,
+	key1 = 18,
+	key2 = 19,
+	key3 = 20,
+	key4 = 21,
+	key5 = 23,
+	key6 = 22,
+	key7 = 26,
+	key8 = 28,
+	key9 = 25,
+	key0 = 29,
+	Minus = 27,
+	Equal = 24,
+	Backspace = 51,
+	Insert = 114,
+	Home = 115,
+	PageUp = 116,
+	NumLock = 71,
+	KPSlash = 75,
+	KpStar = 67,
+	KpDash = 78,
+	Tab = 48,
+	keyQ = 12,
+	keyW = 13,
+	keyE = 14,
+	keyR = 15,
+	keyT = 17,
+	keyY = 16,
+	keyU = 32,
+	keyI = 34,
+	keyO = 31,
+	keyP = 35,
+	LBracket = 33,
+	RBracket = 30,
+	Return = 36,
+	Delete = 117,
+	End = 119,
+	PageDown = 121,
+	KP7 = 89,
+	KP8 = 91,
+	KP9 = 92,
+	KPPlus = 69,
+	CapsLock = 57,
+	keyA = 0,
+	keyS = 1,
+	keyD = 2,
+	keyF = 3,
+	keyG = 5,
+	keyH = 4,
+	keyJ = 38,
+	keyK = 40,
+	keyL = 37,
+	Semicolon = 41,
+	Colon = 39,
+	KP4 = 86,
+	KP5 = 87,
+	KP6 = 88,
+	Shift = 56,
+	International = 50,
+	keyZ = 6,
+	keyX = 7,
+	keyC = 8,
+	keyV = 9,
+	keyB = 11,
+	keyN = 45,
+	keyM = 46,
+	Comma = 43,
+	Period = 47,
+	Slash = 44,
+	Backslash = 42,
+	CursorUp = 62,
+	KP1 = 83,
+	KP2 = 84,
+	KP3 = 85,
+	KPEnter = 76,
+	Ctrl = 54,
+	Option = 58,
+	Command = 55,
+	Space = 49,
+	CursorLeft = 59,
+	CursorDown = 61,
+	CursorRight = 60,
+	KP0 = 82,
+	KPPeriod = 65,
+}

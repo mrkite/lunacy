@@ -1,0 +1,148 @@
+PlotIconID(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theResID: Integer): OSErr {
+	$30, $3c, $05, $00, $ab, $c9
+}
+GetIconSuite(theIconSuite: Handle, theResID: Integer, selector: IconSelectorValue): OSErr {
+	$30, $3c, $05, $01, $ab, $c9
+}
+DisposeIconSuite(theIconSuite: Handle, disposeData: Boolean): OSErr {
+	$30, $3c, $03, $02, $ab, $c9
+}
+PlotIconSuite(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theIconSuite: Handle): OSErr {
+	$30, $3c, $06, $03, $ab, $c9
+}
+MakeIconCache(theHandle: ^Handle, makeIcon: IconGetter, yourDataPtR: Ptr): OSErr {
+	$30, $3c, $06, $04, $ab, $c9
+}
+PlotIconMethod(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theMehtod: IconGetter, yourDataPtr: Ptr): OSErr {
+	$30, $3c, $08, $05, $ab, $c9
+}
+LoadIconCache(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theIconCache: Handle): OSErr {
+	$30, $3c, $06, $06, $ab, $c9
+}
+NewIconSuite(theIconSuite: ^Handle): OSErr {
+	$30, $3c, $02, $07, $ab, $c9
+}
+AddIconToSuite(theIconData: Handle, theSuite: Handle, theType: ResType): OSErr {
+	$30, $3c, $06, $08, $ab, $c9
+}
+GetIconFromSuite(theIconData: ^Handle, theSuite: Handle, theType: ResType): OSErr {
+	$30, $3c, $06, $09, $ab, $c9
+}
+ForEachIconDo(theSuite: Handle, selector: IconSelectorValue, action: IconAction, yourDataPtr: Ptr): OSErr {
+	$30, $3c, $08, $0a, $ab, $c9
+}
+GetLabel(labelNumber: Integer, labelColor: ^RGBColor, labelString: ^Str255): OSErr {
+	$30, $3c, $05, $0b, $ab, $c9
+}
+PtInIconID(testPt: Point, iconRect: ^Rect, align: IconAlignmentType, iconID: Integer): Boolean {
+	$30, $3c, $06, $0d, $ab, $c9
+}
+PtInIconSuite(testPt: Point, iconRect: ^Rect, align: IconAlignmentType, theIconSuite: Handle): Boolean {
+	$30, $3c, $07, $0e, $ab, $c9
+}
+PtInIconMethod(testPt: Point, iconRect: ^Rect, align: IconAlignmentType, theMethod: IconGetter, yourDataPtr: Ptr): Boolean {
+	$30, $3c, $09, $0f, $ab, $c9
+}
+RectInIconID(testRect: ^Rect, iconRect: ^Rect, align: IconAlignmentType, iconID: Integer): Boolean {
+	$30, $3c, $06, $10, $ab, $c9
+}
+RectInIconSuite(testRect: ^Rect, iconRect: ^Rect, align: IconAlignmentType, theIconSuite: Handle): Boolean {
+	$30, $3c, $07, $11, $ab, $c9
+}
+RectInIconMethod(testRect: ^Rect, iconRect: ^Rect, align: IconAlignmentType, theMethod: IconGetter, yourDataPtr: Ptr): Boolean {
+	$30, $3c, $09, $12, $ab, $c9
+}
+IconIDToRgn(theRgn: RgnHandle, iconRect: ^Rect, align: IconAlignmentType, iconID: Integer): OSErr {
+	$30, $3c, $06, $13, $ab, $c9
+}
+IconSuiteToRgn(theRgn: RgnHandle, iconRect: ^Rect, align: IconAlignmentType, theIconSuite: Handle): OSErr {
+	$30, $3c, $07, $14, $ab, $c9
+}
+IconMethodToRgn(theRgn: RgnHandle, iconRect: ^Rect, align: IconAlignmentType, theMethod: IconGetter, yourDataPtr: Ptr): OSErr {
+	$30, $3c, $09, $15, $ab, $c9
+}
+SetSuiteLabel(theSuite: Handle, theLabel: Integer): OSErr {
+	$30, $3c, $03, $16, $ab, $c9
+}
+GetSuiteLabel(theSuite: Handle): Integer {
+	$30, $3c, $02, $17, $ab, $c9
+}
+GetIconCacheData(theCache: Handle, theData: ^Ptr): OSErr {
+	$30, $3c, $04, $19, $ab, $c9
+}
+SetIconCacheData(theCache: Handle, theData: Ptr): OSErr {
+	$30, $3c, $04, $1a, $ab, $c9
+}
+GetIconCacheProc(theCache: Handle, theProc: ^IconGetter): OSErr {
+	$30, $3c, $04, $1b, $ab, $c9
+}
+SetIconCacheProc(theCache: Handle, theProc: IconGetter): OSErr {
+	$30, $3c, $04, $1c, $ab, $c9
+}
+PlotIconHandle(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theIcon: Handle): OSErr {
+	$30, $3c, $06, $1d, $ab, $c9
+}
+PlotSICNHandle(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theSICN: Handle): OSErr {
+	$30, $3c, $06, $1e, $ab, $c9
+}
+PlotCIconHandle(theRect: ^Rect, align: IconAlignmentType, transform: IconTransformType, theCIcon: CIconHandle): OSErr {
+	$30, $3c, $06, $1f, $ab, $c9
+}
+
+IconGetter(theType: ResType, yourDataPtr: Ptr): Handle;
+IconAction(theType: ResType, theIcon: ^Handle, yourDataPtr: Ptr): OSErr;
+
+CIcon struct {
+	iconPMap: PixMap;
+	iconMask: BitMap;
+	iconBMap: BitMap;
+	iconData: Handle;
+	iconMaskData: Integer[];
+}
+CIconPtr = ^CIcon;
+CIconHandle = ^CIconPtr;
+
+IconTransformType enum<Integer> {
+	ttNone = 0,
+	ttDisabled = 1,
+	ttOffline = 2,
+	ttOpen = 3,
+	ttLabel1 = $100,
+	ttLabel2 = $200,
+	ttLabel3 = $300,
+	ttLabel4 = $400,
+	ttLabel5 = $500,
+	ttLabel6 = $600,
+	ttLabel7 = $700,
+	ttSelected = $4000
+}
+IconAlignmentType enum<Integer> {
+	atNone = 0,
+	atVerticalCenter = 1,
+	atTop = 2,
+	atBottom = 3,
+	atHorizontalCenter = 4,
+	atLeft = 8,
+	atRight = 12,
+	atAbsoluteCenter = 5,
+	atCenterTop = 6,
+	atCenterBottom = 7,
+	atCenterLeft = 9,
+	atTopLeft = 10,
+	atBottomLeft = 11,
+	atCenterRight = 13,
+	atTopRight = 14,
+	atBottomRight = 15,
+}
+
+IconSelectorValue enum<LongInt> {
+	svLarge1Bit = 1,
+	svLarge4Bit = 2,
+	svLrage8Bit = 4,
+	svSmall1Bit = $100,
+	svSmall4Bit = $200,
+	svSmall8Bit = $400,
+	svMini1Bit = $10000,
+	svMini4Bit = $20000,
+	svMini8Bit = $40000,
+}

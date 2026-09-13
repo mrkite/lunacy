@@ -1,0 +1,130 @@
+InitDBPack(): OSErr {
+	$3f, $3c, $00, $04, $30, $3c, $01, $00, $a8, $2f
+}
+DBInit(sessID: ^LongInt, ddevName: ^Str63, host: ^Str255, user: ^Str255, password: ^Str255, connStr: ^Str255, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $0e, $02, $a8, $2f
+}
+DBEnd(sessID: LongInt, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $04, $03, $a8, $2f
+}
+DBGetConnInfo(sessID: LongInt, sessNum: Integer, returnedID: ^LongInt, version: ^LongInt, ddevName: ^Str63, host: ^Str255, user: ^Str255, network: ^Str255, connStr: ^Str255, start: ^LongInt, state: ^OSErr, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $17, $04, $a8, $2f
+}
+DBGetSessionNum(sessID: LongInt, sessNum: ^Integer, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $06, $05, $a8, $2f
+}
+DBSend(sessID: LongInt, text: Ptr, len: Integer, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $07, $06, $a8, $2f
+}
+DBSendItem(sessID: LongInt, dataType: DBType, len: Integer, places: Integer, flags: Integer, buffer: Ptr, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $0b, $07, $a8, $2f
+}
+DBExec(sessID: LongInt, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $04, $08, $a8, $2f
+}
+DBState(sessID: LongInt, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $04, $09, $a8, $2f
+}
+DBGetErr(sessID: LongInt, err1: ^LongInt, err2: ^LongInt, item1: ^Str255, item2: ^Str255, errorMsg: ^Str255, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $0e, $0a, $a8, $2f
+}
+DBBreak(sessID: LongInt, abort: Boolean, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $05, $0b, $a8, $2f
+}
+DBGetItem(sessID: LongInt, timeout: LongInt, dataType: ^DBType, len: Integer, places: ^Integer, flags: ^Integer, buffer: Ptr, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $10, $0c, $a8, $2f
+}
+DBUnGetItem(sessID: LongInt, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $04, $0d, $a8, $2f
+}
+DBKill(asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $02, $0e, $a8, $2f
+}
+DBGetNewQuery(queryID: Integer, query: ^QueryHandle): OSErr {
+	$30, $3c, $03, $0f, $a8, $2f
+}
+DBDisposeQuery(query: QueryHandle): OSErr {
+	$30, $3c, $02, $10, $a8, $2f
+}
+DBStartQuery(sessID: ^LongInt, query: QueryHandle, statusProc: ProcPtr, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $08, $11, $a8, $2f
+}
+DBGetQueryResults(sessID: LongInt, results: ^ResultsRecord, timeout: LongInt, statusProc: ProcPtr, asyncPB: DBAsyncParmBlkPtr): OSErr {
+	$30, $3c, $0a, $12, $a8, $2f
+}
+DBResultsToText(results: ^ResultsRecord, theText: ^Handle): OSErr {
+	$30, $3c, $04, $13, $a8, $2f
+}
+DBInstallResultHandler(dataType: DBType, theHandler: ProcPtr, isSysHandler: Boolean): OSErr {
+	$30, $3c, $05, $14, $a8, $2f
+}
+DBRemoveResultHandler(dataType: DBType): OSErr {
+	$30, $3c, $02, $15, $a8, $2f
+}
+DBGetResultHandler(dataType: DBType, theHandler: ^ProcPtr, getSysHandler: Boolean): OSErr {
+	$30, $3c, $05, $16, $a8, $2f
+}
+
+DBType = OSType;
+
+DBAsyncParamBlockRec struct {
+	completionProc: ProcPtr;
+	result: OSErr;
+	userRef: LongInt;
+	ddevRef: LongInt;
+	reserved: LongInt;
+}
+DBAsyncParmBlkPtr = ^DBAsyncParamBlockRec;
+
+ResListElem struct {
+	theType: ResType;
+	id: Integer;
+}
+ResListArray = ResListElem[256];
+ResListPtr = ^ResListArray;
+ResListHandle = ^ResListPtr;
+
+QueryRecord struct {
+	version: Integer;
+	id: Integer;
+	queryProc: Handle;
+	ddevName: Str63;
+	host: Str255;
+	user: Str255;
+	password: Str255;
+	connStr: Str255;
+	currQuery: Integer;
+	numQueries: Integer;
+	queryList: QueryListHandle;
+	numRes: Integer;
+	resList: ResListHandle;
+	dataHandle: Handle;
+	refCon: LongInt;
+}
+QueryPtr = ^QueryRecord;
+QueryHandle = ^QueryPtr;
+
+QueryArray = Handle[256];
+QueryListPtr = ^QueryArray;
+QueryListHandle = ^QueryListPtr;
+
+ColTypesArray = DBType[256];
+ColTypesPtr = ^ColTypesArray;
+ColTypesHandle = ^ColTypesPtr;
+
+DBColInfoRecord struct {
+	len: Integer;
+	places: Integer;
+	flags: Integer;
+}
+ColInfoArray = DBColInfoRecord[256];
+ColInfoPtr = ^ColInfoArray;
+ColInfoHandle = ^ColInfoPtr;
+
+ResultsRecord struct {
+	numRows: Integer;
+	numCols: Integer;
+	colTypes: ColTypesHandle;
+	colData: Handle;
+	colInfo: ColInfoHandle;
+}

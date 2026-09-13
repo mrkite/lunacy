@@ -1,0 +1,117 @@
+ScaleRec struct {
+	xDivide: u16;
+	yDivide: u16;
+	xOffset: u16;
+	yOffset: u16;
+	xMultiply: u16;
+	yMultiply: u16;
+}
+
+ADBCommand enum<u16> {
+	abort = $1,
+	resetKbd,
+	flushKbd,
+	setModes,
+	clearModes,
+	setConfig,
+	sync,
+	writeMicroMem,
+	readMicroMem,
+	readModes,
+	readConfig,
+	readADBError,
+	readVersionNum,
+	readAvailCharSet,
+	readAvailLayout,
+	resetSys,
+	keyCode,
+	resetADB = $40,
+	transmitADBBytes = $47,
+	enableSRQ = $50,
+	flushADBDevBuf = $60,
+	disableSRQ = $70,
+	listen = $80,
+	talk = $c0,
+}
+
+ADBData union {
+	readConfig: ReadConfigRec;
+	setConfig: SetConfigRec;
+	synch: SynchRec;
+	raw: u8[];
+}
+
+ReadConfigRec struct {
+	rcRepeatDelay: u8;
+	rcLayoutOrLang: u8;
+	rcADBAddr: u8;
+}
+SetConfigRec struct {
+	scADBAddr: u8;
+	scLayoutOrLang: u8;
+	scRepeatDelay: u8;
+}
+SynchRec struct {
+	synchMode: u8;
+	synchKybdMouseAddr: u8;
+	synchLayoutOrLang: u8;
+	synchRepeatDelay: u8;
+}
+
+ADBBootInit() {
+	$a2, $09, $01, $22, $00, $00, $e1
+}
+ADBStartUp() {
+	$a2, $09, $02, $22, $00, $00, $e1
+}
+ADBShutDown() {
+	$a2, $09, $03, $22, $00, $00, $e1
+}
+ADBVersion(): i16 {
+	$a2, $09, $04, $22, $00, $00, $e1
+}
+ADBReset() {
+	$a2, $09, $05, $22, $00, $00, $e1
+}
+ADBStatus(): bool {
+	$a2, $09, $06, $22, $00, $00, $e1
+}
+SendInfo(dataLength: i16, dataPtr: ^ADBData, adbCommand: ADBCommand) {
+	$a2, $09, $09, $22, $00, $00, $e1
+}
+ReadKeyMicroData(dataLength: i16, dataPtr: ^ADBData, adbCommand: ADBCommand) {
+	$a2, $09, $0a, $22, $00, $00, $e1
+}
+ReadKeyMicroMem(dataLength: i16, dataPtr: ^ADBData, adbCommand: ADBCommand) {
+	$a2, $09, $0b, $22, $00, $00, $e1
+}
+AsyncADBReceive(compPtr: Ptr) {
+	$a2, $09, $0d, $22, $00, $00, $e1
+}
+SyncADBReceive(inputWord: i16, compPtr: Ptr, adbCommand: ADBCommand) {
+	$a2, $09, $0e, $22, $00, $00, $e1
+}
+AbsOn() {
+	$a2, $09, $0f, $22, $00, $00, $e1
+}
+AbsOff() {
+	$a2, $09, $10, $22, $00, $00, $e1
+}
+ReadAbs(): i16 {
+	$a2, $09, $11, $22, $00, $00, $e1
+}
+SetAbsScale(dataOutPtr: ^ScaleRec) {
+	$a2, $09, $12, $22, $00, $00, $e1
+}
+GetAbsScale(dataInPtr: ^ScaleRec) {
+	$a2, $09, $13, $22, $00, $00, $e1
+}
+SRQPoll(compPtr: Ptr, adbRegAddr: i16) {
+	$a2, $09, $14, $22, $00, $00, $e1
+}
+SRQRemove(adbRegAddr: i16) {
+	$a2, $09, $15, $22, $00, $00, $e1
+}
+ClearSRQTable() {
+	$a2, $09, $16, $22, $00, $00, $e1
+}

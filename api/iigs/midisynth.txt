@@ -1,0 +1,180 @@
+Measure struct {
+	measure: u16;
+	beat: u16;
+	remainder: u16;
+}
+
+CallBackTable struct {
+	usend: Ptr;
+	mupdate: VoidProcPtr;
+	mstart: u32;
+	mstop: u32;
+	mpin: u32;
+	sevents: u32;
+	sx: u32;
+	mpout: u32;
+	pchg: u32;
+	mcont: u32;
+	smark: u32;
+	rbfull: u32;
+}
+
+WaveList struct {
+	topKey: u8;
+	configuration: u8;
+	channel: u8;
+	detune: u8;
+	waveAddressA: u8;
+	waveSizeA: u8;
+	volumeA: u8;
+	octaveA: u8;
+	semitoneA: u8;
+	fineTuneA: u8;
+	waveAddressB: u8;
+	waveSizeB: u8;
+	volumeB: u8;
+	octaveB: u8;
+	semitoneB: u8;
+	fineTuneB: u8;
+}
+
+MIDIEnvelope struct {
+	attackLevel: u8;
+	attackRate: u8;
+	decay1Level: u8;
+	decay1Rate: u8;
+	decay2Level: u8;
+	decay2Rate: u8;
+	sustainLevel: u8;
+	decay3Rate: u8;
+	release1Level: u8;
+	release1Rate: u8;
+	release2Level: u8;
+	release2Rate: u8;
+	releast3Rate: u8;
+	decayGain: u8;
+	velocityGain: u8;
+	pitchBend: u8;
+}
+
+MIDIInstrument struct {
+	gen1Envelope: MIDIEnvelope;
+	gen1Waves: WaveList[8];
+	gen2Envelope: MIDIEnvelope;
+	gen2Waves: WaveList[8];
+}
+
+MSBootInit() {
+	$a2, $23, $01, $22, $00, $00, $e1
+}
+MSStartUp() { 
+	$a2, $23, $02, $22, $00, $00, $e1
+}
+MSShutDown() {
+	$a2, $23, $03, $22, $00, $00, $e1
+}
+MSVersion() {
+	$a2, $23, $04, $22, $00, $00, $e1
+}
+MSReset() {
+	$a2, $23, $05, $22, $00, $00, $e1
+}
+MSStatus() {
+	$a2, $23, $06, $22, $00, $00, $e1
+}
+SetMidiChan(channel: i16) {
+	$a2, $23, $09, $22, $00, $00, $e1
+}
+SetMidiMode(mode: i16) {
+	$a2, $23, $0a, $22, $00, $00, $e1
+}
+MidiNoteOn(channel: i16, key: i16, volume: i16) {
+	$a2, $23, $0b, $22, $00, $00, $e1
+}
+MidiNoteOff(channel: i16, key: i16) {
+	$a2, $23, $0c, $22, $00, $00, $e1
+}
+MidiAllNotesOff() {
+	$a2, $23, $0d, $22, $00, $00, $e1
+}
+SetRecTrack(track: i16) {
+	$a2, $23, $0e, $22, $00, $00, $e1
+}
+SetPlayTrack(track: i16, mode: i16) {
+	$a2, $23, $0f, $22, $00, $00, $e1
+}
+TrackToChannel(track: i16, channel: i16) {
+	$a2, $23, $10, $22, $00, $00, $e1
+}
+Locate(time: i32, buffer: Ptr): i32 {
+	$a2, $23, $11, $22, $00, $00, $e1
+}
+SetVelComp(offset: i16) {
+	$a2, $23, $12, $22, $00, $00, $e1
+}
+SetMIDIPort(inport: i16, outport: i16) {
+	$a2, $23, $13, $22, $00, $00, $e1
+}
+DefineInst(inst: ^MIDIInstrument, num: i16) {
+	$a2, $23, $14, $22, $00, $00, $e1
+}
+SynthPlayer(seqData: Ptr) {
+	$a2, $23, $15, $22, $00, $00, $e1
+}
+SetTempo(tempo: i16) {
+	$a2, $23, $16, $22, $00, $00, $e1
+}
+SetUserCallback(callbackTable: ^CallBackTable) {
+	$a2, $23, $17, $22, $00, $00, $e1
+}
+SysExOut(data: Ptr, delay: i16, callback: Ptr) {
+	$a2, $23, $18, $22, $00, $00, $e1
+}
+SetBeat(beat: i16) {
+	$a2, $23, $19, $22, $00, $00, $e1
+}
+MIDICmd(path: i16, bytes: i16, cmd: i16, data1: i16, data2: i16) {
+	$a2, $23, $1a, $22, $00, $00, $e1
+}
+LocateEnd(buffer: Ptr): Ptr {
+	$a2, $23, $1b, $22, $00, $00, $e1
+}
+Merge(buffer1: Ptr, buffer2: Ptr) {
+	$a2, $23, $1c, $22, $00, $00, $e1
+}
+DeleteTrack(track: i16, buffer: Ptr) {
+	$a2, $23, $1d, $22, $00, $00, $e1
+}
+SetMetro(volume: i16, freq: i16, wave: Ptr) {
+	$a2, $23, $1e, $22, $00, $00, $e1
+}
+GetMSData(): Ptr {
+	$a2, $23, $1f, $22, $00, $00, $e1
+}
+CalcTime(ticksPerBeat: i16, bpm: i16, beat: i16, measure: i16): i32 {
+	$a2, $23, $20, $22, $00, $00, $e1
+}
+CalcMeasure(ticksPerbeat: i16, bpm: i16, time: i32): ^Measure {
+	$a2, $23, $21, $22, $00, $00, $e1
+}
+MSSuspend() {
+	$a2, $23, $22, $22, $00, $00, $e1
+}
+MSResume() {
+	$a2, $23, $23, $22, $00, $00, $e1
+}
+SetTuningTable(table: Ptr) {
+	$a2, $23, $24, $22, $00, $00, $e1
+}
+GetTuningTable(table: Ptr) {
+	$a2, $23, $25, $22, $00, $00, $e1
+}
+SeTrackOut(track: i16, state: i16) {
+	$a2, $23, $26, $22, $00, $00, $e1
+}
+StartMIDIDriver(slot: i16, ctype: i16, id: i16, addr: Ptr) {
+	$a2, $23, $27, $22, $00, $00, $e1
+}
+StopMIDIDriver() {
+	$a2, $23, $28, $22, $00, $00, $e1
+}

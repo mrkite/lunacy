@@ -1,0 +1,119 @@
+QDIconRecord struct {
+	iconType: u16;
+	iconSize: u16;
+	iconHeight: u16;
+	iconWidth: u16;
+	iconImge: u8[];
+	iconMask: u8[];
+}
+
+PicVerb enum<u8> {
+	picNop,
+	picClipRgn,
+	picBkPat,
+	picTxFont,
+	picTxFace,
+	picTxMode,
+	picSpExtra,
+	picPnSize,
+	picPnMode,
+	picPnPat,
+	picThePat,
+	picOvSize,
+	picOrigin,
+	picTxSize,
+	picFGCoor,
+	picBGColor,
+	picTxRatio,
+	picVersion,
+	picLine = $20,
+	picLineFrom,
+	picShortL,
+	picShortLFrom,
+	picLongText = $28,
+	picDHText,
+	picDVText,
+	picDVDHText,
+	rectNoun = $30,
+	rRectNoun = $40,
+	ovalNoun = $50,
+	arcNoun = $60,
+	polyNoun = $70,
+	rgnNoun = $80,
+	picBitsRect = $90,
+	picBitsRgn,
+	picPBitsRect = $98,
+	picPBitsRgn,
+	picShortComment = $a0,
+	picLongComment,
+	picEnd = $ff,
+}
+
+Picture struct {
+	picSCB: u16;
+	picFrame: Rect;
+	opcode: PicVerb[];
+}
+PicHndl = ^^Picture;
+
+ModeMask enum<u16> {
+	resMode640PMask = 0,
+	resMode640DMask = 1,
+	resMode320Mask = 2,
+	destModeCopyMask = 0,
+	destModeLeaveMask = $1000,
+	destModeOnesMask = $2000,
+	destModeZerosMask = $3000,
+}
+
+QDAuxBootInit() {
+	$a2, $12, $01, $22, $00, $00, $e1
+}
+QDAuxStartUp() {
+	$a2, $12, $02, $22, $00, $00, $e1
+}
+QDAuxShutDown() {
+	$a2, $12, $03, $22, $00, $00, $e1
+}
+QDAuxVersion(): i16 {
+	$a2, $12, $04, $22, $00, $00, $e1
+}
+QDAuxReset() {
+	$a2, $12, $05, $22, $00, $00, $e1
+}
+QDAuxStatus(): bool {
+	$a2, $12, $06, $22, $00, $00, $e1
+}
+CopyPixels(srcLocPtr: ^LocInfo, destLocInfo: ^LocInfo, srcRecT: ^Rect, destRect: ^Rect, xferMode: Mode, makeRgn: RgnHandle) {
+	$a2, $12, $09, $22, $00, $00, $e1
+}
+WaitCursor() {
+	$a2, $12, $0a, $22, $00, $00, $e1
+}
+DrawIcon(iconPtR: ^QDIconRecord, displayMode: Mode, xPos: i16, yPos: i16) {
+	$a2, $12, $0b, $22, $00, $00, $e1
+}
+SpecialRect(rectPtr: ^Rect, frameColor: i16, fillColor: i16) {
+	$a2, $12, $0c, $22, $00, $00, $e1
+}
+SeedFill(srcLocInfoPtr: ^LocInfo, srcRect: ^Rect, dstLocInfoPtr: ^LocInfo, dstRect: ^Rect, seedH: i16, seedV: i16, resMode: ModeMask, patternPtr: ^Pattern, leakTblPtr: Ptr) {
+	$a2, $12, $0d, $22, $00, $00, $e1
+}
+CalcMask(srcLocInfoPtr: ^LocInfo, srcRect: ^Rect, dstLocInfoPtr: ^LocInfo, dstRect: ^Rect, resMode: ModeMask, patternPtr: ^Pattern, leakTblPtr: Ptr) {
+	$a2, $12, $0e, $22, $00, $00, $e1
+}
+OpenPicture(picFrame: ^Rect): PicHndl {
+	$a2, $04, $b7, $22, $00, $00, $e1
+}
+PicComment(kind: i16, dataSize: i16, dataHandle: Handle) {
+	$a2, $04, $b8, $22, $00, $00, $e1
+}
+ClosePicture() {
+	$a2, $04, $b9, $22, $00, $00, $e1
+}
+DrawPicture(picHandle: PicHndl, destRect: ^Rect) {
+	$a2, $04, $ba, $22, $00, $00, $e1
+}
+KillPicture(picHandle: PicHndl) {
+	$a2, $04, $bb, $22, $00, $00, $e1
+}

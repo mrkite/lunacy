@@ -1,0 +1,131 @@
+GetScriptLanguageSupport(ts: ComponentInstance, scriptHandle: ^ScriptLanguageSupportHandle): ComponentResult {
+	$2f, $3c, $04, $00, $00, $01, $70, $00, $a8, $2a
+}
+InitiateTextService(ts: ComponentInstance): ComponentResult {
+	$2f, $3c, $00, $00, $00, $02, $70, $00, $a8, $2a
+}
+TerminateTextService(ts: ComponentInstance): ComponentResult {
+	$2f, $3c, $00, $00, $00, $03, $70, $00, $a8, $2a
+}
+ActivateTextService(ts: ComponentInstance): ComponentResult {
+	$2f, $3c, $00, $00, $00, $04, $70, $00, $a8, $2a
+}
+DeactivateTextService(ts: ComponentInstance): ComponentResult {
+	$2f, $3c, $00, $00, $00, $05, $70, $00, $a8, $2a
+}
+TextServiceEvent(ts: ComponentInstance, numOfEvents: Integer, event: ^EventRecord): ComponentResult {
+	$2f, $3c, $00, $00, $00, $06, $70, $00, $a8, $2a
+}
+GetTextServiceMenu(ts: ComponentInstance, serviceMenU: ^MenuHandle): ComponentResult {
+	$2f, $3c, $00, $00, $00, $07, $70, $00, $a8, $2a
+}
+TextServiceMenuSelect(ts: ComponentInstance, serviceMenu: MenuHandle, item: Integer): ComponentResult {
+	$2f, $3c, $00, $00, $00, $08, $70, $00, $a8, $2a
+}
+FixTextService(ts: ComponentInstance): ComponentResult {
+	$2f, $3c, $00, $00, $00, $09, $70, $00, $a8, $2a
+}
+SetTextServiceCursor(ts: ComponentInstance, mousePos: Point): ComponentResult {
+	$2f, $3c, $00, $00, $00, $0a, $70, $00, $a8, $2a
+}
+HidePaletteWindows(ts: ComponentInstance): ComponentResult {
+	$2f, $3c, $00, $00, $00, $0b, $70, $00, $a8, $2a
+}
+
+NewTSMDocument(numOfInterface: Integer, supportedInterfaceTypes: ^InterfaceTypeList, idocID: ^TSMDocumentID, refCon: LongInt): OSErr {
+	$30, $3c, $00, $00, $aa, $54
+}
+DeleteTSMDocument(idocID: TSMDocumentID): OSErr {
+	$30, $3c, $00, $01, $aa, $54
+}
+ActivateTSMDocument(idocID: TSMDocumentID): OSErr {
+	$30, $3c, $00, $02, $aa, $54
+}
+DeactivateTSMDocument(idocID: TSMDocumentID): OSErr {
+	$30, $3c, $00, $03, $aa, $54
+}
+TSMEvent(event: ^EventRecord): Boolean {
+	$30, $3c, $00, $04, $aa, $54
+}
+TSMMenuSelect(menuResult: LongInt): Boolean {
+	$30, $3c, $00, $05, $aa, $54
+}
+SetTSMCursor(mousePos: Point): Boolean {
+	$30, $3c, $00, $06, $aa, $54
+}
+FixTSMDocument(idocID: TSMDocumentID): OSErr {
+	$30, $3c, $00, $07, $aa, $54
+}
+GetServiceList(numOfInterfaceTypes: Integer, supportedInterfaceTypes: InterfaceTypeList, serviceInfo: ^TextServiceListHandle, seedValue: ^LongInt): OSErr {
+	$30, $3c, $00, $08, $aa, $54
+}
+OpenTextService(idocID: TSMDocumentID, aComponent: Component, aComponentInstance: ComponentInstance): OSErr {
+	$30, $3c, $00, $09, $aa, $54
+}
+CloseTextService(idocID: TSMDocumentID, aComponentInstance: ComponentInstance): OSErr {
+	$30, $3c, $00, $0a, $aa, $54
+}
+SendAEFromTSMComponent(theAppleEvent: ^AppleEvent, reply: ^AppleEvent, sendMode: AESendMode, sendPriority: AESendPriority, timeOutInTicks: LongInt, idleProc: IdleProcPtr, filterProc: EventFilterProcPtr): OSErr {
+	$30, $3c, $00, $0b, $aa, $54
+}
+SetDefaultInputMethod(ts: Component, slRecord: ^ScriptLanguageRecord): OSErr {
+	$30, $3c, $00, $0c, $aa, $54
+}
+GetDefaultInputMethod(ts: ^Component, slRecord: ^ScriptLanguageRecord): OSErr {
+	$30, $3c, $00, $0d, $aa, $54
+}
+SetTextServiceLanguage(slRecord: ^ScriptLanguageRecord): OSErr {
+	$30, $3c, $00, $0e, $aa, $54
+}
+GetTextServiceLanguage(slRecord: ^ScriptLanguageRecord): OSErr {
+	$30, $3c, $00, $0f, $aa, $54
+}
+UseInputWindow(idocID: TSMDocumentID, useWindow: Boolean): OSErr {
+	$30, $3c, $00, $10, $aa, $54
+}
+NewServiceWindow(wStorage: Ptr, boundsRect: ^Rect, title: ^Str255, visible: Boolean, theProc: Integer, behind: WindowPtr, goAwayFlag: Boolean, ts: ComponentInstance, window: ^WindowPtr): OSErr {
+	$30, $3c, $00, $11, $aa, $54
+}
+CloseServiceWindow(window: WindowPtr): OSErr {
+	$30, $3c, $00, $12, $aa, $54
+}
+GetFrontServiceWindow(window: ^WindowPtr): OSErr {
+	$30, $3c, $00, $13, $aa, $54
+}
+InitTSMAwareApplication(): OSErr {
+	$30, $3c, $00, $14, $aa, $54
+}
+CloseTSMAwareApplicaton(): OSErr {
+	$30, $3c, $00, $15, $aa, $54
+}
+FindServiceWindow(thePoint: Point, theWindow: ^WindowPtr): Integer {
+	$30, $3c, $00, $17, $aa, $54
+}
+
+TSMDocumentID = Ptr;
+
+TextServiceInfo struct {
+	fComponent: Component;
+	fItmeName: Str255;
+}
+
+TextServiceList struct {
+	fTextServiceCount: Integer;
+	fServices: TextServiceInfo[];
+}
+TextServiceListPtr = ^TextServiceList;
+TextServiceListHandle = ^TextServiceListPtr;
+
+ScriptLanguageRecord struct {
+	fScript: ScriptCode;
+	fLanguage: LangCode;
+}
+
+ScriptLanguageSupport struct {
+	fScriptLanguageCount: Integer;
+	fScriptLanguageArray: ScriptLanguageRecord[];
+}
+ScriptLanguageSupportPtr = ^ScriptLanguageSupport;
+ScriptLanguageSupportHandle = ^ScriptLanguageSupportPtr;
+
+InterfaceTypeList = OSType[];

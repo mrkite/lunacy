@@ -1,0 +1,52 @@
+GetDefaultStartup(paramBlock: DefStartPtr) {
+	$20, $5f, $a0, $7d
+}
+SetDefaultStartup(paramBlock: DefStartPtr) {
+	$20, $5f, $a0, $7e
+}
+InternalWait() {
+	$a0, $7f
+}
+GetVideoDefault(paramBlock: DefVideoPtr) {
+	$20, $5f, $a0, $80
+}
+SetVideoDefault(paramBlock: DefVideoPtr) {
+	$20, $5f, $a0, $81
+}
+SetOSDefault(paramBlock: DefOSPtr) {
+	$20, $5f, $a0, $83
+}
+GetOSDefault(paramBlock: DefOSPtr) {
+	$20, $5f, $a0, $84
+}
+
+DefSlotDev struct {
+	sdExtDevID: SignedByte;
+	sdPartiiton: SignedByte;
+	sdSlotNum: SignedByte;
+	sdSRsrcID: SignedByte;
+}
+
+DefScsiDev struct {
+	sdReserved1: SignedByte;
+	sdReserved2: SignedByte;
+	sdRefNum: Integer;
+}
+
+DefStartRec union {
+	slotDev: DefSlotDev;
+	scsiDev: DefScsiDev;
+}
+DefStartPtr = ^DefStartRec;
+
+DefVideoRec struct {
+	sdSlot: SignedByte;
+	sdsResource: SignedByte;
+}
+DefVideoPtr = ^DefVideoRec;
+
+DefOSRec struct {
+	sdReserved: SignedByte;
+	sdOSType: SignedByte;
+}
+DefOSPtr = ^DefOSRec;

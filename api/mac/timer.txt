@@ -1,0 +1,21 @@
+InsTime(tmTaskPtr: ^TMTask) {
+	$20, $5f, $a0, $58
+}
+RmvTime(tmTaskPtr: ^TMTask) {
+	$20, $5f, $a0, $59
+}
+PrimeTime(tmTaskPtr: ^TMTask, count: LongInt) {
+	$20, $1f, $20, $5f, $a0, $5a
+}
+InsXTime(tmTaskPtr: ^TMTask) {
+	$20, $5f, $a4, $58
+}
+
+TMTask struct {
+	qLink: QElemPtr;
+	qType: QType;
+	tmAddr: ProcPtr;
+	tmCount: LongInt;
+	tmWakeUp: LongInt;
+	tmReserved: LongInt;
+}

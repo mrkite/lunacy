@@ -1,0 +1,233 @@
+P16AllocInterrupt struct {
+	intNum: u16;
+	intCode: Ptr;
+}
+
+P16DeallocateInterrupt struct {
+	intNum: u16;
+}
+
+P16Destroy struct {
+	pathname: Ptr;
+}
+
+P16Flush struct {
+	refNum: u16;
+}
+
+P16Format struct {
+	devName: Ptr;
+	volName: Ptr;
+	fileSysID: u16;
+}
+
+P16GetBootVol struct {
+	dataBuffer: Ptr;
+}
+
+P16Volume struct {
+	devName: Ptr;
+	volName: Ptr;
+	totalBlocks: u32;
+	freeBlocks: u32;
+	fileSysID: u16;
+}
+
+P16GetDevNum struct {
+	devName: Ptr;
+	devNum: u16;
+}
+
+P16EOF struct {
+	refNum: u16;
+	eof: u32;
+}
+
+P16FileInfo struct {
+	pathname: Ptr;
+	access: u16;
+	fileType: u16;
+	auxType: u32;
+	storageType: StorageType;
+	createDate: u16;
+	createTime: u16;
+	modDate: u16;
+	modTime: u16;
+	blocksUsed: u32;
+}
+
+P16GetLastDev struct {
+	devNum: u16;
+}
+
+P16Level struct {
+	level: u16;
+}
+
+P16Mark struct {
+	refNum: u16;
+	position: u32;
+}
+
+P16GetName struct {
+	dataBuffer: Ptr;
+}
+
+P16Prefix struct {
+	prefixNum: u16;
+	prefix: Ptr;
+}
+
+P16GetVersion struct {
+	version: u16;
+}
+
+P16Newline struct {
+	refNum: u16;
+	enableMask: u16;
+	newlineChar: u16;
+}
+
+P16Open struct {
+	refNum: u16;
+	pathname: Ptr;
+	ioBuffer: Ptr;
+}
+
+P16Quit struct {
+	pathname: Ptr;
+	flags: u16;
+}
+
+P16Data struct {
+	refNum: u16;
+	dataBuffer: Ptr;
+	requestCount: u32;
+	transferCount: u32;
+}
+
+P16Block struct {
+	devNum: u16;
+	dataBuffer: Ptr;
+	blockNum: u32;
+}
+
+P16ChangePath struct {
+	pathname: Ptr;
+	newPathname: Ptr;
+}
+
+P16ClearBackupBit struct {
+	pathname: Ptr;
+}
+
+P16Close struct {
+	refNum: u16;
+}
+
+P16Create struct {
+	pathname: Ptr;
+	access: u16;
+	fileType: u16;
+	auxType: u32;
+	storageType: StorageType;
+	createDate: u16;
+	createTime: u16;
+}
+
+P16_CREATE(pblock: ^P16Create) {
+	$22, $a8, $00, $e1, $01, $00, {pblock}
+}
+P16_DESTROY(pblock: ^P16Destroy) {
+	$22, $a8, $00, $e1, $02, $00, {pblock}
+}
+P16_CHANGE_PATH(pblock: ^P16ChangePath) {
+	$22, $a8, $00, $e1, $04, $00, {pblock}
+}
+P16_SET_FILE_INFO(pblock: ^P16FileInfo) {
+	$22, $a8, $00, $e1, $05, $00, {pblock}
+}
+P16_GET_FILE_INFO(pblock: ^P16FileInfo) {
+	$22, $a8, $00, $e1, $06, $00, {pblock}
+}
+P16_VOLUME(pblock: ^P16Volume) {
+	$22, $a8, $00, $e1, $08, $00, {pblock}
+}
+P16_SET_PREFIX(pblock: ^P16Prefix) {
+	$22, $a8, $00, $e1, $09, $00, {pblock}
+}
+P16_GET_PREFIX(pblock: ^P16Prefix) {
+	$22, $a8, $00, $e1, $0a, $00, {pblock}
+}
+P16_CLEAR_BACKUP_BIT(pblock: ^P16ClearBackupBit) {
+	$22, $a8, $00, $e1, $0b, $00, {pblock}
+}
+P16_OPEN(pblock: ^P16Open) {
+	$22, $a8, $00, $e1, $10, $00, {pblock}
+}
+P16_NEWLINE(pblock: ^P16Newline) {
+	$22, $a8, $00, $e1, $11, $00, {pblock}
+}
+P16_READ(pblock: ^P16Data) {
+	$22, $a8, $00, $e1, $12, $00, {pblock}
+}
+P16_WRITE(pblock: ^P16Data) {
+	$22, $a8, $00, $e1, $13, $00, {pblock}
+}
+P16_CLOSE(pblock: ^P16Close) {
+	$22, $a8, $00, $e1, $14, $00, {pblock}
+}
+P16_FLUSH(pblock: ^P16Flush) {
+	$22, $a8, $00, $e1, $15, $00, {pblock}
+}
+P16_SET_MARK(pblock: ^P16Mark) {
+	$22, $a8, $00, $e1, $16, $00, {pblock}
+}
+P16_GET_MARK(pblock: ^P16Mark) {
+	$22, $a8, $00, $e1, $17, $00, {pblock}
+}
+P16_SET_EOF(pblock: ^P16EOF) {
+	$22, $a8, $00, $e1, $18, $00, {pblock}
+}
+P16_GET_EOF(pblock: ^P16EOF) {
+	$22, $a8, $00, $e1, $19, $00, {pblock}
+}
+P16_SET_LEVEL(pblock: ^P16Level) {
+	$22, $a8, $00, $e1, $1a, $00, {pblock}
+}
+P16_GET_LEVEL(pblock: ^P16Level) {
+	$22, $a8, $00, $e1, $1b, $00, {pblock}
+}
+P16_GET_DEV_NUM(pblock: ^P16GetDevNum) {
+	$22, $a8, $00, $e1, $20, $00, {pblock}
+}
+P16_GET_LAST_DEV(pblock: ^P16GetLastDev) {
+	$22, $a8, $00, $e1, $21, $00, {pblock}
+}
+P16_READ_BLOCK(pblock: ^P16Block) {
+	$22, $a8, $00, $e1, $22, $00, {pblock}
+}
+P16_WRITE_BLOCK(pblock: ^P16Block) {
+	$22, $a8, $00, $e1, $23, $00, {pblock}
+}
+P16_FORMAT(pblock: ^P16Format) {
+	$22, $a8, $00, $e1, $24, $00, {pblock}
+}
+P16_GET_NAME(pblock: ^P16GetName) {
+	$22, $a8, $00, $e1, $27, $00, {pblock}
+}
+P16_GET_BOOT_VOL(pblock: ^P16GetBootVol) {
+	$22, $a8, $00, $e1, $28, $00, {pblock}
+}
+P16_QUIT(pblock: ^P16Quit) {
+	$22, $a8, $00, $e1, $29, $00, {pblock}
+}
+P16_GET_VERSION(pblock: ^P16GetVersion) {
+	$22, $a8, $00, $e1, $2a, $00, {pblock}
+}
+P16_ALLOC_INTERRUPT(pblock: ^P16AllocInterrupt) {
+	$22, $a8, $00, $e1, $31, $00, {pblock}
+}
+P16_DEALLOCATE_INTERRUPT(pblock: ^P16DeallocateInterrupt) {
+	$22, $a8, $00, $e1, $32, $00, {pblock}
+}

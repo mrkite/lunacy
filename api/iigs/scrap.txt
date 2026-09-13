@@ -1,0 +1,56 @@
+ScrapType enum<u16> {
+	textScrap = 0,
+	picScrap = 1,
+}
+
+ScrapBootInit() {
+	$a2, $16, $01, $22, $00, $00, $e1
+}
+ScrapStartUp() {
+	$a2, $16, $02, $22, $00, $00, $e1
+}
+ScrapShutDown() {
+	$a2, $16, $03, $22, $00, $00, $e1
+}
+ScrapVersion(): i16 {
+	$a2, $16, $04, $22, $00, $00, $e1
+}
+ScrapReset() {
+	$a2, $16, $05, $22, $00, $00, $e1
+}
+ScrapStatus(): bool {
+	$a2, $16, $06, $22, $00, $00, $e1
+}
+UnloadScrap() {
+	$a2, $16, $09, $22, $00, $00, $e1
+}
+LoadScrap() {
+	$a2, $16, $0a, $22, $00, $00, $e1
+}
+ZeroScrap() {
+	$a2, $16, $0b, $22, $00, $00, $e1
+}
+PutScrap(numBytes: i32, scrapType: ScrapType, srcPtr: Ptr) {
+	$a2, $16, $0c, $22, $00, $00, $e1
+}
+GetScrap(destHandle: Handle, scrapType: ScrapType) {
+	$a2, $16, $0d, $22, $00, $00, $e1
+}
+GetScrapHandle(scrapType: ScrapType): Handle {
+	$a2, $16, $0e, $22, $00, $00, $e1
+}
+GetScrapSize(scrapType: ScrapType): i32 {
+	$a2, $16, $0f, $22, $00, $00, $e1
+}
+GetScrapPath(): Ptr {
+	$a2, $16, $10, $22, $00, $00, $e1
+}
+SetScrapPath(path: ^String255) {
+	$a2, $16, $11, $22, $00, $00, $e1
+}
+GetScrapCount(): i16 {
+	$a2, $16, $12, $22, $00, $00, $e1
+}
+GetScrapState(): i16 {
+	$a2, $16, $13, $22, $00, $00, $e1
+}

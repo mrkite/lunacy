@@ -1,0 +1,33 @@
+ACEBootInit() {
+	$a2, $1d, $01, $22, $00, $00, $e1
+}
+ACEStartUp(dPageAddr: i16) {
+	$a2, $1d, $02, $22, $00, $00, $e1
+}
+ACEShutDown() {
+	$a2, $1d, $03, $22, $00, $00, $e1
+}
+ACEVersion(): i16 {
+	$a2, $1d, $04, $22, $00, $00, $e1
+}
+ACEReset() {
+	$a2, $1d, $05, $22, $00, $00, $e1
+}
+ACEStatus(): bool {
+	$a2, $1d, $06, $22, $00, $00, $e1
+}
+ACEInfo(infoItemCode: i16): i32 {
+	$a2, $1d, $07, $22, $00, $00, $e1
+}
+ACECompress(src: Handle, srcOffset: i32, dest: Handle, destOffset: i32, nBlks: i16, method: i16) {
+	$a2, $1d, $09, $22, $00, $00, $e1
+}
+ACEExpand(src: Handle, srcOffset: i32, dest: Handle, destOffset: i32, nBlks: i16, method: i16) {
+	$a2, $1d, $0a, $22, $00, $00, $e1
+}
+ACECompBegin() {
+	$a2, $1d, $0b, $22, $00, $00, $e1
+}
+ACEExpBegin() {
+	$a2, $1d, $0c, $22, $00, $00, $e1
+}

@@ -1,0 +1,173 @@
+SReadByte(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $00, $a0, $6e, $3e, $80
+}
+SReadWord(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $01, $a0, $6e, $3e, $80
+}
+SReadLong(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $02, $a0, $6e, $3e, $80
+}
+SGetCString(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $03, $a0, $6e, $3e, $80
+}
+SGetBlock(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $05, $a0, $6e, $3e, $80
+}
+SFindStruct(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $06, $a0, $6e, $3e, $80
+}
+SReadStruct(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $07, $a0, $6e, $3e, $80
+}
+SVersion(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $08, $a0, $6e, $3e, $80
+}
+SetSRsrcState(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $09, $a0, $6e, $3e, $80
+}
+InsertSRTRec(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $0a, $a0, $6e, $3e, $80
+}
+SGetSRsrc(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $0b, $a0, $6e, $3e, $80
+}
+SGetTypeSRsrc(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $0c, $a0, $6e, $3e, $80
+}
+SReadInfo(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $10, $a0, $6e, $3e, $80
+}
+SReadPRAMRec(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $11, $a0, $6e, $3e, $80
+}
+SPutPRAMRec(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $12, $a0, $6e, $3e, $80
+}
+SReadFHeader(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $13, $a0, $6e, $3e, $80
+}
+SNextSRsrc(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $14, $a0, $6e, $3e, $80
+}
+SNextTypeSRsrc(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $15, $a0, $6e, $3e, $80
+}
+SRsrcInfo(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $16, $a0, $6e, $3e, $80
+}
+SCkCardStat(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $18, $a0, $6e, $3e, $80
+}
+SReadDrvrName(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $19, $a0, $6e, $3e, $80
+}
+SFindDevBase(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $1b, $a0, $6e, $3e, $80
+}
+SFindBigDevBase(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $1c, $a0, $6e, $3e, $80
+}
+SGetSRsrcPtr(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $1d, $a0, $6e, $3e, $80
+}
+InitSDeclMgr(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $20, $a0, $6e, $3e, $80
+}
+SPrimaryInit(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $21, $a0, $6e, $3e, $80
+}
+SCardChanged(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $22, $a0, $6e, $3e, $80
+}
+SExec(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $23, $a0, $6e, $3e, $80
+}
+SOffsetData(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $24, $a0, $6e, $3e, $80
+}
+SInitPRAMRecs(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $25, $a0, $6e, $3e, $80
+}
+SReadPBSize(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $26, $a0, $6e, $3e, $80
+}
+SCalcStep(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $28, $a0, $6e, $3e, $80
+}
+SInitSRsrcTable(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $29, $a0, $6e, $3e, $80
+}
+SSearchSRT(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $2a, $a0, $6e, $3e, $80
+}
+SUpdateSRT(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $2b, $a0, $6e, $3e, $80
+}
+SCalcSPointer(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $2c, $a0, $6e, $3e, $80
+}
+SGetDriver(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $2d, $a0, $6e, $3e, $80
+}
+SPtrToSlot(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $2e, $a0, $6e, $3e, $80
+}
+SFindSInfoRecPtr(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $2f, $a0, $6e, $3e, $80
+}
+SFindSRsrcPtr(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $30, $a0, $6e, $3e, $80
+}
+SDeleteSRTRec(spBlkPtr: SpBlockPtr): OSErr {
+	$20, $5f, $70, $31, $a0, $6e, $3e, $80
+}
+
+SIntInstall(sIntQElemPtr: SQElemPtr, theSlot: Integer): OSErr {
+	$30, $1f, $20, $5f, $a0, $75, $3e, $80
+}
+SIntRemove(sIntQElemPtr: SQElemPtr, theSlot: Integer): OSErr {
+	$30, $1f, $20, $5f, $a0, $76, $3e, $80
+}
+
+SpBlock struct {
+	spResult: LongInt;
+	spsPointer: Ptr;
+	spSize: LongInt;
+	spOffsetData: LongInt;
+	spIOFileName: Ptr;
+	spsExecPBlk: Ptr;
+	spParamData: SPParamData;
+	spMisc: LongInt;
+	spReserved: LongInt;
+	spIOReserved: Integer;
+	spRefNum: Integer;
+	spCategory: Integer;
+	spCType: Integer;
+	spDrvrSW: Integer;
+	spDrvrHW: Integer;
+	spTBMask: SignedByte;
+	spSlot: SignedByte;
+	spID: SignedByte;
+	spExtDev: SignedByte;
+	spHwDev: SignedByte;
+	spByteLanes: SignedByte;
+	spFlags: SignedByte;
+	spKey: SignedByte;
+}
+SpBlockPtr = ^SpBlock;
+
+SPParamData enum <LongInt> {
+	fAll = 1,
+	fOneSlot = 2,
+	fNext = 4,
+}
+
+SlotIntQElement struct {
+	sqLink: Ptr;
+	sqType: Integer;
+	sqPrio: Integer;
+	sqAddr: ProcPtr;
+	sqParm: LongInt;
+}
+SQElemPtr = ^SlotIntQElement;
+

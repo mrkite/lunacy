@@ -10,7 +10,9 @@ use crate::plugins::register_plugins;
 use eframe::egui;
 use lunacy::Lunacy;
 
+mod cpus;
 mod lunacy;
+mod platforms;
 mod plugins;
 mod widgets;
 

@@ -1,0 +1,82 @@
+MidiClockFunc enum<u16> {
+	miSetClock,
+	miStartClock,
+	miStopClock,
+	miSetFreq,
+}
+
+MidiControlCode enum<u16> {
+	miSetRTVec,
+	miSetErrVec,
+	miSetInBuf,
+	miSetOutBuf,
+	miStartInput,
+	miStartOutput,
+	miStopInput,
+	miStopOutput,
+	miFlushInput,
+	miFlushOutput,
+	miFlushPacket,
+	miWaitOutput,
+	miSetInMode,
+	miSetOutMode,
+	miClrNotePad,
+	miSetDelay,
+	miOutputStat,
+	miIgnoreSysEx,
+}
+
+MidiDeviceFunc enum<u16> {
+	miSelectDrvr,
+	miLoadDrvr,
+	miUnloadDrvr,
+}
+
+MidiInfoFunc enum<u16> {
+	miNextPktLen,
+	miInputChars,
+	miOutputChars,
+	miMaxInChars,
+	miMaxOutChars,
+	miRecordAddr,
+	miPlayAddr,
+	miClockValue,
+	miClockFreq,
+}
+
+MidiBootInit() {
+	$a2, $20, $01, $22, $00, $00, $e1
+}
+MidiStartUp(userID: i16, directPages: i16) {
+	$a2, $20, $02, $22, $00, $00, $e1
+}
+MidiShutDown() {
+	$a2, $20, $03, $22, $00, $00, $e1
+}
+MidiVersion(): i16 {
+	$a2, $20, $04, $22, $00, $00, $e1
+}
+MidiReset() {
+	$a2, $20, $05, $22, $00, $00, $e1
+}
+MidiStatus(): bool {
+	$a2, $20, $06, $22, $00, $00, $e1
+}
+MidiControl(controlCode: MidiControlCode) {
+	$a2, $20, $09, $22, $00, $00, $e1
+}
+MidiDevice(funcNum: MidiDeviceFunc, driverInfo: Ptr) {
+	$a2, $20, $0a, $22, $00, $00, $e1
+}
+MidiClock(funcNum: MidiClockFunc, arg: i32) {
+	$a2, $20, $0b, $22, $00, $00, $e1
+}
+MidiInfo(funcNum: MidiInfoFunc): i32 {
+	$a2, $20, $0c, $22, $00, $00, $e1
+}
+MidiReadPacket(arrayAddr: Ptr, arraySize: i16): i16 {
+	$a2, $20, $0d, $22, $00, $00, $e1
+}
+MidiWritePacket(arrayAddr: Ptr): i16 {
+	$a2, $20, $0e, $22, $00, $00, $e1
+}

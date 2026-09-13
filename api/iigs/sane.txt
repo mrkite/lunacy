@@ -1,0 +1,24 @@
+SANEStartUp(dPgaeAddr: i16) {
+	$a2, $0a, $02, $22, $00, $00, $e1
+}
+SANEShutDown() {
+	$a2, $0a, $03, $22, $00, $00, $e1
+}
+SANEVersion(): i16 {
+	$a2, $0a, $04, $22, $00, $00, $e1
+}
+SANEReset() {
+	$a2, $0a, $05, $22, $00, $00, $e1
+}
+SANEStatus(): bool {
+	$a2, $0a, $06, $22, $00, $00, $e1
+}
+SANEFP816() {
+	$a2, $0a, $09, $22, $00, $00, $e1
+}
+SANEDecStr816() {
+	$a2, $0a, $0a, $22, $00, $00, $e1
+}
+SANEElems816() {
+	$a2, $0a, $0b, $22, $00, $00, $e1
+}

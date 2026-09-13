@@ -1,0 +1,121 @@
+LActivate(act: Boolean, lHandle: ListHandle) {
+	$42, $67, $a9, $e7
+}
+LAddColumn(count: Integer, colNum: Integer, lHandle: ListHandle): Integer {
+	$3f, $3c, $00, $04, $a9, $e7
+}
+LAddRow(count: Integer, rowNum: Integer, lHandle: ListHandle): Integer {
+	$3f, $3c, $00, $08, $a9, $e7
+}
+LAddToCell(dataPtr: Ptr, dataLen: Integer, theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $0c, $a9, $e7
+}
+LAutoScroll(lHandle: ListHandle) {
+	$3f, $3c, $00, $10, $a9, $e7
+}
+LCellSize(cSize: Point, lHandle: ListHandle) {
+	$3f, $3c, $00, $14, $a9, $e7
+}
+LClick(pt: Point, modifiers: Integer, lHandle: ListHandle): Boolean {
+	$3f, $3c, $00, $18, $a9, $e7
+}
+LClrCell(theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $1c, $a9, $e7
+}
+LDelColumn(count: Integer, colNum: Integer, lHandle: ListHandle) {
+	$3f, $3c, $00, $20, $a9, $e7
+}
+LDelRow(count: Integer, rowNum: Integer, lHandle: ListHandle) {
+	$3f, $3c, $00, $24, $a9, $e7
+}
+LDispose(lHandle: ListHandle) {
+	$3f, $3c, $00, $28, $a9, $e7
+}
+LSetDrawingMode(drawIt: Boolean, lHandle: ListHandle) {
+	$3f, $3c, $00, $2c, $a9, $e7
+}
+LDrwa(theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $30, $a9, $e7
+}
+LGetCellDataLocation(offset: ^Integer, len: ^Integer, theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $34, $a9, $e7
+}
+LGetCell(dataPtr: Ptr, dataLen: ^Integer, theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $38, $a9, $e7
+}
+LGetSelect(next: Boolean, theCell: ^Cell, lHandle: ListHandle): Boolean {
+	$3f, $3c, $00, $3c, $a9, $e7
+}
+LLastClick(lHandle: ListHandle): Cell {
+	$3f, $3c, $00, $40, $a9, $e7
+}
+LNew(rView: ^Rect, dataBounds: ^Rect, cSize: Point, theProc: Integer, theWindow: WindowPtr, drawIt: Boolean, hasGrow: Boolean, scrollHoriz: Boolean, scrollVert: Boolean): ListHandle {
+	$3f, $3c, $00, $44, $a9, $e7
+}
+LNextCell(hNext: Boolean, vNext: Boolean, theCell: ^Cell, lHandle: ListHandle): Boolean {
+	$3f, $3c, $00, $48, $a9, $e7
+}
+LRect(cellRect: ^Rect, theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $4c, $a9, $e7
+}
+LScroll(dCols: Integer, dRows: Integer, lHandle: ListHandle) {
+	$3f, $3c, $00, $50, $a9, $e7
+}
+LSearch(dataPtr: Ptr, dataLen: Integer, searchProc: Ptr, theCell: ^Cell, lHandle: ListHandle): Boolean {
+	$3f, $3c, $00, $54, $a9, $e7
+}
+LSetCell(dataPtr: Ptr, dataLen: Integer, theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $58, $a9, $e7
+}
+LSetSelect(setIt: Boolean, theCell: Cell, lHandle: ListHandle) {
+	$3f, $3c, $00, $5c, $a9, $e7
+}
+LSize(listWidth: Integer, listHeight: Integer, lHandle: ListHandle) {
+	$3f, $3c, $00, $60, $a9, $e7
+}
+LUpdate(theRgn: RgnHandle, lHandle: ListHandle) {
+	$3f, $3c, $00, $64, $a9, $e7
+}
+
+ListRec struct {
+	rView: Rect;
+	port: GrafPtr;
+	indent: Point;
+	cellSize: Point;
+	visible: Rect;
+	vScroll: ControlHandle;
+	hScroll: ControlHandle;
+	selFlags: ListSelFlags;
+	lActive: Boolean;
+	lReserved: SignedByte;
+	listFlags: SignedByte;
+	clikTime: LongInt;
+	clikLoc: Point;
+	mouseLoc: Point;
+	lClikLoop: Ptr;
+	lastClick: Cell;
+	refCon: LongInt;
+	listDefProc: Handle;
+	userHandle: Handle;
+	dataBounds: Rect;
+	cells: DataHandle;
+	maxIndex: Integer;
+	cellArray: Integer[];
+}
+ListPtr = ^ListRec;
+ListHandle = ^ListPtr;
+
+ListSelFlags enum<SignedByte> {
+	lOnlyOne = -128,
+	lExtendDrag = 64,
+	lNoDisjoint = 32,
+	lNoExtend = 16,
+	lNoRect = 8,
+	lUseSense = 4,
+	lNoNilHilite = 2,
+}
+
+DataArray = Char[32000];
+DataPtr = ^DataArray;
+DataHandle = ^DataPtr;
+Cell = Point;

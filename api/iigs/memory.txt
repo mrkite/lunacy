@@ -1,0 +1,119 @@
+HandleAttr enum<u16> {
+	attrNoPurge = 0,
+	attrBank = 1,
+	attrAddr = 2,
+	attrPage = 4,
+	attrNoSpec = 8,
+	attrNoCross = $10,
+	attrPurge1 = $100,
+	attrPurge2 = $200,
+	attrPurge3 = $400,
+	attrPurge = $300,
+	attrHandle = $1000,
+	attrSystem = $2000,
+	attrFixed = $4000,
+	attrLocked = $8000,
+}
+
+MMBootInit() {
+	$a2, $02, $01, $22, $00, $00, $e1
+}
+MMStartUp(): i16 {
+	$a2, $02, $02, $22, $00, $00, $e1
+}
+MMShutDown(userID: i16) {
+	$a2, $02, $03, $22, $00, $00, $e1
+}
+MMVersion(): i16 {
+	$a2, $02, $04, $22, $00, $00, $e1
+}
+MMReset() {
+	$a2, $02, $05, $22, $00, $00, $e1
+}
+MMStatus(): bool {
+	$a2, $02, $06, $22, $00, $00, $e1
+}
+NewHandle(blockSize: i32, userID: i16, attributes: HandleAttr, locationPtr: Ptr): Handle {
+	$a2, $02, $09, $22, $00, $00, $e1
+}
+ReallocHandle(blockSize: i32, userID: i16, attributes: HandleAttr, locationPtr: Ptr, theHandle: Handle) {
+	$a2, $02, $0a, $22, $00, $00, $e1
+}
+RestoreHandle(theHandle: Handle) {
+	$a2, $02, $0b, $22, $00, $00, $e1
+}
+AddToOOMQueue(headerPtr: Ptr) {
+	$a2, $02, $0c, $22, $00, $00, $e1
+}
+DeleteFromOOMQueue(headerPtr: Ptr) {
+	$a2, $02, $0d, $22, $00, $00, $e1
+}
+DisposeHandle(theHandle: Handle) {
+	$a2, $02, $10, $22, $00, $00, $e1
+}
+DisposeAll(userID: i16) {
+	$a2, $02, $11, $22, $00, $00, $e1
+}
+PurgeHandle(theHandle: Handle) {
+	$a2, $02, $12, $22, $00, $00, $e1
+}
+PurgeAll(userID: i16) {
+	$a2, $02, $13, $22, $00, $00, $e1
+}
+GetHandleSize(theHandle: Handle): i32 {
+	$a2, $02, $18, $22, $00, $00, $e1
+}
+SetHandleSize(newSize: i32, theHandle: Handle) {
+	$a2, $02, $19, $22, $00, $00, $e1
+}
+FindHandle(locationPtr: Ptr): Handle {
+	$a2, $02, $1a, $22, $00, $00, $e1
+}
+FreeMem(): i32 {
+	$a2, $02, $1b, $22, $00, $00, $e1
+}
+MaxBlock(): i32 {
+	$a2, $02, $1c, $22, $00, $00, $e1
+}
+TotalMem(): i32 {
+	$a2, $02, $1d, $22, $00, $00, $e1
+}
+CheckHandle(theHandle: Handle) {
+	$a2, $02, $1e, $22, $00, $00, $e1
+}
+CompactMem() {
+	$a2, $02, $1f, $22, $00, $00, $e1
+}
+HLock(theHandle: Handle) {
+	$a2, $02, $20, $22, $00, $00, $e1
+}
+HLockAll(userID: i16) {
+	$a2, $02, $21, $22, $00, $00, $e1
+}
+HUnlock(theHandle: Handle) {
+	$a2, $02, $22, $22, $00, $00, $e1
+}
+HUnlockAll(userID: i16) {
+	$a2, $02, $23, $22, $00, $00, $e1
+}
+SetPurge(newPurgeLevel: i16, theHandle: Handle) {
+	$a2, $02, $24, $22, $00, $00, $e1
+}
+SetPurgeAll(newPurgeLevel: i16, userID: i16) {
+	$a2, $02, $25, $22, $00, $00, $e1
+}
+PtrToHand(sourcePtr: Ptr, destHandle: Handle, count: i32) {
+	$a2, $02, $28, $22, $00, $00, $e1
+}
+HandToPtr(sourceHandle: Handle, destPtr: Ptr, count: i32) {
+	$a2, $02, $29, $22, $00, $00, $e1
+}
+HandToHand(sourceHandle: Handle, destHandle: Handle, count: i32) {
+	$a2, $02, $2a, $22, $00, $00, $e1
+}
+BlockMove(srcPtr: Ptr, dstPtr: Ptr, count: i32) {
+	$a2, $02, $2b, $22, $00, $00, $e1
+}
+RealFreeMem(): i32 {
+	$a2, $02, $2f, $22, $00, $00, $e1
+}

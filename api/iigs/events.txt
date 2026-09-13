@@ -1,0 +1,133 @@
+EventCode enum<u16> {
+	nullEvt,
+	mouseDownEvt,
+	mouseUpEvt,
+	keyDownEvt,
+	autoKeyEvt,
+	updateEvt,
+	activateEvt = 8,
+	switchEvt,
+	deskAccEvt,
+	driverEvt,
+	app1Evt,
+	app2Evt,
+	app3Evt,
+	app4Evt,
+}
+
+EventMask enum<u16> {
+	mDownMask = 2,
+	mUpMask = $4,
+	keyDownMask = $8,
+	autoKeyMask = $20,
+	updateMask = $40,
+	activeMask = $100,
+	switchMask = $200,
+	deskAccMask = $400,
+	driverMask = $800,
+	app1Mask = $1000,
+	app2Mask = $2000,
+	app3Mask = $4000,
+	app4Mask = $8000,
+	everyEvent = $ffff,
+}
+
+Modifiers enum<u16> {
+	activeFlag = 1,
+	changeFlag = 2,
+	btn1State = $40,
+	btn0State = $80,
+	appleKey = $100,
+	shiftKey = $200,
+	capsLock = $400,
+	optionKey = $800,
+	controlKey = $1000,
+	keyPad = $2000,
+}
+
+EventRecord struct {
+	what: EventCode;
+	message: u32;
+	when: u32;
+	where: Point;
+	modifiers: Modifiers;
+}
+
+EMBootInit() {
+	$a2, $06, $01, $22, $00, $00, $e1
+}
+EMStartUp(dPageAddr: i16, queueSize: i16, xMinClamp: i16, xMaxClamp: i16, yMinClamp: i16, yMaxClamp: i16, userID: i16) {
+	$a2, $06, $02, $22, $00, $00, $e1
+}
+EMShutDown() {
+	$a2, $06, $03, $22, $00, $00, $e1
+}
+EMVersion(): i16 {
+	$a2, $06, $04, $22, $00, $00, $e1
+}
+EMReset() {
+	$a2, $06, $05, $22, $00, $00, $e1
+}
+EMStatus(): bool {
+	$a2, $06, $06, $22, $00, $00, $e1
+}
+DoWindows(): i16 {
+	$a2, $06, $09, $22, $00, $00, $e1
+}
+GetNextEvent(eventMask: EventMask, eventPtr: ^EventRecord): bool {
+	$a2, $06, $0a, $22, $00, $00, $e1
+}
+EventAvail(eventMask: EventMask, eventPtr: ^EventRecord): bool {
+	$a2, $06, $0b, $22, $00, $00, $e1
+}
+GetMouse(mouseLocPtr: ^Point) {
+	$a2, $06, $0c, $22, $00, $00, $e1
+}
+Button(buttonNum: i16): bool {
+	$a2, $06, $0d, $22, $00, $00, $e1
+}
+StillDown(buttonNum: i16): bool {
+	$a2, $06, $0e, $22, $00, $00, $e1
+}
+WaitMouseUp(buttonNum: i16): bool {
+	$a2, $06, $0f, $22, $00, $00, $e1
+}
+TickCount(): i32 {
+	$a2, $06, $10, $22, $00, $00, $e1
+}
+GetDblTime(): i32 {
+	$a2, $06, $11, $22, $00, $00, $e1
+}
+GetCaretTime(): i32 {
+	$a2, $06, $12, $22, $00, $00, $e1
+}
+SetSwitch() {
+	$a2, $06, $13, $22, $00, $00, $e1
+}
+PostEvent(eventCode: EventCode, eventMsg: i32): i16 {
+	$a2, $06, $14, $22, $00, $00, $e1
+}
+FlushEvents(eventMask: EventMask, stopMask: EventMask): i16 {
+	$a2, $06, $15, $22, $00, $00, $e1
+}
+GetOSEvent(eventMask: EventMask, eventPtr: ^EventRecord): bool {
+	$a2, $06, $16, $22, $00, $00, $e1
+}
+OSEventAvail(eventMask: EventMask, eventPtr: ^EventRecord): bool {
+	$a2, $06, $17, $22, $00, $00, $e1
+}
+SetEventMask(sysEventMask: EventMask) {
+	$a2, $06, $18, $22, $00, $00, $e1
+}
+FakeMouse(changedFlag: i16, modLatch: i16, xPos: i16, yPos: i16, ButtonStatus: i16) {
+	$a2, $06, $19, $22, $00, $00, $e1
+}
+SetAutoKeyLimit(newLimit: i16) {
+	$a2, $06, $1a, $22, $00, $00, $e1
+}
+GetKeyTranslation(): i16 {
+	$a2, $06, $1b, $22, $00, $00, $e1
+}
+SetKeyTranslation(kTransID: i16) {
+	$a2, $06, $1c, $22, $00, $00, $e1
+}

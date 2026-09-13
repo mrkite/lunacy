@@ -1,0 +1,136 @@
+VideoSelector enum<u16> {
+	vdVideoOverlay = 1,
+	vdFrameGrabber,
+	vdInVStandards,
+	vdOutVStandards,
+	vdKeyDissLevels,
+	vdNKeyDissLevels,
+	vdAdjSideEffect,
+	vdKeyColorBits,
+	vdInHueAdj,
+	vdInSatAdj,
+	vdInContrastAdj,
+	vdInBrightAdj,
+	vdOutSetup,
+	vdOutChromaFilter,
+	vdOutExtBlank,
+	vdKeyEnhDiss,
+	vdLineInterrupt,
+	vdGGBus,
+	vdDualOut,
+	vdTextMonoOver,
+	vdGenlock = $32,
+	vdVideoDetect,
+	vdGenlocked,
+	vdAdjInc = $50,
+	vdAdjDec,
+	vdAdjSvae,
+	vdKColorEnable = $64,
+	vdVerticalBlank = $82,
+	vdMainPageLin = $c8,
+	vdRAMPageSel,
+	vdVBLInterrupt,
+	vdINterlaceMode,
+	vdClearVBLInt,
+	vdClearLineInt,
+	vdDisplayField,
+	vdVLBIntRequest,
+	vdLineIntRequest,
+}
+
+VideoStandard enum<u16> {
+	vdNone = 0,
+	vdNTSC = 1,
+	vdPAL = 2,
+	vdSECAM = 4,
+	vdSNTSC = 8,
+	vdSPAL = $10,
+	vdSSECAM = $20,
+	vdRGB60 = $40,
+	vdRGB50 = $80,
+}
+
+VDBootInit() {
+	$a2, $21, $01, $22, $00, $00, $e1
+}
+VDStartUp() {
+	$a2, $21, $02, $22, $00, $00, $e1
+}
+VDShutdown() {
+	$a2, $21, $03, $22, $00, $00, $e1
+}
+VDVersion(): i16 {
+	$a2, $21, $04, $22, $00, $00, $e1
+}
+VDReset() {
+	$a2, $21, $05, $22, $00, $00, $e1
+}
+VDStatus(): bool {
+	$a2, $21, $06, $22, $00, $00, $e1
+}
+VDInStatus(videoSelector: VideoSelector): i16 {
+	$a2, $21, $09, $22, $00, $00, $e1
+}
+VDInSetStd(inputStandard: VideoStandard) {
+	$a2, $21, $0a, $22, $00, $00, $e1
+}
+VDInGetStd(): VideoStandard {
+	$a2, $21, $0b, $22, $00, $00, $e1
+}
+VDInConvAdj(videoSelector: VideoSelector, adjustFunction: i16) {
+	$a2, $21, $0c, $22, $00, $00, $e1
+}
+VDKeyControl(videoSelector: VideoSelector, keyerCtlValue: i16) {
+	$a2, $21, $0d, $22, $00, $00, $e1
+}
+VDKeyStatus(videoSelector: VideoSelector): i16 {
+	$a2, $21, $0e, $22, $00, $00, $e1
+}
+VDKeySetKCol(redValue: i16, greenValue: i16, blueValue: i16) {
+	$a2, $21, $0f, $22, $00, $00, $e1
+}
+VDKeyGetRCol(): i16 {
+	$a2, $21, $10, $22, $00, $00, $e1
+}
+VDKeyGetGCol(): i16 {
+	$a2, $21, $11, $22, $00, $00, $e1
+}
+VDKeyGetBCol(): i16 {
+	$a2, $21, $12, $22, $00, $00, $e1
+}
+VDKeySetKDiss(kDissolve: i16) {
+	$a2, $21, $13, $22, $00, $00, $e1
+}
+VDKeyGetKDiss(): i16 {
+	$a2, $21, $14, $22, $00, $00, $e1
+}
+VDKeySetNKDiss(nonKeyDissolve: i16) {
+	$a2, $21, $15, $22, $00, $00, $e1
+}
+VDKeyGetNKDiss(): i16 {
+	$a2, $21, $16, $22, $00, $00, $e1
+}
+VDOutSetStd(outStandard: VideoStandard) {
+	$a2, $21, $17, $22, $00, $00, $e1
+}
+VDOutGetStd(): VideoStandard {
+	$a2, $21, $18, $22, $00, $00, $e1
+}
+VDOutControl(videoSelector: VideoSelector, outCtlValue: i16) {
+	$a2, $21, $19, $22, $00, $00, $e1
+}
+VDOutStatus(videoSelector: VideoSelector): i16 {
+	$a2, $21, $1a, $22, $00, $00, $e1
+}
+VDGetFeatures(videoSelector: VideoSelector): i16 {
+	$a2, $21, $1b, $22, $00, $00, $e1
+}
+VDInControl(videoSelector: VideoSelector, inputCtlValue: i16) {
+	$a2, $21, $1c, $22, $00, $00, $e1
+}
+VDGGControl(videoSelector: VideoSelector, ggCtlValue: i16) {
+	$a2, $21, $1d, $22, $00, $00, $e1
+}
+VDGGStatus(videoSelector: VideoSelector): i16 {
+	$a2, $21, $1e, $22, $00, $00, $e1
+}

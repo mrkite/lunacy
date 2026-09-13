@@ -1,0 +1,87 @@
+ShieldCursor(shieldRect: ^Rect, offsetPt: Point) {
+	$a8, $55
+}
+BitAnd(value1: LongInt, value2: LongInt): LongInt {
+	$a8, $58
+}
+BitXor(value1: LongInt, value2: LongInt): LongInt {
+	$a8, $59
+}
+BitNot(value1: LongInt): LongInt {
+	$a8, $5a
+}
+BitOr(value1: LongInt, value2: LongInt): LongInt {
+	$a8, $5b
+}
+BitShift(value: LongInt, count: Integer): LongInt {
+	$a8, $5c
+}
+BitTst(bytePtr: Ptr, bitNum: LongInt): Boolean {
+	$a8, $5d
+}
+BitSet(bytePtr: Ptr, bitNum: LongInt) {
+	$a8, $5e
+}
+BitClr(bytePtr: Ptr, bitNum: LongInt) {
+	$a8, $5f
+}
+LongMul(a: LongInt, b: LongInt, result: ^Int64Bit) {
+	$a8, $67
+}
+FixMul(a: Fixed, b: Fixed): Fixed {
+	$a8, $68
+}
+FixRatio(numer: Integer, denom: Integer): Fixed {
+	$a8, $69
+}
+HiWord(x: LongInt): Integer {
+	$a8, $6a
+}
+LoWord(x: LongInt): Integer {
+	$a8, $6b
+}
+FixRound(x: Fixed): Integer {
+	$a8, $6c
+}
+SlopeFromAngle(angle: Integer): Fixed {
+	$a8, $bc
+}
+AngleFromSlope(slope: Fixed): Integer {
+	$a8, $c4
+}
+PackBits(srcPtr: Ptr, dstPtr: ^Ptr, srcBytes: Integer) {
+	$a8, $cf
+}
+UnpackBits(srcPtr: Ptr, dstPtr: ^Ptr, dstBytes: Integer) {
+	$a8, $d0
+}
+
+PlotIcon(theRect: ^Rect, theIcon: Handle) {
+	$a9, $4b
+}
+DeltaPoint(ptA: Point, ptB: Point): LongInt {
+	$a9, $4f
+}
+
+GetPattern(patID: Integer): PatHandle {
+	$a9, $b8
+}
+GetCursor(cursorID: Integer): CursHandle {
+	$a9, $b9
+}
+
+GetIcon(iconID: Integer): Handle {
+	$a9, $bb
+}
+GetPicture(picID: Integer): PicHandle {
+	$a9, $bc
+}
+
+ScreenRes(scrnHRes: ^Integer, scrnVRes: ^Integer) {
+	$22, $5f, $32, $b8, $01, $02, $22, $5f, $32, $b8, $01, $04
+}
+
+Int64Bit struct {
+	hiLong: LongInt;
+	loLong: LongInt;
+}

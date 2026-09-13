@@ -1,0 +1,60 @@
+Smartport_Status(pb: i16) {
+	$20, $0d, $c5, $00, {pb}
+}
+Smartport_ReadBlock(pb: i16) {
+	$20, $0d, $c5, $01, {pb} 
+}
+Smartport_WriteBlock(pb: i16) {
+	$20, $0d, $c5, $02, {pb}
+}
+Smartport_Format(pb: i16) {
+	$20, $0d, $c5, $03, {pb}
+}
+Smartport_Control(pb: i16) {
+	$20, $0d, $c5, $04, {pb}
+}
+Smartport_Init(pb: i16) {
+	$20, $0d, $c5, $05, {pb}
+}
+Smartport_Open(pb: i16) {
+	$20, $0d, $c5, $06, {pb}
+}
+Smartport_Close(pb: i16) {
+	$20, $0d, $c5, $07, {pb}
+}
+Smartport_Read(pb: i16) {
+	$20, $0d, $c5, $08, {pb}
+}
+Smartport_Write(pb: i16) {
+	$20, $0d, $c5, $09, {pb}
+}
+Smartport_StatusExt(pb: i16) {
+	$20, $0d, $c5, $40, {pb}
+}
+Smartport_ReadBlockExt(pb: i16) {
+	$20, $0d, $c5, $41, {pb}
+}
+Smartport_WriteBlockExt(pb: i16) {
+	$20, $0d, $c5, $42, {pb}
+}
+Smartport_FormatExt(pb: i16) {
+	$20, $0d, $c5, $43, {pb}
+}
+Smartport_ControlExt(pb: i16) {
+	$20, $0d, $c5, $44, {pb}
+}
+Smartport_InitExt(pb: i16) {
+	$20, $0d, $c5, $45, {pb}
+}
+Smartport_OpenExt(pb: i16) {
+	$20, $0d, $c5, $46, {pb}
+}
+Smartport_CloseExt(pb: i16) {
+	$20, $0d, $c5, $47, {pb}
+}
+Smartport_ReadExt(pb: i16) {
+	$20, $0d, $c5, $48, {pb}
+}
+Smartport_WriteExt(pb: i16) {
+	$20, $0d, $c5, $49, {pb}
+}

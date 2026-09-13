@@ -1,0 +1,226 @@
+LLDControlVal enum<u16> {
+	kReset = 1,
+	kFormFeed = 2,
+	kLineFeed = 3,
+}
+
+PMType enum<u16> {
+	prImageWriter = 1,
+	prImageWriterLQ = 2,
+	prLaserWriter = 3,
+	prEpson = 4,
+}
+
+PMChars enum<u16> {
+	prBlackWhite = 1,
+	prColor = 2,
+}
+
+PrInfoRec struct {
+	iDev: u16;
+	iVRes: u16;
+	iHRes: u16;
+	rPgae: Rect;
+}
+
+PrStatusRec struct {
+	iTotPages: u16;
+	iCurPage: u16;
+	iTotCopies: u16;
+	iCurCopy: u16;
+	iTotBands: u16;
+	iCurBand: u16;
+	fPgDirty: u16;
+	fImaging: u16;
+	hPrint: PrRecHndl;
+	pPrPort: ^GrafPort;
+	hPic: Handle;
+}
+
+PrintErr enum<u16> {
+	pntrConFailed = $1308,
+	memFullErr = $ff80,
+	ioAbort = $ffe5,
+	prAbort = $0080,
+	missingDriver = $1301,
+	portNotOn = $1302,
+	noPrintRecord = $1303,
+	badLaserPrep = $1304,
+	badLPFile = $1305,
+	papConnNotOpen = $1306,
+	papReadWriteErr = $1307,
+	ptrConnFailed = $1308,
+	badLoadParam = $1309,
+	callNotSupported = $130a,
+	startUpAlreadyMde = $1321,
+	invalidCtlVal = $1322,
+}
+
+PMLoop enum<u8> {
+	bDraftLoop = 0,
+	bSpoolLoop = $80,
+}
+
+PrJobRec struct {
+	iFstPage: u16;
+	iLstPage: u16;
+	iCopies: u16;
+	bJDocLoop: PMLoop;
+	fFromUser: u8;
+	pIdleProc: WordProcPtr;
+	pFileName: Ptr;
+	iFileVol: u16;
+	bFileVers: u8;
+	bJobX: u8;
+}
+
+PrStyleRec struct {
+	wDev: u16;
+	interA: u16[3];
+	feed: u16;
+	paperType: u16;
+	crWidth: u16;
+	reduction: u16;
+	internB: u16;
+}
+
+PrRec struct {
+	prVersion: u16;
+	prInfo: PrInfoRec;
+	rPaper: Rect;
+	prStyl: PrStyleRec;
+	prInfoPT: u8[14];
+	prXInfo: u8[24];
+	prJob: PrJobRec;
+	printX: u8[38];
+	iReserved: u16;
+}
+PrRecHndl = ^^PrRec;
+
+PrPrinterSpecRec struct {
+	prPrinterType: PMType;
+	prCharacteristics: PMChars;
+}
+
+PMDriver enum<u16> {
+	bothDrivers = 0,
+	printerDriver = 1,
+	portDriver = 2,
+}
+
+PMOrientation enum<u16> {
+	prPortrait = 0,
+	prLandscape = 1,
+}
+
+PMBootInit() {
+	$a2, $13, $01, $22, $00, $00, $e1
+}
+PMStartUp(userID: i16, dPageAddr: i16) {
+	$a2, $13, $02, $22, $00, $00, $e1
+}
+PMShutDown() {
+	$a2, $13, $03, $22, $00, $00, $e1
+}
+PMVersion(): i16 {
+	$a2, $13, $04, $22, $00, $00, $e1
+}
+PMReset() {
+	$a2, $13, $05, $22, $00, $00, $e1
+}
+PMStatus(): bool {
+	$a2, $13, $06, $22, $00, $00, $e1
+}
+PrDefault(printRecordHandle: PrRecHndl) {
+	$a2, $13, $09, $22, $00, $00, $e1
+}
+PrValidate(printRecordHandle: PrRecHndl): bool {
+	$a2, $13, $0a, $22, $00, $00, $e1
+}
+PrStlDialog(printRecordHandle: PrRecHndl): bool {
+	$a2, $13, $0b, $22, $00, $00, $e1
+}
+PrJobDialog(printRecordHandle: PrRecHndl): bool {
+	$a2, $13, $0c, $22, $00, $00, $e1
+}
+PrPixelMap(srcLocPtr: ^LocInfo, srcRectPtr: ^Rect, colorFlag: i16) {
+	$a2, $13, $0d, $22, $00, $00, $e1
+}
+PrOpenDoc(printRecordHandle: PrRecHndl, printGrafPort: ^GrafPort): ^GrafPort {
+	$a2, $13, $0e, $22, $00, $00, $e1
+}
+PrCloseDoc(printGrafPortPtr: ^GrafPort) {
+	$a2, $13, $0f, $22, $00, $00, $e1
+}
+PrOpenPage(printGrafPortPtr: ^GrafPort, pageFramePtr: ^Rect) {
+	$a2, $13, $10, $22, $00, $00, $e1
+}
+PrClosePage(printGrafPortPtr: ^GrafPort) {
+	$a2, $13, $11, $22, $00, $00, $e1
+}
+PrPicFile(printRecordHandle: PrRecHndl, printGrafPortPtr: ^GrafPort, statusRecPtr: ^PrStatusRec) {
+	$a2, $13, $12, $22, $00, $00, $e1
+}
+PrError(): PrintErr {
+	$a2, $13, $14, $22, $00, $00, $e1
+}
+PrSetError(errorNumber: PrintErr) {
+	$a2, $13, $15, $22, $00, $00, $e1
+}
+PrChoosePrinter(): bool {
+	$a2, $13, $16, $22, $00, $00, $e1
+}
+PrGetPrinterSpecs(): PrPrinterSpecRec {
+	$a2, $13, $18, $22, $00, $00, $e1
+}
+LLDStartUp(dPageAddr: i16, userID: i16) {
+	$a2, $13, $19, $22, $00, $00, $e1
+}
+LLDShutDown(userID: i16) {
+	$a2, $13, $1a, $22, $00, $00, $e1
+}
+LLDControl(printerControlValue: LLDControlVal) {
+	$a2, $13, $1b, $22, $00, $00, $e1
+}
+LLDBitMap(bitMapPtr: Ptr, rectPtr: ^Rect, userID: i16) {
+	$a2, $13, $1c, $22, $00, $00, $e1
+}
+LLDText(textPtr: Ptr, textLength: i16, userID: i16) {
+	$a2, $13, $1d, $22, $00, $00, $e1
+}
+PrDriverVer(): i16 {
+	$a2, $13, $23, $22, $00, $00, $e1
+}
+PrPortVer(): i16 {
+	$a2, $13, $24, $22, $00, $00, $e1
+}
+PrGetZoneName(zoneNamePtr: ^String255) {
+	$a2, $13, $25, $22, $00, $00, $e1
+}
+PrGetPrinterDvrName(dvrNamePtr: ^String255) {
+	$a2, $13, $28, $22, $00, $00, $e1
+}
+PrGetPortDvrname(dvrNamePtR: ^String255) {
+	$a2, $13, $29, $22, $00, $00, $e1
+}
+PrGetUserName(userNamePtr: ^String255) {
+	$a2, $13, $2a, $22, $00, $00, $e1
+}
+PrGetNetworkName(networkNamePtr: ^String255) {
+	$a2, $13, $2b, $22, $00, $00, $e1
+}
+PMUnloadDriver(whichDriver: PMDriver) {
+	$a2, $13, $34, $22, $00, $00, $e1
+}
+PMLoadDriver(whichDriver: PMDriver) {
+	$a2, $13, $35, $22, $00, $00, $e1
+}
+PrGetDocName(): StringPtr {
+	$a2, $13, $36, $22, $00, $00, $e1
+}
+PrSetDocName(docNamePtr: StringPtr) {
+	$a2, $13, $37, $22, $00, $00, $e1
+}
+PrGetPgOrientation(prRecordHandle: PrRecHndl): PMOrientation {
+	$a2, $13, $38, $22, $00, $00, $e1
+}

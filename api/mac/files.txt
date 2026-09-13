@@ -1,0 +1,965 @@
+
+PBOpenSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $00, $3e, $80
+}
+PBCloseSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $01, $3e, $80
+}
+PBReadSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $02, $3e, $80
+}
+PBWriteSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $03, $3e, $80
+}
+PBControlSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $04, $3e, $80
+}
+PBStatusSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $05, $3e, $80
+}
+PBKillIOSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $06, $3e, $80
+}
+PBGetVInfoSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $07, $3e, $80
+}
+PBCreateSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $08, $3e, $80
+}
+PBDeleteSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $09, $3e, $80
+}
+PBOpenRFSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $0a, $3e, $80
+}
+PBRenameSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $0b, $3e, $80
+}
+PBGetFInfoSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $0c, $3e, $80
+}
+PBSetFInfoSync(paramBlock: ParmBlkPtr): OSErr {
+	$25, $0f, $a0, $0d, $3e, $80
+}
+PBUnmountVolSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $0e, $3e, $80
+}
+PBMountVolSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $0f, $3e, $80
+}
+PBAllocateSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $10, $3e, $80
+}
+PBGetEOFSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $11, $3e, $80
+}
+PBSetEOFSync(praamBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $12, $3e, $80
+}
+PBFlushVolSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $13, $3e, $80
+}
+PBGetVolSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $14, $3e, $80
+}
+PBSetVolSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $15, $3e, $80
+}
+FInitQueue() {
+	$a0, $16
+}
+PBEject(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $17, $3e, $80
+}
+PBGetFPosSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $18, $3e, $80
+}
+PBSetFLockSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $41, $3e, $80
+}
+PBRstFLockSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $42, $3e, $80
+}
+PBSetFVersSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $43, $3e, $80
+}
+PBSetFPosSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $44, $3e, $80
+}
+PBFlushFileSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a0, $45, $3e, $80
+}
+
+PBOpenDFSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $1a, $a0, $60, $3e, $80
+}
+PBDTOpenInform(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2e, $a0, $60, $3e, $80
+}
+PBDTDeleteSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2f, $a0, $60, $3e, $80
+}
+
+PBHOpenSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $00, $3e, $80
+}
+PBHGetVInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $07, $3e, $80
+}
+PBHCreateSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $08, $3e, $80
+}
+PBHDeleteSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $09, $3e, $80
+}
+PBHOpenRFSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $0a, $3e, $80
+}
+PBHRenameSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $0b, $3e, $80
+}
+PBHGetFInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $0c, $3e, $80
+}
+PBHSetFInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $0d, $3e, $80
+}
+HUnmountVol() {
+	$a2, $0e
+}
+PBAllocContigSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a2, $10, $3e, $80
+}
+PBHGetVolSync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $a2, $14, $3e, $80
+}
+PBHSetVolSync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $a2, $15, $3e, $80
+}
+PBHSetFLockSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $41, $3e, $80
+}
+PBHRstFLockSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a2, $42, $3e, $80
+}
+
+PBOpenWDSync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $70, $01, $a2, $60, $3e, $80
+}
+PBCloseWDSync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $70, $02, $a2, $60, $3e, $80
+}
+PBCatMoveSync(paramBlock: CMovePBPtr): OSErr {
+	$20, $5f, $70, $05, $a2, $60, $3e, $80
+}
+PBDirCreateSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $06, $a2, $60, $3e, $80
+}
+PBGetWDInfoSync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $70, $07, $a2, $60, $3e, $80
+}
+PBGetFCBInfoSync(paramBlock: FCBPBPtr): OSErr {
+	$20, $5f, $70, $08, $a2, $60, $3e, $80
+}
+PBGetCatInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $09, $a2, $60, $3e, $80
+}
+PBSetCatInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $0a, $a2, $60, $3e, $80
+}
+PBSetVInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $0b, $a2, $60, $3e, $80
+}
+PBLockRangeSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $10, $a2, $60, $3e, $80
+}
+PBUnlockRangeSync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $11, $a2, $60, $3e, $80
+}
+PBCreateFileIDRefSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $14, $a2, $60, $3e, $80
+}
+PBDeleteFileIDRefSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $15, $a2, $60, $3e, $80
+}
+PBResolveFileIDRefSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $16, $a2, $60, $3e, $80
+}
+PBExchangeFilesSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $17, $a2, $60, $3e, $80
+}
+PBCatSearchSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $18, $a2, $60, $3e, $80
+}
+PBHOpenDFSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $1a, $a2, $60, $3e, $80
+}
+PBMakeFSSpecSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $1b, $a2, $60, $3e, $80
+}
+PBDTGetPath(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $20, $a2, $60, $3e, $80
+}
+PBDTCloseDown(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $21, $a2, $60, $3e, $80
+}
+PBDTAddIconSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $22, $a2, $60, $3e, $80
+}
+PBDTGetIconSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $23, $a2, $60, $3e, $80
+}
+PBDTGetIconInfoSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $24, $a2, $60, $3e, $80
+}
+PBDTAddAPPLSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $25, $a2, $60, $3e, $80
+}
+PBDTRemoveAPPLSync(paramBlock :DTPBPtr): OSErr {
+	$20, $5f, $70, $26, $a2, $60, $3e, $80
+}
+PBDTGetAPPLSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $27, $a2, $60, $3e, $80
+}
+PBDTSetCommentSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $28, $a2, $60, $3e, $80
+}
+PBDTRemoveCommentSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $29, $a2, $60, $3e, $80
+}
+PBDTGetCommentSync(praamBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2a, $a2, $60, $3e, $80
+}
+PBDTFlushSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2b, $a2, $60, $3e, $80
+}
+PBDTResetSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2c, $a2, $60, $3e, $80
+}
+PBDTGetInfoSync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2d, $a2, $60, $3e, $80
+}
+PBHGetVolParmsSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $30, $a2, $60, $3e, $80
+}
+PBHGetLogInInfoSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $31, $a2, $60, $3e, $80
+}
+PBHGetDirAccessSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $32, $a2, $60, $3e, $80
+}
+PBHSetDirAccessSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $33, $a2, $60, $3e, $80
+}
+PBHMapIDSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $34, $a2, $60, $3e, $80
+}
+PBHMapNameSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $35, $a2, $60, $3e, $80
+}
+PBHCopyFileSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $36, $a2, $60, $3e, $80
+}
+PBHMoveRenameSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $37, $a2, $60, $3e, $80
+}
+PBHOpenDenySync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $38, $a2, $60, $3e, $80
+}
+PBHOpenRFDenySync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $39, $a2, $60, $3e, $80
+}
+PBGetVolMountInfoSize(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $3f, $a2, $60, $3e, $80
+}
+PBGetVolMouseInfo(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $40, $a2, $60, $3e, $80
+}
+PBVolumeMount(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $41, $a2, $60, $3e, $80
+}
+PBGetForeignPrivsSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $60, $a2, $60, $3e, $80
+}
+PBSetForeignPrivsSync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $61, $a2, $60, $3e, $80
+}
+
+PBOpenAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $00, $3e, $80
+}
+PBCloseAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $01, $3e, $80
+}
+PBReadAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $02, $3e, $80
+}
+PBWriteAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $03, $3e, $80
+}
+PBControlAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $04, $3e, $80
+}
+PBStatusAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $05, $3e, $80
+}
+PBKillIOAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $06, $3e, $80
+}
+PBGetVInfoAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $07, $3e, $80
+}
+PBCreateAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $08, $3e, $80
+}
+PBDeleteAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $09, $3e, $80
+}
+PBOpenRFAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $0a, $3e, $80
+}
+PBRenameAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $0b, $3e, $80
+}
+PBGetFInfoAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $0c, $3e, $80
+}
+PBSetFInfoAsync(paramBlock: ParmBlkPtr): OSErr {
+	$25, $0f, $a4, $0d, $3e, $80
+}
+PBUnmountVolAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $0e, $3e, $80
+}
+PBMountVolAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $0f, $3e, $80
+}
+PBAllocateAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $10, $3e, $80
+}
+PBGetEOFAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $11, $3e, $80
+}
+PBSetEOFAsync(praamBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $12, $3e, $80
+}
+PBFlushVolAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $13, $3e, $80
+}
+PBGetVolAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $14, $3e, $80
+}
+PBSetVolAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $15, $3e, $80
+}
+PBGetFPosAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $18, $3e, $80
+}
+PBSetFLockAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $41, $3e, $80
+}
+PBRstFLockAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $42, $3e, $80
+}
+PBSetFVersAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $43, $3e, $80
+}
+PBSetFPosAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $44, $3e, $80
+}
+PBFlushFileAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a4, $45, $3e, $80
+}
+
+PBOpenDFAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $1a, $a4, $60, $3e, $80
+}
+PBDTDeleteAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2f, $a4, $60, $3e, $80
+}
+
+PBHOpenAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $00, $3e, $80
+}
+PBHGetVInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $07, $3e, $80
+}
+PBHCreateAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $08, $3e, $80
+}
+PBHDeleteAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $09, $3e, $80
+}
+PBHOpenRFAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $0a, $3e, $80
+}
+PBHRenameAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $0b, $3e, $80
+}
+PBHGetFInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $0c, $3e, $80
+}
+PBHSetFInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $0d, $3e, $80
+}
+PBAllocContigAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $a6, $10, $3e, $80
+}
+PBHGetVolAsync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $a6, $14, $3e, $80
+}
+PBHSetVolAsync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $a6, $15, $3e, $80
+}
+PBHSetFLockAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $41, $3e, $80
+}
+PBHRstFLockAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $a6, $42, $3e, $80
+}
+
+PBOpenWDAsync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $70, $01, $a6, $60, $3e, $80
+}
+PBCloseWDAsync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $70, $02, $a6, $60, $3e, $80
+}
+PBCatMoveAsync(paramBlock: CMovePBPtr): OSErr {
+	$20, $5f, $70, $05, $a6, $60, $3e, $80
+}
+PBDirCreateAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $06, $a6, $60, $3e, $80
+}
+PBGetWDInfoAsync(paramBlock: WDPBPtr): OSErr {
+	$20, $5f, $70, $07, $a6, $60, $3e, $80
+}
+PBGetFCBInfoAsync(paramBlock: FCBPBPtr): OSErr {
+	$20, $5f, $70, $08, $a6, $60, $3e, $80
+}
+PBGetCatInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $09, $a6, $60, $3e, $80
+}
+PBSetCatInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $0a, $a6, $60, $3e, $80
+}
+PBSetVInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $0b, $a6, $60, $3e, $80
+}
+PBLockRangeAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $10, $a6, $60, $3e, $80
+}
+PBUnlockRangeAsync(paramBlock: ParmBlkPtr): OSErr {
+	$20, $5f, $70, $11, $a6, $60, $3e, $80
+}
+PBCreateFileIDRefAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $14, $a6, $60, $3e, $80
+}
+PBDeleteFileIDRefAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $15, $a6, $60, $3e, $80
+}
+PBResolveFileIDRefAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $16, $a6, $60, $3e, $80
+}
+PBExchangeFilesAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $17, $a6, $60, $3e, $80
+}
+PBCatSearchAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $18, $a6, $60, $3e, $80
+}
+PBHOpenDFAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $1a, $a6, $60, $3e, $80
+}
+PBMakeFSSpecAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $1b, $a6, $60, $3e, $80
+}
+PBDTAddIconAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $22, $a6, $60, $3e, $80
+}
+PBDTGetIconAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $23, $a6, $60, $3e, $80
+}
+PBDTGetIconInfoAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $24, $a6, $60, $3e, $80
+}
+PBDTAddAPPLAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $25, $a6, $60, $3e, $80
+}
+PBDTRemoveAPPLAsync(paramBlock :DTPBPtr): OSErr {
+	$20, $5f, $70, $26, $a6, $60, $3e, $80
+}
+PBDTGetAPPLAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $27, $a6, $60, $3e, $80
+}
+PBDTSetCommentAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $28, $a6, $60, $3e, $80
+}
+PBDTRemoveCommentAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $29, $a6, $60, $3e, $80
+}
+PBDTGetCommentAsync(praamBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2a, $a6, $60, $3e, $80
+}
+PBDTFlushAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2b, $a6, $60, $3e, $80
+}
+PBDTResetAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2c, $a6, $60, $3e, $80
+}
+PBDTGetInfoAsync(paramBlock: DTPBPtr): OSErr {
+	$20, $5f, $70, $2d, $a6, $60, $3e, $80
+}
+PBHGetVolParmsAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $30, $a6, $60, $3e, $80
+}
+PBHGetLogInInfoAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $31, $a6, $60, $3e, $80
+}
+PBHGetDirAccessAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $32, $a6, $60, $3e, $80
+}
+PBHSetDirAccessAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $33, $a6, $60, $3e, $80
+}
+PBHMapIDAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $34, $a6, $60, $3e, $80
+}
+PBHMapNameAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $35, $a6, $60, $3e, $80
+}
+PBHCopyFileAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $36, $a6, $60, $3e, $80
+}
+PBHMoveRenameAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $37, $a6, $60, $3e, $80
+}
+PBHOpenDenyAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $38, $a6, $60, $3e, $80
+}
+PBHOpenRFDenyAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $39, $a6, $60, $3e, $80
+}
+PBGetForeignPrivsAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $60, $a6, $60, $3e, $80
+}
+PBSetForeignPrivsAsync(paramBlock: HParmBlkPtr): OSErr {
+	$20, $5f, $70, $61, $a6, $60, $3e, $80
+}
+
+SFPutFile(where: Point, prompt: ^Str255, origName: ^Str255, dlgHook: DlgHookProcPtr, reply: ^SFReply) {
+	$3f, $3c, $00, $01, $a9, $ea
+}
+SFGetFile(where: Point, prompt: ^Str255, fileFilter: FileFilterProcPtr, numTypes: Integer, typeList: ^SFTypeList, dlgHook: DlgHookProcPtr, reply: ^SFReply) {
+	$3f, $3c, $00, $02, $a9, $ea
+}
+SFPPutFile(where: Point, prompt: ^Str255, origName: ^Str255, dlgHook: DlgHookProcPtr, reply: ^SFReply, dlgID: Integer, filterProc: ModalFilterProcPtr) {
+	$3f, $3c, $00, $03, $a9, $ea
+}
+SFPGetFile(where: Point, prompt: ^Str255, fileFilter: FileFilterProcPtr, numTypes: Integer, typeList: ^SFTypeList, dlgHook: DlgHookProcPtr, reply: ^SFReply, dlgID: Integer, filterProc: ModalFilterProcPtr) {
+	$3f, $3c, $00, $04, $a9, $ea
+}
+StandardPutFile(prompt: ^Str255, defaultname: ^Str255, reply: ^StandardFileReply) {
+	$3f, $3c, $00, $05, $a9, $ea
+}
+StandardGetFile(fileFilter: FileFilterProcPtr, numTypes: Integer, typeList: ^SFTypeList, reply: ^StandardFileReply) {
+	$3f, $3c, $00, $06, $a9, $ea
+}
+CustomPutFile(prompt: ^Str255, defaultName: ^Str255, reply: ^StandardFileReply, dlgID: Integer, where: Point, dlgHook: DlgHookYDProcPtr, filterProc: ModalFilterYDProcPtr, activeList: Ptr, activteProc: ActivateYDProcPtr, yourDataPtr: Ptr) {
+	$3f, $3c, $00, $07, $a9, $ea
+}
+CustomGetFile(fileFilter: FileFilterYDProcPtr, numTypes: Integer, typeList: ^SFTypeList, reply: ^StandardFileReply, dlgID: Integer, where: Point, dlgHook: DlgHookYDProcPtr, filterProc: ModalFilterYDProcPtr, activeList: Ptr, activateProc: ActivateYDProcPtr, yourDataPtr: Ptr) {
+	$3f, $3c, $00, $08, $a9, $ea
+}
+
+FSMakeFSSpec(vRefNum: Integer, dirID: LongInt, fileName: ^Str255, spec: ^FSSpec): OSErr {
+	$30, $3c, $00, $01, $aa, $52
+}
+FSpOpenDF(spec: ^FSSpec, permission: SignedByte, refNum: ^Integer): OSErr {
+	$30, $3c, $00, $02, $aa, $52
+}
+FSpOpenRF(spec: ^FSSpec, permission: SignedByte, refNum: ^Integer): OSErr {
+	$30, $3c, $00, $03, $aa, $52
+}
+FSpCreate(spec: ^FSSpec, creator: OSType, fileType: OSType, scriptTag: ScriptCode): OSErr {
+	$30, $3c, $00, $04, $aa, $52
+}
+FSpDirCreate(spec: ^FSSpec, scriptTag: ScriptCode, createdDirID: ^LongInt): OSErr {
+	$30, $3c, $00, $05, $aa, $52
+}
+FSpDelete(spec: ^FSSpec): OSErr {
+	$30, $3c, $00, $06, $aa, $52
+}
+FSpGetFInfo(spec: ^FSSpec, fndrInfo: ^FInfo): OSErr {
+	$30, $3c, $00, $07, $aa, $52
+}
+FSpSetFInfo(spec: ^FSSpec, fndrInfo: ^FInfo): OSErr {
+	$30, $3c, $00, $08, $aa, $52
+}
+FSpSetFLock(spec: ^FSSpec): OSErr {
+	$30, $3c, $00, $09, $aa, $52
+}
+FSpRstFLock(spec: ^FSSpec): OSErr {
+	$30, $3c, $00, $0a, $aa, $52
+}
+FSpRename(spec: ^FSSpec, newName: ^Str255): OSErr {
+	$30, $3c, $00, $0b, $aa, $52
+}
+FSpCatMove(source: ^FSSpec, dest: ^FSSpec): OSErr {
+	$30, $3c, $00, $0c, $aa, $52
+}
+FSpExchangeFiles(source: ^FSSpec, dest: ^FSSpec): OSErr {
+	$30, $3c, $00, $0f, $aa, $52
+}
+
+GetDrvQHdr(): QHdrPtr {
+	$2e, $bc, $00, $00, $03, $08
+}
+GetVCBQHdr(): QHdrPtr {
+	$2e, $bc, $00, $00, $03, $56
+}
+GetFSQHdr(): QHdrPtr {
+	$2e, $bc, $00, $00, $03, $60
+}
+
+FSSpec struct {
+	vRefNum: Integer;
+	parID: LongInt;
+	name: Str63;
+}
+FSSpecPtr = ^FSSpec;
+FSSpecArray = FSSpec[];
+FSSpecArrayPtr = ^FSSpecArray;
+
+FileFilterProcPtr(pb: CInfoPBPtr): Boolean;
+FileFilterYDProcPtr(pb: CInfoPBPtr, myDataPtr: Ptr): Boolean;
+DlgHookProcPtr(item: Integer, theDialog: DialogPtr): Integer;
+DlgHookYDProcPtr(item: Integer, theDialog: DialogPtr, myDataPtr: Ptr): Integer;
+ActivateYDProcPtr(theDialog: DialogPtr, itemNo: Integer, activating: Boolean, myDataPtr: Ptr);
+ModalFilterYDProcPtr(theDialog: DialogPtr, theEvent: ^EventRecord, itemHit: ^Integer, myDataPtr: Ptr): Boolean;
+
+SFTypeList = OSType[4];
+
+StandardFileReply struct {
+	sfGood: Boolean;
+	sfReplacing: Boolean;
+	sfType: OSType;
+	sfFile: FSSpec;
+	sfScript: ScriptCode;
+	sfFlags: Integer;
+	sfIsFolder: Boolean;
+	sfIsVolume: Boolean;
+	sfReserved1: LongInt;
+	sfReserved2: Integer;
+}
+
+SFReply struct {
+	good: Boolean;
+	copy: Boolean;
+	fType: OSType;
+	vRefNum: Integer;
+	version: Integer;
+	fName: Str63;
+}
+
+FXInfo struct {
+	fdIconID: Integer;
+	fdUnused: Integer[3];
+	fdScript: SignedByte;
+	fdXFlags: SignedByte;
+	fdComment: Integer;
+	fdPutAway: LongInt;
+}
+
+DInfo struct {
+	frRect: Rect;
+	frFlags: Integer;
+	frLocation: Point;
+	frView: Integer;
+}
+
+DXInfo struct {
+	frScroll: Point;
+	frOpenChain: LongInt;
+	frScript: SignedByte;
+	frXFlags: SignedByte;
+	frComment: Integer;
+	frPutAway: LongInt;
+}
+
+FCBPBRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	ioRefNum: Integer;
+	filler: Integer;
+	ioFCBIndex: Integer;
+	filler1: Integer;
+	ioFCBFlNm: LongInt;
+	ioFCBFlags: Integer;
+	ioFCBStBlk: Integer;
+	ioFCBEOF: LongInt;
+	ioFCBPLen: LongInt;
+	ioFCBCrPs: LongInt;
+	ioFCBVRefNum: Integer;
+	ioFCBClpSiz: LongInt;
+	ioFCBParID: LongInt;
+}
+FCBPBPtr = ^FCBPBRec;
+
+DTPBRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	ioDTRefNum: Integer;
+	ioIndex: Integer;
+	ioTagInfo: LongInt;
+	ioDTBuffer: Ptr;
+	ioDTReqCount: LongInt;
+	ioDTActCount: LongInt;
+	filler1: SignedByte;
+	ioIconType: SignedByte;
+	filler2: Integer;
+	ioDirID: LongInt;
+	ioFileCreator: OSType;
+	ioFileType: OSType;
+	ioFiller3: LongInt;
+	ioDTLgLen: LongInt;
+	ioDTPyLen: LongInt;
+	ioFiller4: Integer[14];
+	ioAPPLParID: LongInt;
+}
+DTPBPtr = ^DTPBRec;
+CSCode = Integer;
+
+CInfoFile struct {
+	ioFlFndrInfo: FInfo;
+	ioDirID: LongInt;
+	ioFlStBlk: Integer;
+	ioFlLgLen: LongInt;
+	ioFlPyLen: LongInt;
+	ioFlRStBlk: Integer;
+	ioFlRLgLen: LongInt;
+	ioFlRPyLen: LongInt;
+	ioFlCrDat: LongInt;
+	ioFlMdDat: LongInt;
+	ioFlBkDat: LongInt;
+	ioFlXFndrInfo: FXInfo;
+	ioFlParID: LongInt;
+	ioFlClpSiz: LongInt;
+}
+
+CInfoDir struct {
+	ioDrUsrWds: DInfo;
+	ioDrDirID: LongInt;
+	ioDrNmFls: Integer;
+	filler3: Integer[9];
+	ioDrCrDat: LongInt;
+	ioDrMdDat: LongInt;
+	ioDrBkDat: LongInt;
+	ioDrFndrInfo: DXInfo;
+	ioDrParID: LongInt;
+}
+
+CInfoType union {
+	hFileInfo: CInfoFile;
+	dirInfo: CInfoDir;
+}
+
+CInfoPBRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	ioFRefNum: Integer;
+	ioFVersNum: SignedByte;
+	filler1: SignedByte;
+	ioFDirIndex: Integer;
+	ioFlAttrib: SignedByte;
+	filler2: SignedByte;
+	cInfoType: CInfoType;
+}
+CInfoPBPtr = ^CInfoPBRec;
+
+CMovePBRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	filler1: LongInt;
+	ioNewName: StringPtr;
+	filler2: LongInt;
+	ioNewDirID: LongInt;
+	filler3: LongInt[2];
+	ioDirID: LongInt;
+}
+CMovePBPtr = ^CMovePBRec;
+
+WDPBRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	filler1: Integer;
+	ioWDIndex: Integer;
+	ioWDProcID: LongInt;
+	ioWDVRefNum: Integer;
+	filler2: Integer[7];
+	ioWDDirID: LongInt;
+}
+WDPBPtr = ^WDPBRec;
+
+HVolumeParam struct {
+	filler2: LongInt;
+	ioVolIndex: Integer;
+	ioVCrDate: LongInt;
+	ioVLsMod: LongInt;
+	ioVAtrb: Integer;
+	ioVNmFls: Integer;
+	ioVBitMap: Integer;
+	ioAllocPtr: Integer;
+	ioVNmAlBlks: Integer;
+	ioVAlBlkSiz: LongInt;
+	ioVClpSiz: LongInt;
+	ioAlBlSt: Integer;
+	ioVNxtCNID: LongInt;
+	ioVFrBlk: Integer;
+	ioVSigWord: Integer;
+	ioVDrvInfo: Integer;
+	ioVDRefNum: Integer;
+	ioVFSID: Integer;
+	ioVBkUp: LongInt;
+	ioVSeqNum: Integer;
+	ioVWrCnt: LongInt;
+	ioVFilCnt: LongInt;
+	ioVDirCnt: LongInt;
+	ioVFndrInfo: LongInt[8];
+}
+
+AccessParam struct {
+	filler3: Integer;
+	ioDenyModes: Integer;
+	filler4: Integer;
+	filler5: SignedByte;
+	ioACUser: SignedByte;
+	filler6: LongInt;
+	ioACOwnerID: LongInt;
+	ioACGroupID: LongInt;
+	ioACAccess: LongInt;
+}
+
+ObjParam struct {
+	filler7: Integer;
+	ioObjType: Integer;
+	ioObjNamePtr: Ptr;
+	ioObjID: LongInt;
+}
+
+CopyParam struct {
+	ioDstVRefNum: Integer;
+	filler8: Integer;
+	ioNewName: Ptr;
+	ioCopyName: Ptr;
+	ioNewDirID: LongInt;
+}
+
+WDParam struct {
+	filler9: Integer;
+	ioWDIndex: Integer;
+	ioWDProcID: LongInt;
+	ioWDVRefNum: Integer;
+	filler10: Integer;
+	filler11: LongInt;
+	filler12: LongInt;
+	filler13: LongInt;
+	ioWDDirID: LongInt;
+}
+
+FIDParam struct {
+	filler14: LongInt;
+	ioDestNamePtr: StringPtr;
+	filler15: LongInt;
+	ioDestDirID: LongInt;
+	filler16: LongInt;
+	filler17: LongInt;
+	ioSrcDirID: LongInt;
+	filler18: Integer;
+	ioFileID: LongInt;
+}
+
+CSParam struct {
+	ioMatchPtr: FSSpecArrayPtr;
+	ioReqMatchCount: LongInt;
+	ioActMatchCount: LongInt;
+	ioSearchBits: LongInt;
+	ioSearchInfo1: CInfoPBPtr;
+	ioSearchInfo2: CInfoPBPtr;
+	ioSearchTime: LongInt;
+	ioCatPosition: CatPositionRec;
+	ioOptBuffer: Ptr;
+	ioOptBufSize: LongInt;
+}
+
+ForeignPrivParam struct {
+	filler21: LongInt;
+	filler22: LongInt;
+	ioForeignPrivBuffer: Ptr;
+	ioForeignPrivReqCount: LongInt;
+	ioForeignPrivActCount: LongInt;
+	filler23: LongInt;
+	ioForeignPrivDirID: LongInt;
+	ioForeignPrivInfo1: LongInt;
+	ioForeignPrivInfo2: LongInt;
+	ioForeignPrivInfo3: LongInt;
+	ioForeignPrivInfo4: LongInt;
+}
+
+HParamBlkType union {
+	io: IOParam;
+	file: FileParam;
+	volume: HVolumeParam;
+	access: AccessParam;
+	obj: ObjParam;
+	copy: CopyParam;
+	wd: WDParam;
+	fid: FIDParam;
+	cs: CSParam;
+	foreignPriv: ForeignPrivParam;
+}
+
+HParamBlockRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	paramBlkType: HParamBlkType;
+}
+HParmBlkPtr = ^HParamBlockRec;
+
+CatPositionRec struct {
+	initialize: LongInt;
+	priv: Integer[6];
+}

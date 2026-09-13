@@ -14,6 +14,7 @@ mod view;
 use crate::lunacy::jump::Jump;
 use crate::lunacy::{crumbs::Crumbs, find::Find};
 use eframe::egui;
+pub use expparser::ExpParser;
 pub use file::File;
 use std::{
     path::Path,
@@ -40,6 +41,7 @@ pub mod gestalt {
     pub const FIND: u8 = 4;
     pub const FIND_NEXT: u8 = 8;
     pub const FIND_PREV: u8 = 0x10;
+    pub const MENU: u8 = 0x20;
 }
 
 #[derive(Default, PartialEq)]
@@ -369,6 +371,9 @@ impl Lunacy {
                         ctx.post(Message::FindPrev);
                     }
                 });
+                if self.crumbs.gestalt() & gestalt::MENU != 0 {
+                    self.crumbs.menu(ui, ctx);
+                }
             });
         });
     }

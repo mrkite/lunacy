@@ -1,0 +1,62 @@
+GetLInfoPB struct {
+	sfile: ^u8;
+	dfile: ^u8;
+	parms: ^u8;
+	istring: ^u8;
+	merr: u8;
+	merrf: u8;
+	losp: u8;
+	kflag: u8;
+	mflags: u32;
+	pflags: u32;
+	org: u32;
+}
+
+Shell_GET_LINFO(pb: ^GetLInfoPB) {
+	$22, $a8, $00, $e1, $01, $01, {pb}
+}
+Shell_SET_LINFO(pb: ^GetLInfoPB) {
+	$22, $a8, $00, $e1, $02, $01, {pb}
+}
+Shell_GET_LANG(pb: Ptr): u16 {
+	$22, $a8, $00, $e1, $03, $01, {pb}
+}
+Shell_SET_LANG(pb: Ptr) {
+	$22, $a8, $00, $e1, $04, $01, {pb}
+}
+Shell_ERROR(pb: Ptr) {
+	$22, $a8, $00, $e1, $05, $01, {pb}
+}
+Shell_SET_VAR(pb: Ptr) {
+	$22, $a8, $00, $e1, $06, $01, {pb}
+}
+Shell_VERSION(pb: Ptr): u32 {
+	$22, $a8, $00, $e1, $07, $01, {pb}
+}
+Shell_READ_INDEXED(pb: Ptr) {
+	$22, $a8, $00, $e1, $08, $01, {pb}
+}
+Shell_INIT_WILDCARD(pb: Ptr) {
+	$22, $a8, $00, $e1, $09, $01, {pb}
+}
+Shell_NEXT_WILDCARD(pb: Ptr) {
+	$22, $a8, $00, $e1, $0a, $01, {pb}
+}
+Shell_GET_VAR(pb: Ptr) {
+	$22, $a8, $00, $e1, $0b, $01, {pb}
+}
+Shell_EXECUTE(pb: Ptr) {
+	$22, $a8, $00, $e1, $0d, $01, {pb}
+}
+Shell_DIRECTION(pb: Ptr) {
+	$22, $a8, $00, $e1, $0f, $01, {pb}
+}
+Shell_REDIRECT(pb: Ptr) {
+	$22, $a8, $00, $e1, $10, $01, {pb}
+}
+Shell_STOP(pb: Ptr): i16 {
+	$22, $a8, $00, $e1, $13, $01, {pb}
+}
+Shell_WRITE_CONSOLE(pb: Ptr) {
+	$22, $a8, $00, $e1, $1a, $01, {pb}
+}

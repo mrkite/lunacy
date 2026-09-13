@@ -1,0 +1,139 @@
+AccessModeMask enum<u16> {
+	requestReadAccess = 0,
+	requestWriteAccess = 1,
+	denyReadAccess = $10,
+	denyWriteAccess = $20,
+}
+
+ForkNumMask enum<u16> {
+	dataForkNum = 0,
+	resourceForkNum = 1,
+}
+
+ASCommand enum<u16> {
+	ASBufferControl = 1,
+	ASByteRangeLock,
+	ASSpecialOpenFork,
+	ASGetPrivileges,
+	ASSetPrivileges,
+	ASUserInfo,
+	ASCopyFile,
+	ASGetUserPath,
+	ASOpenDesktop,
+	ASCloseDesktop,
+	ASGetComment,
+	ASSetComment,
+	ASGetServerName,
+}
+
+ASMask enum<u16> {
+	seeFolders = $0,
+	seeFiles = $2,
+	makeChanges = $4,
+	folderOwner = $80,
+	relativeToEOF = $4000,
+	lockRange = $8000,
+}
+
+CommandBlock struct {
+	pCount: u16;
+	fstNum: u16;
+	commandNum: ASCommand;
+}
+
+BufferControlRec struct {
+	pBlock: CommandBlock;
+	refNum: u16;
+	flags: ASMask;
+}
+
+ByteRangeLockRec struct {
+	pBlock: CommandBlock;
+	referenceNum: u16;
+	lockFlag: u16;
+	fileOffset: u32;
+	rangeLength: u32;
+	rangeStart: u32;
+}
+
+CopyFileRec struct {
+	pBlock: CommandBlock;
+	sourcePathname: ^GSString255;
+	destPathname: ^GSString255;
+}
+
+DesktopRec struct {
+	pBlock: CommandBlock;
+	desktopRefNum: u16;
+	pathname: ^GSString255;
+}
+
+SpecialOpenForkRec struct {
+	pBlock: CommandBlock;
+	pathname: ^GSString255;
+	accessMode: AccessModeMask;
+	forkNum: ForkNumMask;
+}
+
+GetAccessRightsRec struct {
+	reserved: u8;
+	world: u8;
+	group: u8;
+	owner: u8;
+}
+
+SetAccessRightsRec struct {
+	userSummary: u8;
+	world: u8;
+	group: u8;
+	owner: u8;
+}
+
+GetPrivilegesRec struct {
+	pBlock: CommandBlock;
+	pathname: ^GSString255;
+	accessRights: GetAccessRightsRec;
+	ownerName: ^ResultBuf255;
+	groupName: ^ResultBuf255;
+}
+
+SetPrivilegesRec struct {
+	pBlock: CommandBlock;
+	pathname: ^GSString255;
+	accessRights: SetAccessRightsRec;
+	ownerName: ^ResultBuf255;
+	groupName: ^ResultBuf255;
+}
+
+UserInfoRec struct {
+	pBlock: CommandBlock;
+	deviceNum: u16;
+	userName: ^ResultBuf255;
+	primaryGroupName: ^ResultBuf255;
+}
+
+GetUserPathRec struct {
+	pBlock: CommandBlock;
+	prefix: ^ResultBuf255;
+}
+
+GetCommentRec struct {
+	pBlock: CommandBlock;
+	desktopRefNum: u16;
+	pathname: ^GSString255;
+	comment: ^ResultBuf255;
+}
+
+SetCommentRec struct {
+	pBlock: CommandBlock;
+	desktopRefNum: u16;
+	pathname: ^GSString255;
+	comment: ^GSString255;
+}
+
+GetServerNameRec struct {
+	pBlock: CommandBlock;
+	pathname: ^GSString255;
+	serverName: ^ResultBuf255;
+	zoneName: ^ResultBuf255;
+}

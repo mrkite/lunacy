@@ -1,0 +1,96 @@
+SysEditType enum<u16> {
+	kUndo = 1,
+	kCut = 2,
+	kCopy = 3,
+	kPaste = 4,
+	kClear = 5,
+}
+
+DeskBootInit() {
+	$a2, $05, $01, $22, $00, $00, $e1
+}
+DeskStartUp() {
+	$a2, $05, $02, $22, $00, $00, $e1
+}
+DeskShutDown() {
+	$a2, $05, $03, $22, $00, $00, $e1
+}
+DeskVersion(): i16 {
+	$a2, $05, $04, $22, $00, $00, $e1
+}
+DeskReset() {
+	$a2, $05, $05, $22, $00, $00, $e1
+}
+DeskStatus(): bool {
+	$a2, $05, $06, $22, $00, $00, $e1
+}
+SaveScrn() {
+	$a2, $05, $09, $22, $00, $00, $e1
+}
+RestScrn() {
+	$a2, $05, $0a, $22, $00, $00, $e1
+}
+SaveAll() {
+	$a2, $05, $0b, $22, $00, $00, $e1
+}
+RestAll() {
+	$a2, $05, $0c, $22, $00, $00, $e1
+}
+InstallNDA(idHandle: Handle) {
+	$a2, $05, $0e, $22, $00, $00, $e1
+}
+InstallCDA(idHandle: Handle) {
+	$a2, $05, $0f, $22, $00, $00, $e1
+}
+ChooseCDA() {
+	$a2, $05, $11, $22, $00, $00, $e1
+}
+SetDAStrPtr(altDispHandle: Handle, stringTablePtr: Ptr) {
+	$a2, $05, $13, $22, $00, $00, $e1
+}
+GetDAStrPtr(): Ptr {
+	$a2, $05, $14, $22, $00, $00, $e1
+}
+OpenNDA(idNum: i16): i16 {
+	$a2, $05, $15, $22, $00, $00, $e1
+}
+CloseNDA(refNum: i16) {
+	$a2, $05, $16, $22, $00, $00, $e1
+}
+SystemClick(eventRecPtr: ^EventRecord, theWindowPtr: ^Window, findWndResult: i16) {
+	$a2, $05, $17, $22, $00, $00, $e1
+}
+SystemEdit(editType: SysEditType): bool {
+	$a2, $05, $18, $22, $00, $00, $e1
+}
+SystemTask() {
+	$a2, $05, $19, $22, $00, $00, $e1
+}
+SystemEvent(eventWhat: i16, eventMessage: i32, eventWhen: i32, eventWhere: Point, eventMods: i16): bool {
+	$a2, $05, $1a, $22, $00, $00, $e1
+}
+GetNumNDAs(): i16 {
+	$a2, $05, $1b, $22, $00, $00, $e1
+}
+CloseNDAByWinPtr(theWindowPtr: ^Window) {
+	$a2, $05, $1c, $22, $00, $00, $e1
+}
+CloseAllNDAs() {
+	$a2, $05, $1d, $22, $00, $00, $e1
+}
+FixAppleMenu(startingID: i16) {
+	$a2, $05, $1e, $22, $00, $00, $e1
+}
+AddToRunQ(headerPtr: Ptr) {
+	$a2, $05, $1f, $22, $00, $00, $e1
+}
+RemoveFromRunQ(headerPtr: Ptr) {
+	$a2, $05, $20, $22, $00, $00, $e1
+}
+RemoveCDA(idHandle: Handle) {
+	$a2, $05, $21, $22, $00, $00, $e1
+}
+RemoveNDA(idHandle: Handle) {
+	$a2, $05, $22, $22, $00, $00, $e1
+}
+

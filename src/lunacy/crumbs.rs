@@ -68,6 +68,12 @@ impl Crumbs {
         }
     }
 
+    pub fn menu(&mut self, ui: &mut egui::Ui, ctx: Context) {
+        if let Some(view) = self.views.get_mut(self.selected) {
+            view.menu(ui, ctx);
+        }
+    }
+
     pub fn save(&self, out: &mut std::fs::File, ctx: Context) -> Result<(), std::io::Error> {
         if let Some(view) = self.views.get(self.selected) {
             view.save(out, ctx)

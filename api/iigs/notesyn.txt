@@ -1,0 +1,80 @@
+Envelope struct {
+	st1BkPt: u8;
+	st1Increment: i16;
+	st2BkPt: u8;
+	st2Increment: i16;
+	st3BkPt: u8;
+	st3Increment: i16;
+	st4BkPt: u8;
+	st4Increment: i16;
+	st5BkPt: u8;
+	st5Increment: i16;
+	st6BkPt: u8;
+	st6Increment: i16;
+	st7BkPt: u8;
+	st7Increment: i16;
+	st8BkPt: u8;
+	st8Increment: i16;
+}
+
+WaveForm struct {
+	wfTopKey: u8;
+	wfWaveAddress: u8;
+	wfWaveSize: u8;
+	wfDocMode: u8;
+	wfRelPitch: i16;
+}
+
+Instrument struct {
+	theEnvelope: Envelope;
+	releaseSegment: u8;
+	priorityIncrement: u8;
+	pitchBendRange: u8;
+	vibratorDepth: u8;
+	vibratoSpeed: u8;
+	inSpare: u8;
+	aWaveCount: u8;
+	bWaveCount: u8;
+	aWaveList: WaveForm[];
+	bWaveList: WaveForm[];
+}
+
+NSBootInit() {
+	$a2, $19, $01, $22, $00, $00, $e1
+}
+NSStartUp(updateRate: i16, userUpdateRtnPtr: Ptr) {
+	$a2, $19, $02, $22, $00, $00, $e1
+}
+NSShutDown() {
+	$a2, $19, $03, $22, $00, $00, $e1
+}
+NSVersion(): i16 {
+	$a2, $19, $04, $22, $00, $00, $e1
+}
+NSReset() {
+	$a2, $19, $05, $22, $00, $00, $e1
+}
+NSStatus(): bool {
+	$a2, $19, $06, $22, $00, $00, $e1
+}
+AllocGen(requestedPriority: i16): i16 {
+	$a2, $19, $09, $22, $00, $00, $e1
+}
+DeallocGen(genNumber: i16) {
+	$a2, $19, $0a, $22, $00, $00, $e1
+}
+NoteOn(genNumber: i16, semitone: i16, volume: i16, instrumentPtr: ^Instrument) {
+	$a2, $19, $0b, $22, $00, $00, $e1
+}
+NoteOff(genNumber: i16, semitone: i16) {
+	$a2, $19, $0c, $22, $00, $00, $e1
+}
+AllNotesOff() {
+	$a2, $19, $0d, $22, $00, $00, $e1
+}
+NSSetUpdateRate(updateRate: i16) {
+	$a2, $19, $0e, $22, $00, $00, $e1
+}
+NSSetUserUpdateRtn(updateRtn: VoidProcPtr): VoidProcPtr {
+	$a2, $19, $0f, $22, $00, $00, $e1
+}

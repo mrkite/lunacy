@@ -1,0 +1,81 @@
+P8_ALLOC_INTERRUPT(pb: i16) {
+	$20, $00, $bf, $40, {pb}
+}
+P8_DEALLOC_INTERRUPT(pb: i16) {
+	$20, $00, $bf, $41, {pb}
+}
+P8_AppleTalk(pb: i16) {
+	$20, $00, $bf, $42, {pb}
+}
+P8_QUIT(pb: i16) {
+	$20, $00, $bf, $65, {pb}
+}
+P8_READ_BLOCK(pb: i16) {
+	$20, $00, $bf, $80, {pb}
+}
+P8_WRITE_BLOCK(pb: i16) {
+	$20, $00, $bf, $81, {pb}
+}
+P8_GET_TIME(pb: i16) {
+	$20, $00, $bf, $82, {pb}
+}
+P8_CREATE(pb: i16) {
+	$20, $00, $bf, $c0, {pb}
+}
+P8_DESTROY(pb: i16) {
+	$20, $00, $bf, $c1, {pb}
+}
+P8_RENAME(pb: i16) {
+	$20, $00, $bf, $c2, {pb}
+}
+P8_SET_FILE_INFO(pb: i16) {
+	$20, $00, $bf, $c3, {pb}
+}
+P8_GET_FILE_INFO(pb: i16) {
+	$20, $00, $bf, $c4, {pb}
+}
+P8_ON_LINE(pb: i16) {
+	$20, $00, $bf, $c5, {pb}
+}
+P8_SET_PREFIX(pb: i16) {
+	$20, $00, $bf, $c6, {pb}
+}
+P8_GET_PREFIX(pb: i16) {
+	$20, $00, $bf, $c7, {pb}
+}
+P8_OPEN(pb: i16) {
+	$20, $00, $bf, $c8, {pb}
+}
+P8_NEWLINE(pb: i16) {
+	$20, $00, $bf, $c9, {pb}
+}
+P8_READ(pb: i16) {
+	$20, $00, $bf, $ca, {pb}
+}
+P8_WRITE(pb: i16) {
+	$20, $00, $bf, $cb, {pb}
+}
+P8_CLOSE(pb: i16) {
+	$20, $00, $bf, $cc, {pb}
+}
+P8_FLUSH(pb: i16) {
+	$20, $00, $bf, $cd, {pb}
+}
+P8_SET_MARK(pb: i16) {
+	$20, $00, $bf, $ce, {pb}
+}
+P8_GET_MARK(pb: i16) {
+	$20, $00, $bf, $cf, {pb}
+}
+P8_SET_EOF(pb: i16) {
+	$20, $00, $bf, $d0, {pb}
+}
+P8_GET_EOF(pb: i16) {
+	$20, $00, $bf, $d1, {pb}
+}
+P8_SET_BUF(pb: i16) {
+	$20, $00, $bf, $d2, {pb}
+}
+P8_GET_BUF(pb: i16) {
+	$20, $00, $bf, $d3, {pb}
+}

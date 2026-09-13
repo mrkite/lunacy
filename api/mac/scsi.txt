@@ -1,0 +1,39 @@
+SCSIReset(): OSErr {
+	$42, $67, $a8, $15
+}
+SCSIGet(): OSErr {
+	$3f, $3c, $00, $01, $a8, $15
+}
+SCSISelect(targetID: Integer): OSErr {
+	$3f, $3c, $00, $02, $a8, $15
+}
+SCSICmd(buffer: Ptr, count: Integer): OSErr {
+	$3f, $3c, $00, $03, $a8, $15
+}
+SCSIComplete(stat: ^Integer, message: ^Integer, wait: LongInt): OSErr {
+	$3f, $3c, $00, $04, $a8, $15
+}
+SCSIRead(tibPtr: Ptr): OSErr {
+	$3f, $3c, $00, $05, $a8, $15
+}
+SCSIWrite(tibPtr: Ptr): OSErr {
+	$3f, $3c, $00, $06, $a8, $15
+}
+SCSIRBlind(tibPtr: Ptr): OSErr {
+	$3f, $3c, $00, $08, $a8, $15
+}
+SCSIWBlind(tibPtr: Ptr): OSErr {
+	$3f, $3c, $00, $09, $a8, $15
+}
+SCSIStat(): Integer {
+	$3f, $3c, $00, $0a, $a8, $15
+}
+SCSISelAtn(targetID: Integer): OSErr {
+	$3f, $3c, $00, $0b, $a8, $15
+}
+SCSIMsgIn(message: ^Integer): OSErr {
+	$3f, $3c, $00, $0c, $a8, $15
+}
+SCSIMsgOut(message: Integer): OSErr {
+	$3f, $3c, $00, $0d, $a8, $15
+}

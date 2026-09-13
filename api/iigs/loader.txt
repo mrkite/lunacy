@@ -1,0 +1,80 @@
+RestartOutRec struct {
+	userID: u16;
+	startAddr: Ptr;
+	dPageAddr: u16;
+	buffSize: u16;
+}
+
+LoadSegNameOut struct {
+	segAddr: Ptr;
+	fileNum: u16;
+	segNum: u16;
+}
+
+UnloadSegOutRec struct {
+	userID: u16;
+	fileNum: u16;
+	segNum: u16;
+}
+
+InitialLoadOutputRec struct {
+	userID: u16;
+	startAddr: Ptr;
+	dPageAddr: u16;
+	buffSize: u16;
+}
+
+LoaderInitialization() {
+	$a2, $11, $01, $22, $00, $00, $e1
+}
+LoaderStartUp() {
+	$a2, $11, $02, $22, $00, $00, $e1
+}
+LoaderShutDown() {
+	$a2, $11, $03, $22, $00, $00, $e1
+}
+LoaderVersion(): i16 {
+	$a2, $11, $04, $22, $00, $00, $e1
+}
+LoaderReset() {
+	$a2, $11, $05, $22, $00, $00, $e1
+}
+LoaderStatus(): bool {
+	$a2, $11, $06, $22, $00, $00, $e1
+}
+InitialLoad(userID: i16, loadFileNamePtr: Ptr, spMemFlag: bool): ^InitialLoadOutputRec {
+	$a2, $11, $09, $22, $00, $00, $e1
+}
+Restart(userID: i16): ^RestartOutRec {
+	$a2, $11, $0a, $22, $00, $00, $e1
+}
+LoadSegNum(userID: i16, loadFileNum: i16, loadSegNum: i16): Ptr {
+	$a2, $11, $0b, $22, $00, $00, $e1
+}
+LoadSegName(userID: i16, loadFileNamePtr: Ptr, loadSegNamePtr: Ptr): ^LoadSegNameOut {
+	$a2, $11, $0d, $22, $00, $00, $e1
+}
+UnloadSeg(segmentPtr: Ptr): ^UnloadSegOutRec {
+	$a2, $11, $0c, $22, $00, $00, $e1
+}
+GetLoadSegInfo(userID: i16, loadFileNum: i16, loadSegNum: i16, bufferPtr: Ptr) {
+	$a2, $11, $0f, $22, $00, $00, $e1
+}
+GetUserID(pathNamePtr: Ptr): i16 {
+	$a2, $11, $10, $22, $00, $00, $e1
+}
+GetPathname(userId: i16, fileNumber: i16): Ptr {
+	$a2, $11, $11, $22, $00, $00, $e1
+}
+UserShutDown(userID: i16, restartFlag: i16): i16 {
+	$a2, $11, $12, $22, $00, $00, $e1
+}
+RenamePathname(oldPathname: Ptr, newPathname: Ptr) {
+	$a2, $11, $13, $22, $00, $00, $e1
+}
+GetUserID2(pathNamePtr: Ptr): i16 {
+	$a2, $11, $21, $22, $00, $00, $e1
+}
+GetPathname2(userID: i16, fileNumber: i16): Ptr {
+	$a2, $11, $22, $22, $00, $00, $e1
+}

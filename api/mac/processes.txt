@@ -1,0 +1,98 @@
+LaunchDeskAccessory(pFileSpec: FSSpecPtr, pDAName: StringPtr): OSErr {
+	$3f, $3c, $00, $36, $a8, $8f
+}
+GetCurrentProcess(psn: ^ProcessSerialNumber): OSErr {
+	$3f, $3c, $00, $37, $a8, $8f
+}
+GetNextProcess(psn: ^ProcessSerialNumber): OSErr {
+	$3f, $3c, $00, $38, $a8, $8f
+}
+GetFrontProcess(psn: ^ProcessSerialNumber): OSErr {
+	$70, $ff, $2f, $00, $3f, $3c, $00, $39, $a8, $8f
+}
+GetProcessInformation(psn: ^ProcessSerialNumber, info: ^ProcessInfoRec): OSErr {
+	$3f, $3c, $00, $3a, $a8, $8f
+}
+SetFrontProcess(psn: ^ProcessSerialNumber): OSErr {
+	$3f, $3c, $00, $3b, $a8, $8f
+}
+WakeUpProcess(psn: ^ProcessSerialNumber): OSErr {
+	$3f, $3c, $00, $3c, $a8, $8f
+}
+SameProcess(psn1: ^ProcessSerialNumber, psn2: ^ProcessSerialNumber, result: ^Boolean): OSErr {
+	$3f, $3c, $00, $3d, $a8, $8f
+}
+
+LoadSeg() {
+	$a9, $f0
+}
+UnloadSeg(routineAddr: Ptr) {
+	$a9, $f1
+}
+LaunchApplication(LaunchParams: LaunchPBPtr): OSErr {
+	$20, $5f, $a9, $f2, $3e, $80
+}
+Chain() {
+	$a9, $f3
+}
+ExitToShell() {
+	$a9, $f4
+}
+GetAppParms(apName: ^Str255, apRefNum: ^Integer, apParam: ^Handle) {
+	$a9, $f5
+}
+
+ProcessSerialNumber struct {
+	highLongOfPSN: LongInt;
+	lowLongOfPSN: LongInt;
+}
+ProcessSerialNumberPtr = ^ProcessSerialNumber;
+
+LaunchParamBlockRec struct {
+	reserved1: LongInt;
+	reserved2: Integer;
+	launchBlockID: Integer;
+	lauchEPBLength: LongInt;
+	lauchFileFlags: Integer;
+	launhControlFlags: LaunchFlags;
+	launchAppSpec: FSSpecPtr;
+	launchProcessSN: ProcessSerialNumber;
+	launchPreferredSize: LongInt;
+	launchMinimumSize: LongInt;
+	launchAvailableSize: LongInt;
+	launchAppParameters: AppParametersPtr;
+}
+LaunchPBPtr = ^LaunchParamBlockRec;
+
+LaunchFlags enum<Integer> {
+	launchContinue = $4000,
+	launchNoFileFlags = $0800,
+	launchUseMinimum = $0400,
+	launchDontSwitch = $0200,
+	launchAllow24Bit = $0100,
+	launchInhibitDaemon = $0080,
+}
+
+ProcessInfoRec struct {
+	processInfoLength: LongInt;
+	processName: StringPtr;
+	processNumber: ProcessSerialNumber;
+	processType: LongInt;
+	processSignature: OSType;
+	processMode: LongInt;
+	processLocation: Ptr;
+	processSize: LongInt;
+	processFreeMem: LongInt;
+	processLauncher: ProcessSerialNumber;
+	processLaunchDate: LongInt;
+	processActiveTime: LongInt;
+	processAppSpec: FSSpecPtr;
+}
+
+AppParameters struct {
+	theMsgEvent: EventRecord;
+	eventRefCon: LongInt;
+	messageLength: LongInt;
+	messageBuffer: SignedByte[];
+}
+AppParametersPtr = ^AppParameters;

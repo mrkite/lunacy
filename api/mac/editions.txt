@@ -1,0 +1,189 @@
+InitEditionPack(): OSErr {
+	$3f, $3c, $00, $11, $30, $3c, $01, $00, $a8, $2d
+}
+NewSection(container: ^EditionContainerSpec, sectionDocument: FSSpecPtr, kind: SectionType, sectionID: LongInt, initialMode: UpdateMode, sectionH: SectionHandle): OSErr {
+	$30, $3c, $0a, $02, $a8, $2d
+}
+RegisterSection(sectionDocument: ^FSSpec, sectionH: SectionHandle, aliasWasUpdated: Boolean): OSErr {
+	$30, $3c, $06, $04, $a8, $2d
+}
+UnRegisterSection(sectionH: SectionHandle): OSErr {
+	$30, $3c, $02, $06, $a8, $2d
+}
+IsRegisteredSection(sectionH: SectionHandle): OSErr {
+	$30, $3c, $02, $08, $a8, $2d
+}
+AssociateSection(sectionH: SectionHandle, newSectionDocument: FSSpecPtr): OSErr {
+	$30, $3c, $04, $0c, $a8, $2d
+}
+CreateEditionContainerFile(editionFile: ^FSSpec, fdCreator: OSType, editionFileNameScript: ScriptCode): OSErr {
+	$30, $3c, $05, $0e, $a8, $2d
+}
+DeleteEditionContainerFile(editionFile: ^FSSpec): OSErr {
+	$30, $3c, $02, $10, $a8, $2d
+}
+OpenEdition(subscriberSectionH: SectionHandle, refNum: ^EditionRefNum): OSErr {
+	$30, $3c, $04, $12, $a8, $2d
+}
+OpenNewEdition(publisherSectionH: SectionHandle, fdCreator: OSType, publisherSectionDocument: FSSpecPtr, refNum: EditionRefNum): OSErr {
+	$30, $3c, $08, $14, $a8, $2d
+}
+CloseEdition(whichEdition: EditionRefNum, successful: Boolean): OSErr {
+	$30, $3c, $03, $16, $a8, $2d
+}
+EditionHasFormat(whichEdition: EditionRefNum, whichFormat: FormatType, formatSize: ^Size): OSErr {
+	$30, $3c, $06, $18, $a8, $2d
+}
+ReadEdition(whichEdition: EditionRefNum, whichFormat: FormatType, buffPtr: Ptr, buffLen: ^Size): OSErr {
+	$30, $3c, $08, $1a, $a8, $2d
+}
+WriteEdition(whichEdition: EditionRefNum, whichFormat: FormatType, buffPtr: Ptr, buffLen: Size): OSErr {
+	$30, $3c, $08, $1c, $a8, $2d
+}
+GetEditionFormatMark(whichEdition: EditionRefNum, whichFormat: FormatType, currentMark: LongInt): OSErr {
+	$30, $3c, $06, $1e, $a8, $2d
+}
+SetEditionFormatMark(whichEdition: EditionRefNum, whichFormat: FormatType, setMarkTo: LongInt): OSErr {
+	$30, $3c, $06, $20, $a8, $2d
+}
+GetEditionInfo(sectionH: SectionHandle, editionInfo: ^EditionInfoRecord): OSErr {
+	$30, $3c, $04, $22, $a8, $2d
+}
+GoToPublisherSection(container: ^EditionContainerSpec): OSErr {
+	$30, $3c, $02, $24, $a8, $2d
+}
+GetLastEditionContainerUsed(container: ^EditionContainerSpec): OSErr {
+	$30, $3c, $02, $26, $a8, $2d
+}
+GetStandardFormats(container: ^EditionContainerSpec, previewFormat: ^FormatType, preview: Handle, publisherAlias: Handle, formats: Handle): OSErr {
+	$30, $3c, $0a, $28, $a8, $2d
+}
+GetEditionOpenerProc(opener: ^EditionOpenerProcPtr): OSErr {
+	$30, $3c, $02, $2a, $a8, $2d
+}
+SetEditionOpenerProc(opener: EditionOpenerProcPtr): OSErr {
+	$30, $3c, $02, $2c, $a8, $2d
+}
+CallEditionOpenerProc(selector: EditionOpenerVerb, pb: ^EditionOpenerParamBlock, routine: EditionOpenerProcPtr): OSErr {
+	$30, $3c, $05, $2e, $a8, $2d
+}
+CallFormatIOProc(selector: FormatIOVerb, pb: ^FormatIOParamBlock, routine: FormatIOProcPtr): OSErr {
+	$30, $3c, $05, $30, $a8, $2d
+}
+NewSubscriberDialog(reply: ^NewSubscriberReply): OSErr {
+	$30, $3c, $02, $32, $a8, $2d
+}
+NewSubscriberExpDialog(reply: ^NewSubscriberReply, where: Point, expansionDITLresID: Integer, dlgHook: ExpDlgHookProcPtr, filterProc: ExpModalFilterProcPtr, yourDataPtr: Ptr): OSErr {
+	$30, $3c, $0b, $34, $a8, $2d
+}
+NewPublisherDialog(reply: ^NewPublisherReply): OSErr {
+	$30, $3c, $02, $36, $a8, $2d
+}
+NewPublisherExpDialog(reply: ^NewPublisherReply, where: Point, expansionDITLresID: Integer, dlgHook: ExpDlgHookProcPtr, filterProc: ExpModalFilterProcPtr, yourDataPtr: Ptr): OSErr {
+	$30, $3c, $0b, $38, $a8, $2d
+}
+SectionOptionsDialog(reply: ^SectionOptionsReply): OSErr {
+	$30, $3c, $02, $3a, $a8, $2d
+}
+SectionOptionsExpDialog(reply: ^SectionOptionsReply, where: Point, expansionDITLresID: Integer, dlgHook: ExpDlgHookProcPtr, filterProc: ExpModalFilterProcPtr, yourDataPtr: Ptr): OSErr {
+	$30, $3c, $0b, $3c, $a8, $2d
+}
+
+FormatIOVerb enum<Integer> {
+	ioHasFormat,
+	ioReadFormat,
+	ioNewFormat,
+	ioWriteFormat,
+}
+
+EditionOpenerVerb enum<Integer> {
+	eoOpen,
+	eoClose,
+	eoOpenNew,
+	eoCloseNew,
+	eoCanSubscribe,
+}
+
+EditionRefNum = Handle;
+FormatType = Char[4];
+SectionType = SignedByte;
+UpdateMode = Integer;
+
+ExpModalFilterProcPtr(theDialog: DialogPtr, theEvent: ^EventRecord, itemOffset: Integer, itemHit: ^Integer, yourDataPtr: Ptr): Boolean;
+ExpDlgHookProcPtr(itemOffset: Integer, itemHit: Integer, theDialog: DialogPtr, yourDataPtr: Ptr): Integer;
+EditionOpenerProcPtr(selector: EditionOpenerVerb, pb: ^FormatIOParamBlock): Integer;
+FormatIOProcPtr(selector: FormatIOVerb, pb: ^FormatIOParamBlock): Integer;
+
+EditionContainerSpec struct {
+	theFile: FSSpec;
+	theFileScript: ScriptCode;
+	thePart: LongInt;
+	thePartName: Str31;
+	thePartScript: ScriptCode;
+}
+
+EditionInfoRecord struct {
+	crDate: TimeStamp;
+	mdDate: TimeStamp;
+	fdCreator: OSType;
+	fdType: OSType;
+	container: EditionContainerSpec;
+}
+
+SectionRecord struct {
+	version: SignedByte;
+	kind: SectionType;
+	mode: UpdateMode;
+	mdDate: TimeStamp;
+	sectionID: LongInt;
+	refCon: LongInt;
+	alias: AliasHandle;
+	subPart: LongInt;
+	nextSection: SectionHandle;
+	controlBlock: Handle;
+	refNum: EditionRefNum;
+}
+SectionPtr = ^SectionRecord;
+SectionHandle = ^SectionPtr;
+
+SectionOptionsReply struct {
+	canceled: Boolean;
+	changed: Boolean;
+	sectionH: SectionHandle;
+	action: ResType;
+}
+
+NewSubscriberReply struct {
+	canceled: Boolean;
+	formatsMask: SignedByte;
+	container: EditionContainerSpec;
+}
+
+NewPublisherReply struct {
+	canceled: Boolean;
+	replacing: Boolean;
+	usePart: Boolean;
+	preview: Handle;
+	previewFormat: FormatType;
+	container: EditionContainerSpec;
+}
+
+FormatIOParamBlock struct {
+	ioRefNum: LongInt;
+	format: FormatType;
+	formatIndex: LongInt;
+	offset: LongInt;
+	buffPtr: Ptr;
+	buffLen: LongInt;
+}
+
+EditionOpenerParamBlock struct {
+	info: EditionInfoRecord;
+	sectionH: SectionHandle;
+	document: FSSpecPtr;
+	fdCreator: OSType;
+	ioRefNum: LongInt;
+	ioProc: FormatIOProcPtr;
+	success: Boolean;
+	formatsMask: SignedByte;
+}

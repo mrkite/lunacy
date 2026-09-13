@@ -1,0 +1,92 @@
+MessageAction enum<u16> {
+	addMessage = 1,
+	getMessage = 2,
+	deleteMessage = 3,
+}
+
+MessageType enum<u16> {
+	fileInfoType = 1,
+}
+
+TLMountButton enum<u16> {
+	mvReturn = 1,
+	mvEscape = 2,
+}
+
+MessageRec struct {
+	messageNext: MessageRecHndl;
+	messageType: MessageType;
+	messageData: u16;
+	filenames: String255[];
+}
+MessageRecHndl = ^^MessageRec;
+
+TLBootInit() {
+	$a2, $01, $01, $22, $00, $00, $e1
+}
+TLStartUp() {
+	$a2, $01, $02, $22, $00, $00, $e1
+}
+TLShutDown() {
+	$a2, $01, $03, $22, $00, $00, $e1
+}
+TLVersion(): i16 {
+	$a2, $01, $04, $22, $00, $00, $e1
+}
+TLReset() {
+	$a2, $01, $05, $22, $00, $00, $e1
+}
+TLStatus(): bool {
+	$a2, $01, $06, $22, $00, $00, $e1
+}
+GetTSPtr(userOrSystem: i16, tsNum: i16): Ptr {
+	$a2, $01, $09, $22, $00, $00, $e1
+}
+SetTSPtr(userOrSystem: i16, tsNum: i16, fpTablePtr: Ptr) {
+	$a2, $01, $0a, $22, $00, $00, $e1
+}
+GetFuncPtr(userOrSystem: i16, funcTSNum: i16): Ptr {
+	$a2, $01, $0b, $22, $00, $00, $e1
+}
+GetWAP(userOrSystem: i16, tsNum: i16): Ptr {
+	$a2, $01, $0c, $22, $00, $00, $e1
+}
+SetWAP(userOrSystem: i16, tsNum: i16, waptPtr: Ptr) {
+	$a2, $01, $0d, $22, $00, $00, $e1
+}
+LoadTools(toolTablePtr: Ptr) {
+	$a2, $01, $0e, $22, $00, $00, $e1
+}
+LoadOneTool(toolNumber: i16, minVersion: i16) {
+	$a2, $01, $0f, $22, $00, $00, $e1
+}
+UnloadOneTool(toolNumber: i16) {
+	$a2, $01, $10, $22, $00, $00, $e1
+}
+TLMountVolume(whereX: i16, whereY: i16, line1: ^String255, line2: ^String255, but1: ^String255, but2: ^String255): TLMountButton {
+	$a2, $01, $11, $22, $00, $00, $e1
+}
+TLTextMountVolume(line1: ^String255, line2: ^String255, but1: ^String255, but2: ^String255): TLMountButton {
+	$a2, $01, $12, $22, $00, $00, $e1
+}
+SaveTextState(): Handle {
+	$a2, $01, $13, $22, $00, $00, $e1
+}
+RestoreTextState(stateHandle: Handle) {
+	$a2, $01, $14, $22, $00, $00, $e1
+}
+MessageCenter(action: MessageAction, messageType: MessageType, messageHandle: MessageRecHndl) {
+	$a2, $01, $15, $22, $00, $00, $e1
+}
+SetDefaultTPT() {
+	$a2, $01, $16, $22, $00, $00, $e1
+}
+MessageByName(createItFlag: bool, recordPtr: Ptr): i32 {
+	$a2, $01, $17, $22, $00, $00, $e1
+}
+StartUpTools(userID: i16, startStopRefDesc: RefDescriptor, startStopRef: Ref): Ref {
+	$a2, $01, $18, $22, $00, $00, $e1
+}
+ShutDownTools(startStopDesc: RefDescriptor, startStopRef: Ref) {
+	$a2, $01, $19, $22, $00, $00, $e1
+}

@@ -1,0 +1,250 @@
+TESelView(hTE: TEHandle) {
+	$a8, $11
+}
+TEPinScroll(dh: Integer, dv: Integer, hTE: TEHandle) {
+	$a8, $12
+}
+TEAutoView(fAuto: Boolean, hTE: TEHandle) {
+	$a8, $13
+}
+
+TEGetOffset(pt: Point, hTE: TEHandle): Integer {
+	$a8, $3c
+}
+TEStylePaste(hTE: TEHandle) {
+	$3f, $3c, $00, $00, $a8, $3d
+}
+TESetStyle(mode: Integer, newStyle: ^TextStyle, redraw: Boolean, hTE: TEHandle) {
+	$3f, $3c, $00, $01, $a8, $3d
+}
+TEReplaceStyle(mode: Integer, oldStyle: ^TextStyle, newStyle: ^TextStyle, redraw: Boolean, hTE: TEHandle) {
+	$3f, $3c, $00, $02, $a8, $3d
+}
+TEGetStyle(offset: Integer, theStyle: ^TextStyle, lineHeight: ^Integer, fontAscent: ^Integer, hTE: TEHandle) {
+	$3f, $3c, $00, $03, $a8, $3d
+}
+TEGetStyleHandle(hTE: TEHandle): TEStyleHandle {
+	$3f, $3c, $00, $04, $a8, $3d
+}
+TESetStyleHandle(theHandle: TEStyleHandle, hTE: TEHandle) {
+	$3f, $3c, $00, $05, $a8, $3d
+}
+TEGetStyleScrapHandle(hTE: TEHandle): StScrpHandle {
+	$3f, $3c, $00, $06, $a8, $3d
+}
+TEStyleInsert(text: Ptr, length: LongInt, hST: StScrpHandle, hTE: TEHandle) {
+	$3f, $3c, $00, $07, $a8, $3d
+}
+TEGetPoint(offset: Integer, hTE: TEHandle): Point {
+	$3f, $3c, $00, $08, $a8, $3d
+}
+TEGetHeight(endLine: LongInt, startLine: LongInt, hTE: TEHandle): Integer {
+	$3f, $3c, $00, $09, $a8, $3d
+}
+TEContinuousStyle(mode: ^Integer, aStyle: ^TextStyle, hTE: TEHandle): Boolean {
+	$3f, $3c, $00, $0a, $a8, $3d
+}
+TEUseStyleScrap(rangeStart: LongInt, rangeEnd: LongInt, newStyles: StScrpHandle, redraw: Boolean, hTE: TEHandle) {
+	$3f, $3c, $00, $0b, $a8, $3d
+}
+TECustomHook(which: TEIntHook, addr: ^ProcPtr, hTE: TEHandle) {
+	$3f, $3c, $00, $0c, $a8, $3d
+}
+TENumStyles(rangeStart: LongInt, rangeEnd: LongInt, hTE: TEHandle): LongInt {
+	$3f, $3c, $00, $0d, $a8, $3d
+}
+TEFeatureFlag(feature: Integer, action: Integer, hTE: TEHandle): Integer {
+	$3f, $3c, $00, $0e, $a8, $3d
+}
+
+TEStyleNew(destRect: ^Rect, viewRect: ^Rect): TEHandle {
+	$a8, $3e
+}
+
+TEGetText(hTE: TEHandle): CharsHandle {
+	$a9, $cb
+}
+TEInit() {
+	$a9, $cc
+}
+TEDispose(hTE: TEHandle) {
+	$a9, $cd
+}
+TETextBox(text: Ptr, length: LongInt, box: ^Rect, just: Integer) {
+	$a9, $ce
+}
+TESetText(text: Ptr, length: LongInt, hTE: TEHandle) {
+	$a9, $cf
+}
+TECalText(hTE: TEHandle) {
+	$a9, $d0
+}
+TESetSelect(selStart: LongInt, selEnd: LongInt, hTE: TEHandle) {
+	$a9, $d1
+}
+TENew(destRect: ^Rect, viewRect: ^Rect): TEHandle {
+	$a9, $d2
+}
+TEUpdate(rUpdate: ^Rect, hTE: TEHandle) {
+	$a9, $d3
+}
+TEClick(pt: Point, extend: Boolean, hTE: TEHandle) {
+	$a9, $d4
+}
+TECopy(hTE: TEHandle) {
+	$a9, $d5
+}
+TECut(hTE: TEHandle) {
+	$a9, $d6
+}
+TEDelete(hTE: TEHandle) {
+	$a9, $d7
+}
+TEActivate(hTE: TEHandle) {
+	$a9, $d8
+}
+TEDeactivate(hTE: TEHandle) {
+	$a9, $d9
+}
+TEIdle(hTE: TEHandle) {
+	$a9, $da
+}
+TEPaste(hTE: TEHandle) {
+	$a9, $db
+}
+TEKey(key: Char, hTE: TEHandle) {
+	$a9, $dc
+}
+TEScroll(dh: Integer, dv: Integer, hTE: TEHandle) {
+	$a9, $dd
+}
+TEInsert(text: Ptr, length: LongInt, hTE: TEHandle) {
+	$a9, $de
+}
+TESetAlignment(align: Integer, hTE: TEHandle) {
+	$a9, $df
+}
+
+TEScrapHandle(): Handle {
+	$2e, $b8, $0a, $b4
+}
+
+TERec struct {
+	destRect: Rect;
+	viewRect: Rect;
+	selRect: Rect;
+	lineHeight: Integer;
+	fontAscent: Integer;
+	selPoint: Point;
+	selStart: Integer;
+	selEnd: Integer;
+	active: Integer;
+	wordBreak: ProcPtr;
+	clikLoop: ProcPtr;
+	clickTime: LongInt;
+	clickLoc: Integer;
+	caretTime: LongInt;
+	caretState: Integer;
+	just: Integer;
+	teLength: Integer;
+	hText: Handle;
+	hDispatchRec: LongInt;
+	clikStuff: Integer;
+	crOnly: Integer;
+	txFont: Integer;
+	txFace: Style;
+	txMode: Mode;
+	txSize: Integer;
+	inPort: GrafPtr;
+	highHook: ProcPtr;
+	caretHook: ProcPtr;
+	nLines: Integer;
+	lineStarts: Integer[16001];
+}
+TEHandle = ^^TERec;
+
+TextStyle struct {
+	tsFont: Integer;
+	tsFace: Style;
+	tsSize: Integer;
+	tsColor: RGBColor;
+}
+TextStylePtr = ^TextStyle;
+TextStyleHandle = ^TextStylePtr;
+
+TEStyleRec struct {
+	nRuns: Integer;
+	nStyles: Integer;
+	styleTab: STHandle;
+	lhTab: LHHandle;
+	teRefCon: LongInt;
+	nullStyle: NullStHandle;
+	runs: StyleRun[8001];
+}
+TEStylePtr = ^TEStyleRec;
+TEStyleHandle = ^TEStylePtr;
+
+Chars = Char[32001];
+CharsPtr = ^Chars;
+CharsHandle = ^CharsPtr;
+
+STElement struct {
+	stCount: Integer;
+	stHeight: Integer;
+	stAscent: Integer;
+	stFont: Integer;
+	stFace: Style;
+	stSize: Integer;
+	stColor: RGBColor;
+}
+TEStyleTable = STElement[1777];
+STPtr = ^TEStyleTable;
+STHandle = ^STPtr;
+
+StyleRun struct {
+	startChar: Integer;
+	styleIndex: Integer;
+}
+
+LHElement struct {
+	lHeight: Integer;
+	lhAscent: Integer;
+}
+LHTable = LHElement[8001];
+LHPtr = ^LHTable;
+LHHandle = ^LHPtr;
+
+NullStRec struct {
+	teReserved: LongInt;
+	nullScrap: StScrpHandle;
+}
+NullStPtr = ^NullStRec;
+NullStHandle = ^NullStPtr;
+
+ScrpStElement struct {
+	scrpStartChar: LongInt;
+	scrpHeight: Integer;
+	scrpAscent: Integer;
+	scrpFont: Integer;
+	scrpFace: Style;
+	scrpSize: Integer;
+	scrpColor: RGBColor;
+}
+
+ScrpStTable = ScrpStElement[1601];
+
+StScrpRec struct {
+	scrpNStyles: Integer;
+	scrpStyleTab: ScrpStTable;
+}
+StScrpPtr = ^StScrpRec;
+StScrpHandle = ^StScrpPtr;
+
+TEIntHook enum<Integer> {
+	intEOLHook = 0,
+	intDrawHook,
+	intWidthHook,
+	intHitTestHook,
+	intNWidthHook = 6,
+	intTextWidthHook = 7,
+}

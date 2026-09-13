@@ -1,0 +1,323 @@
+PPCInit(): OSErr {
+	$70, $00, $a0, $dd, $3e, $80
+}
+PPCOpenSync(pb: PPCOpenPBPtr): OSErr {
+	$20, $5f, $70, $01, $a0, $dd, $3e, $80
+}
+PPCStartSync(pb: PPCStartPBPtr): OSErr {
+	$20, $5f, $70, $02, $a0, $dd, $3e, $80
+}
+PPCInformSync(pb: PPCInformPBPtr): OSErr {
+	$20, $5f, $70, $03, $a0, $dd, $3e, $80
+}
+PPCAcceptSync(pb: PPCAcceptPBPtr): OSErr {
+	$20, $5f, $70, $04, $a0, $dd, $3e, $80
+}
+PPCRejectSync(pb: PPCRejectPBPtr): OSErr {
+	$20, $5f, $70, $05, $a0, $dd, $3e, $80
+}
+PPCWriteSync(pb: PPCWritePBPtr): OSErr {
+	$20, $5f, $70, $06, $a0, $dd, $3e, $80
+}
+PPCReadSync(pb: PPCReadPBPtr): OSErr {
+	$20, $5f, $70, $07, $a0, $dd, $3e, $80
+}
+PPCEndSync(pb: PPCEndPBPtr): OSErr {
+	$20, $5f, $70, $08, $a0, $dd, $3e, $80
+}
+PPCCloseSync(pb: PPCClosePBPtr): OSErr {
+	$20, $5f, $70, $09, $a0, $dd, $3e, $80
+}
+IPCListPortsSync(pb: IPCListPortsPBPtr): OSErr {
+	$20, $5f, $70, $0a, $a0, $dd, $3e, $80
+}
+
+PPCOpenAsync(pb: PPCOpenPBPtr): OSErr {
+	$20, $5f, $70, $01, $a4, $dd, $3e, $80
+}
+PPCStartAsync(pb: PPCStartPBPtr): OSErr {
+	$20, $5f, $70, $02, $a4, $dd, $3e, $80
+}
+PPCInformAsync(pb: PPCInformPBPtr): OSErr {
+	$20, $5f, $70, $03, $a4, $dd, $3e, $80
+}
+PPCAcceptAsync(pb: PPCAcceptPBPtr): OSErr {
+	$20, $5f, $70, $04, $a4, $dd, $3e, $80
+}
+PPCRejectAsync(pb: PPCRejectPBPtr): OSErr {
+	$20, $5f, $70, $05, $a4, $dd, $3e, $80
+}
+PPCWriteAsync(pb: PPCWritePBPtr): OSErr {
+	$20, $5f, $70, $06, $a4, $dd, $3e, $80
+}
+PPCReadAsync(pb: PPCReadPBPtr): OSErr {
+	$20, $5f, $70, $07, $a4, $dd, $3e, $80
+}
+PPCEndAsync(pb: PPCEndPBPtr): OSErr {
+	$20, $5f, $70, $08, $a4, $dd, $3e, $80
+}
+PPCCloseAsync(pb: PPCClosePBPtr): OSErr {
+	$20, $5f, $70, $09, $a4, $dd, $3e, $80
+}
+IPCListPortsAsync(pb: IPCListPortsPBPtr): OSErr {
+	$20, $5f, $70, $0a, $a4, $dd, $3e, $80
+}
+
+PPCBrowser(prompt: ^Str255, applListLabel: ^Str255, defaultSpecified: Boolean, theLocation: ^LocationNameRec, thePortInfo: ^PortInfoRec, portFilter: PPCFilterProcPtr, theLocNBPType: ^Str32): OSErr {
+	$30, $3c, $0d, $00, $a8, $2b
+}
+
+PPCServiceType enum<SignedByte> {
+	ppcServiceRealTime = 1,
+}
+PPCSessionOrigin enum<SignedByte> {
+	ppcLocalOrigin = 1,
+	ppcRemoteOrigin = 2,
+}
+PPCPortRefNum = Integer;
+PPCSessRefNum = LongInt;
+
+PPCLocationKinds enum<Integer> {
+	ppcNoLocation = 0,
+	ppcNPBLocation = 1,
+	ppcNBPTypeLocation = 2,
+}
+
+PPCLocationKind union {
+	ppcNBPLocation: EntityName;
+	ppcNBPTypeLocation: Str32;
+}
+
+LocationNameRec struct {
+	locationKindSelector: PPCLocationKinds;
+	locationKind: PPCLocationKind;
+}
+LocationNamePtr = ^LocationNameRec;
+
+CreatorAndType struct {
+	creator: OSType;
+	type: OSType;
+}
+
+PPCPortKinds enum<Integer> {
+	ppcByCreatorAndType = 1,
+	ppcByString = 2,
+}
+
+PPCPortKind union {
+	ppcByString: Str32;
+	ppcByCreatorAndType: CreatorAndType;
+}
+
+PortInfoRec struct {
+	filler1: SignedByte;
+	authRequired: Boolean;
+	name: PPCPortRec;
+}
+
+PortInfoArray = PortInfoRec[];
+PortInfoArrayPtr = ^PortInfoArray;
+
+PPCPortRec struct {
+	nameScript: ScriptCode;
+	name: Str32;
+	portKindSelector: PPCPortKinds;
+	portKind: PPCPortKind;
+}
+PPCPortPtr = ^PPCPortRec;
+
+PPCOpenPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	portRefNum: PPCPortRefNum;
+	filler1: LongInt;
+	serviceType: PPCServiceType;
+	resFlag: SignedByte;
+	portName: PPCPortPtr;
+	locationName: LocationNamePtr;
+	networkVisible: Boolean;
+	nbpRegistered: Boolean;
+}
+PPCOpenPBPtr = ^PPCOpenPBRec;
+
+PPCInformPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	portRefNum: PPCPortRefNum;
+	sessRefNum: PPCSessRefNum;
+	autoAccept: Boolean;
+	portName: PPCPortPtr;
+	locationName: LocationNamePtr;
+	userName: StringPtr;
+	userData: LongInt;
+	requestType: PPCSessionOrigin;
+}
+PPCInformPBPtr = ^PPCInformPBRec;
+
+PPCStartPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	portRefNum: PPCPortRefNum;
+	sessRefNum: PPCSessRefNum;
+	serviceType: PPCServiceType;
+	resFlag: SignedByte;
+	portName: PPCPortPtr;
+	locationName: LocationNamePtr;
+	rejectInfo: LongInt;
+	userData: LongInt;
+	userRefNum: LongInt;
+}
+PPCStartPBPtr = ^PPCStartPBRec;
+
+PPCAcceptPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	filler1: Integer;
+	sessRefNum: PPCSessRefNum;
+}
+PPCAcceptPBPtr = ^PPCAcceptPBRec;
+
+PPCRejectPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	filler1: Integer;
+	sessRefNum: PPCSessRefNum;
+	filler2: Integer;
+	filler3: LongInt;
+	filler4: LongInt;
+	rejectInfo: LongInt;
+}
+PPCRejectPBPtr = ^PPCRejectPBRec;
+
+PPCWritePBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	filler1: Integer;
+	sessRefNum: PPCSessRefNum;
+	bufferLength: Size;
+	actualLength: Size;
+	bufferPtr: Ptr;
+	more: Boolean;
+	filler2: SignedByte;
+	userData: LongInt;
+	blockCreator: OSType;
+	blockType: OSType;
+}
+PPCWritePBPtr = ^PPCWritePBRec;
+
+PPCReadPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	filler1: Integer;
+	sessRefNum: PPCSessRefNum;
+	bufferLength: Size;
+	actualLength: Size;
+	bufferPtr: Ptr;
+	more: Boolean;
+	filler2: SignedByte;
+	userData: LongInt;
+	blockCreator: OSType;
+	blockType: OSType;
+}
+PPCReadPBPtr = ^PPCReadPBRec;
+
+PPCEndPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	filler1: Integer;
+	sessRefNum: PPCSessRefNum;
+}
+PPCEndPBPtr = ^PPCEndPBRec;
+
+PPCClosePBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	portRefNum: PPCPortRefNum;
+}
+PPCClosePBPtr = ^PPCClosePBRec;
+
+IPCListPortsPBRec struct {
+	qLink: Ptr;
+	csCode: CSCode;
+	intUse: Integer;
+	intUsePtr: Ptr;
+	ioCompletion: PPCCompProcPtr;
+	ioResult: OSErr;
+	reserved: LongInt[5];
+	filler1: Integer;
+	startIndex: Integer;
+	requestCount: Integer;
+	actualCount: Integer;
+	portName: PPCPortPtr;
+	locationName: LocationNamePtr;
+	bufferPtr: PortInfoArrayPtr;
+}
+IPCListPortsPBPtr = ^IPCListPortsPBRec;
+
+PPCParamBlockRec union {
+	openParam: PPCOpenPBRec;
+	informParam: PPCInformPBRec;
+	startParam: PPCStartPBRec;
+	acceptParam: PPCAcceptPBRec;
+	rejectParam: PPCRejectPBRec;
+	writeParam: PPCWritePBRec;
+	readParam: PPCReadPBRec;
+	endParam: PPCEndPBRec;
+	closeParam: PPCClosePBRec;
+	listPortsParam: IPCListPortsPBRec;
+}
+PPCParamBlockPtr = ^PPCParamBlockRec;
+
+PPCCompProcPtr(pb: PPCParamBlockPtr);
+PPCFilterProcPtr(locationName: ^LocationNameRec, thePortInfo: ^PortInfoRec): Boolean;
+
+EntityName struct {
+	objStr: Str32;
+	typeStr: Str32;
+	zoneStr: Str32;
+}

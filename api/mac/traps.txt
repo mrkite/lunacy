@@ -1,0 +1,27 @@
+PowerOff() {
+	$a0, $5b
+}
+IOPInfoAccess() {
+	$a0, $86
+}
+IOPMsgRequest() {
+	$a0, $87
+}
+IOPMoveData() {
+	$a0, $88
+}
+NewSCSI() {
+	$a0, $89
+}
+Sleep() {
+	$a0, $8a
+}
+Layout() {
+	$a8, $f7
+}
+PutIcon() {
+	$a9, $ca
+}
+MethodDispatch() {
+	$a9, $f8
+}

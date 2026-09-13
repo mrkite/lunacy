@@ -1,0 +1,115 @@
+SpeakString(s: ^Str255): OSErr {
+	$20, $3c, $02, $20, $00, $0c, $a8, $00
+}
+SpeakText(char: SpeechChannel, textBuf: Ptr, byteLen: LongInt): OSErr {
+	$20, $3c, $06, $24, $00, $0c, $a8, $00
+}
+SpeakBuffer(chan: SpeechChannel): OSErr {
+	$20, $3c, $08, $28, $00, $0c, $a8, $00
+}
+StopSpeech(chan: SpeechChannel): OSErr {
+	$20, $3c, $02, $2c, $00, $0c, $a8, $00
+}
+StopSpeechAt(chan: SpeechChannel, whereToStop: LongInt): OSErr {
+	$20, $3c, $04, $30, $00, $0c, $a8, $00
+}
+PauseSpeechAt(chan: SpeechChannel, whereToStop: LongInt): OSErr {
+	$20, $3c, $04, $34, $00, $0c, $a8, $00
+}
+ContinueSpeech(chan: SpeechChannel): OSErr {
+	$20, $3c, $02, $38, $00, $0c, $a8, $00
+}
+
+MakeVoiceSpec(creator: OSType, id: OSType, voice: VoiceSpecPtr): OSErr {
+	$20, $3c, $06, $04, $00, $0c, $a8, $00
+}
+CountVoices(numVoices: ^Integer): OSErr {
+	$20, $3c, $01, $08, $00, $0c, $a8, $00
+}
+GetIndVoice(index: Integer, voice: VoiceSpecPtr): OSErr {
+	$20, $3c, $03, $0c, $00, $0c, $a8, $00
+}
+GetVoiceDescription(voice: VoiceSpecPtr, info: VoiceDescriptionPtr, infoLength: LongInt): OSErr {
+	$20, $3c, $06, $10, $00, $0c, $a8, $00
+}
+GetVoiceInfo(voice: VoiceSpecPtr, selector: OSType, voiceInfo: Ptr): OSErr {
+	$20, $3c, $06, $14, $00, $0c, $a8, $00
+}
+
+NewSpeechChannel(voice: VoiceSpecPtr, chan: SpeechChannel): OSErr {
+	$20, $3c, $04, $18, $00, $0c, $a8, $00
+}
+DisposeSpeechChannel(chan: SpeechChannel): OSErr {
+	$20, $3c, $02, $1c, $00, $0c, $a8, $00
+}
+
+SpeechManagerVersion(): NumVersion {
+	$20, $3c, $00, $00, $00, $0c, $a8, $00
+}
+SpeechBusy(): Integer {
+	$20, $3c, $00, $3c, $00, $0c, $a8, $00
+}
+SpeechBusySystemWide(): Integer {
+	$20, $3c, $00, $40, $00, $0c, $a8, $00
+}
+
+SetSpeechRate(chan: SpeechChannel, rate: Fixed): OSErr {
+	$20, $3c, $04, $44, $00, $0c, $a8, $00
+}
+GetSpeechRate(chan: SpeechChannel, rate: ^Fixed): OSErr {
+	$20, $3c, $04, $48, $00, $0c, $a8, $00
+}
+SetSpeechPitch(chan: SpeechChannel, pitch: Fixed): OSErr {
+	$20, $3c, $04, $4c, $00, $0c, $a8, $00
+}
+GetSpeechPitch(chan: SpeechChannel, pitch: ^Fixed): OSErr {
+	$20, $3c, $04, $50, $00, $0c, $a8, $00
+}
+SetSpeechInfo(chan: SpeechChannel, selector: OSType, speechInfo: Ptr): OSErr {
+	$20, $3c, $06, $54, $00, $0c, $a8, $00
+}
+GetSpeechInfo(chan: SpeechChannel, selector: OSType, speechInfo: Ptr): OSErr {
+	$20, $3c, $06, $58, $00, $0c, $a8, $00
+}
+
+TextToPhonemes(chan: SpeechChannel, textBuf: Ptr, textBytes: LongInt, phonemeBuf: Handle, phonemeBytes: ^LongInt): OSErr {
+	$20, $3c, $0a, $5c, $00, $0c, $a8, $00
+}
+
+UseDictionary(chan: SpeechChannel, dictionary: Handle): OSErr {
+	$20, $3c, $04, $60, $00, $0c, $a8, $00
+}
+
+SpeechChannelRecord = LongInt;
+SpeechChannel = ^SpeechChannelRecord;
+SpeechChannelPtr = ^SpeechChannel;
+
+VoiceSpec struct {
+	creator: OSType;
+	id: OSType;
+}
+VoiceSpecPtr = ^VoiceSpec;
+
+VoiceGender enum<Integer> {
+	kNeuter = 0,
+	kMale,
+	kFemale,
+}
+
+VoiceDescription struct {
+	length: LongInt;
+	voice: VoiceSpec;
+	version: LongInt;
+	name: Str63;
+	comment: Str255;
+	gender: VoiceGender;
+	age: Integer;
+	script: Integer;
+	language: Integer;
+	region: Integer;
+	reserved1: LongInt;
+	reserved2: LongInt;
+	reserved3: LongInt;
+	reserved4: LongInt;
+}
+VoiceDescriptionPtr = ^VoiceDescription;

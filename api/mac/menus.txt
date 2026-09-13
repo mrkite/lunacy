@@ -1,0 +1,194 @@
+InitProcMenu(resID: Integer) {
+	$a8, $08
+}
+PopUpMenuSelect(menu: MenuHandle, Top: Integer, Left: Integer, PopUpItem: Integer): LongInt {
+	$a8, $0b
+}
+InvalMenuBar() {
+	$a8, $1d
+}
+InsertFontResMenu(theMenu: MenuHandle, afterItem: Integer, scriptFilter: Integer) {
+	$30, $3c, $04, $00, $a8, $25
+}
+InsertIntlResMenu(theMenu: MenuHandle, theType: ResType, afterItem: Integer, scriptFilter: Integer) {
+	$30, $3c, $06, $01, $a8, $25
+}
+InsertMenuItem(theMenu: MenuHandle, itemString: ^Str255, afterItem: Integer) {
+	$a8, $26
+}
+GetItemCmd(theMenu: MenuHandle, item: Integer, cmdChar: ^Char) {
+	$a8, $4e
+}
+SetItemCmd(theMenu: MenuHandle, item: Integer, cmdChar: Char) {
+	$a8, $4f
+}
+
+InitMenus() {
+	$a9, $30
+}
+NewMenu(menuID: Integer, menuTitle: ^Str255): MenuHandle {
+	$a9, $31
+}
+DisposeMenu(theMenu: MenuHandle) {
+	$a9, $32
+}
+AppendMenu(menu: MenuHandle, data: ^Str255) {
+	$a9, $33
+}
+ClearMenuBar() {
+	$a9, $34
+}
+InsertMenu(theMenu: MenuHandle, beforeID: Integer) {
+	$a9, $35
+}
+DeleteMenu(menuID: Integer) {
+	$a9, $36
+}
+DrawMenuBar() {
+	$a9, $37
+}
+HiliteMenu(menuID: Integer) {
+	$a9, $38
+}
+EnableItem(theMenu: MenuHandle, item: Integer) {
+	$a9, $39
+}
+DisableItem(theMenu: MenuHandle, item: Integer) {
+	$a9, $3a
+}
+GetMenuBar(): Handle {
+	$a9, $3b
+}
+SetMenuBar(menuList: Handle) {
+	$a9, $3c
+}
+MenuSelect(startPt: Point): LongInt {
+	$a9, $3d
+}
+MenuKey(ch: Char): LongInt {
+	$a9, $3e
+}
+GetItemIcon(theMenu: MenuHandle, item: Integer, iconIndex: ^Byte) {
+	$a9, $3f
+}
+SetItemIcon(theMenu: MenuHandle, item: Integer, iconIndex: Byte) {
+	$a9, $40
+}
+GetItemStyle(theMenu: MenuHandle, item: Integer, chStyle: ^Style) {
+	$a9, $41
+}
+SetItemStyle(theMenu: MenuHandle, item: Integer, chStyle: Style) {
+	$a9, $42
+}
+GetItemMark(theMenu: MenuHandle, item: Integer, markChar: ^Char) {
+	$a9, $43
+}
+SetItemMark(theMenu: MenuHandle, item: Integer, markChar: Char) {
+	$a9, $44
+}
+CheckItem(theMenu: MenuHandle, item: Integer, checked: Boolean) {
+	$a9, $45
+}
+GetMenuItemText(theMenu: MenuHandle, item: Integer, itemString: ^Str255) {
+	$a9, $46
+}
+SetMenuItemText(theMenu: MenuHandle, item: Integer, itemString: ^Str255) {
+	$a9, $47
+}
+CalcMenuSize(theMenu: MenuHandle) {
+	$a9, $48
+}
+GetMenuHandle(menuID: Integer): MenuHandle {
+	$a9, $49
+}
+SetMenuFlash(count: Integer) {
+	$a9, $4a
+}
+FlashMenUBar(menuID: Integer) {
+	$a9, $4c
+}
+AppendResMenu(theMenu: MenuHandle, theType: ResType) {
+	$a9, $4d
+}
+CountMItems(theMenu: MenuHandle): Integer {
+	$a9, $50
+}
+InsertResMenu(theMenu: MenuHandle, theType: ResType, afterItem: Integer) {
+	$a9, $51
+}
+DeleteMenuItem(theMenu: MenuHandle, item: Integer) {
+	$a9, $52
+}
+GetMenu(resourceID: Integer): MenuHandle {
+	$a9, $bf
+}
+GetNewMBar(menuBarID: Integer): Handle {
+	$a9, $c0
+}
+
+DeleteMCEntries(menuID: Integer, menuItem: Integer) {
+	$aa, $60
+}
+GetMCInfo(): MCTableHandle {
+	$aa, $61
+}
+SetMCInfo(menuCTbl: MCTableHandle) {
+	$aa, $62
+}
+DisposeMCInfo(menuCTbl: MCTableHandle) {
+	$aa, $63
+}
+GetMCEntry(menuID: Integer, menuItem: Integer): MCEntryPtr {
+	$aa, $64
+}
+SetMCEntries(numEntries: Integer, menuCEntries: MCTablePtr) {
+	$aa, $65
+}
+MenuChoice(): LongInt {
+	$aa, $66
+}
+ModalDialogMenuSetup(nowModal: Boolean) {
+	$aa, $67
+}
+
+GetMBarHeight(): Integer {
+	$3e, $b8, $0b, $aa
+}
+
+MenuInfo struct {
+	menuID: Integer;
+	menuWidth: Integer;
+	menuHeight: Integer;
+	menuProc: Handle;
+	enableFlags: LongInt;
+	menuData: Str255;
+}
+MenuPtr = ^MenuInfo;
+MenuHandle = ^MenuPtr;
+
+MenuRec struct {
+	menuOH: MenuHandle;
+	menuLeft: Integer;
+}
+
+MenuList struct {
+	lastMenu: Integer;
+	lastRight: Integer;
+	mbResID: Integer;
+	menu: MenuRec[];
+}
+
+MCEntry struct {
+	mctID: Integer;
+	mctItem: Integer;
+	mctRGB1: RGBColor;
+	mctRGB2: RGBColor;
+	mctRGB3: RGBColor;
+	mctRGB4: RGBColor;
+	mctReserved: Integer;
+}
+MCEntryPtr = ^MCEntry;
+
+MCTable = MCEntry[];
+MCTablePtr = ^MCTable;
+MCTableHandle = ^MCTablePtr;

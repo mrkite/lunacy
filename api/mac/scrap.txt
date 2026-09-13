@@ -1,0 +1,27 @@
+InfoScrap(): PScrapStuff {
+	$a9, $f9
+}
+UnloadScrap(): LongInt {
+	$a9, $fa
+}
+LoadScrap(): LongInt {
+	$a9, $fb
+}
+ZeroScrap(): LongInt {
+	$a9, $fc
+}
+GetScrap(hDest: Handle, theType: ResType, offset: ^LongInt): LongInt {
+	$a9, $fd
+}
+PutScrap(length: LongInt, theType: ResType, source: Ptr): LongInt {
+	$a9, $fe
+}
+
+ScrapStuff struct {
+	scrapSize: LongInt;
+	scrapHandle: Handle;
+	scrapCount: Integer;
+	scrapState: Integer;
+	scrapName: StringPtr;
+}
+PScrapStuff = ^ScrapStuff;

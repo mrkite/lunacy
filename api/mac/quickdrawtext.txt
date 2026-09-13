@@ -1,0 +1,114 @@
+MeasureText(count: Integer, textAddr: Ptr, charLocs: Ptr) {
+	$a8, $37
+}
+
+StdText(byteCount: Integer, textAddr: Ptr, numer: Point, denom: Point) {
+	$a8, $82
+}
+DrawChar(ch: Char) {
+	$a8, $83
+}
+DrawString(s: ^Str255) {
+	$a8, $84
+}
+DrawText(textBuf: Ptr, firstByte: Integer, byteCount: Integer) {
+	$a8, $85
+}
+TextWidth(textBuf: Ptr, firstByte: Integer, byteCount: Integer): Integer {
+	$a8, $86
+}
+TextFont(font: Integer) {
+	$a8, $87
+}
+TextFace(face: Style) {
+	$a8, $88
+}
+TextMode(mode: Mode) {
+	$a8, $89
+}
+TextSize(size: Integer) {
+	$a8, $8a
+}
+GetFontInfo(info: ^FontInfo) {
+	$a8, $8b
+}
+StringWidth(s: ^Str255): Integer {
+	$a8, $8c
+}
+CharWidth(ch: Char): Integer {
+	$a8, $8d
+}
+SpaceExtra(extra: Fixed) {
+	$a8, $8e
+}
+
+Pixel2Char(textBuf: Ptr, textLength: Integer, slop: Integer, pixelWidth: Integer, leadingEdge: ^Boolean): Integer {
+	$2f, $3c, $82, $0e, $00, $14, $a8, $b5
+}
+Char2Pixel(textBuf: Ptr, textLen: Integer, slop: Integer, offset: Integer, direction: Integer): Integer {
+	$2f, $3c, $82, $0c, $00, $16, $a8, $b5
+}
+HiliteText(textPtr: Ptr, textLength: Integer, firstOffset: Integer, secondOffset: Integer, offsets: ^OffsetTable) {
+	$2f, $3c, $80, $0e, $00, $1c, $a8, $b5
+}
+DrawJust(textPtr: Ptr, textLenght: Integer, slop: Integer) {
+	$2f, $3c, $80, $08, $00, $1e, $a8, $b5
+}
+MeasureJust(textPtr: Ptr, textLength: Integer, slop: Integer, charLocs: Ptr) {
+	$2f, $3c, $08, $0c, $00, $20, $a8, $b5
+}
+PortionText(textPtr: Ptr, textLength: LongInt): Fixed {
+	$2f, $3c, $84, $08, $00, $24, $a8, $b5
+}
+VisibleLength(textPtr: Ptr, textLength: LongInt): LongInt {
+	$2f, $3c, $84, $08, $00, $28, $a8, $b5
+}
+PixelToChar(textBuf: Ptr, textLen: LongInt, slop: Fixed, pixelWidth: Fixed, leadingEdge: ^Boolean, widthRemaining: ^Fixed, styleRunPosition: JustStyleCode, numer: Point, denom: Point): Integer {
+	$2f, $3c, $82, $22, $00, $2e, $a8, $b5
+}
+CharToPixel(textBuf: Ptr, textLen: LongInt, slop: Fixed, offset: LongInt, direction: Integer, styleRunPosition: JustStyleCode, numer: Point, denom: Point): Integer {
+	$2f, $3c, $82, $1c, $00, $30, $a8, $b5
+}
+DrawJustified(textPtr: Ptr, textLength: LongInt, slop: Fixed, styleRunPosition: JustStyleCode, numer: Point, denom: Point) {
+	$2f, $3c, $80, $16, $00, $32, $a8, $b5
+}
+MeasureJustified(textPtr: Ptr, textLength: LongInt, slop: Fixed, charLocs: Ptr, styleRunPosition: JustStyleCode, numer: Point, denom: Point) {
+	$2f, $3c, $80, $1a, $00, $34, $a8, $b5
+}
+PortionLine(textPtr: Ptr, textLen: LongInt, styleRunPosition: JustStyleCode, numer: Point, denom: Point): Fixed {
+	$2f, $3c, $84, $12, $00, $36, $a8, $b5
+}
+GetFormatOrder(ordering: FormatOrderPtr, firstFormat: Integer, lastFormat: Integer, lineRight: Boolean, rlDirProc: Ptr, dirParam: Ptr) {
+	$2f, $3c, $80, $12, $ff, $fc, $a8, $b5
+}
+
+StdTxMeas(byteCount: Integer, textAddr: Ptr, numer: ^Point, denom: ^Point, info: ^FontInfo): Integer {
+	$a8, $ed
+}
+
+CharExtra(extra: Fixed) {
+	$aa, $23
+}
+
+FontInfo struct {
+	ascent: Integer;
+	descent: Integer;
+	widMax: Integer;
+	leading: Integer;
+}
+
+FormatOrder = Integer[];
+FormatOrderPtr = ^FormatOrder;
+
+JustStyleCode enum<Integer> {
+	onlyStyleRun = 0,
+	leftStyleRun = 1,
+	rightStyleRun = 2,
+	middleStyleRun = 3
+}
+
+OffPair struct {
+	offFirst: Integer;
+	offSecond: Integer;
+}
+OffsetTable = OffPair[3];

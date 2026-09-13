@@ -1,0 +1,109 @@
+NewGWorld(offscreenGWorld: GWorldPtr, pixelDepth: Integer, boundsRect: ^Rect, cTable: CTabHandle, aGDevice: GDHandle, flags: GWorldFlags): OSErr {
+	$20, $3c, $00, $16, $00, $00, $ab, $1d
+}
+LockPixels(pm: PixMapHandle) {
+	$20, $3c, $00, $04, $00, $01, $ab, $1d
+}
+UnlockPixels(pm: PixMapHandle) {
+	$20, $3c, $00, $04, $00, $02, $ab, $1d
+}
+UpdateGWorld(offscreenGWorld: ^GWorldPtr, pixelDepth: Integer, boundsRect: ^Rect, cTable: CTabHandle, aGDevice: GDHandle, flags: GWorldFlags): GWorldFlags {
+	$20, $3c, $00, $16, $00, $03, $ab, $1d
+}
+DisposeGWorld(offscreenGWorld: GWorldPtr) {
+	$20, $3c, $00, $04, $00, $04, $ab, $1d
+}
+GetGWorld(port: ^CGrafPtr, gdh: ^GDHandle) {
+	$20, $3c, $00, $08, $00, $05, $ab, $1d
+}
+SetGWorld(port: CGrafPtr, gdh: GDHandle) {
+	$20, $3c, $00, $08, $00, $06, $ab, $1d
+}
+CTabChanged(ctab: CTabHandle) {
+	$20, $3c, $00, $04, $00, $07, $ab, $1d
+}
+PixPatChanged(ppat: PixPatHandle) {
+	$20, $3c, $00, $04, $00, $08, $ab, $1d
+}
+PortChanged(port: GrafPtr) {
+	$20, $3c, $00, $04, $00, $09, $ab, $1d
+}
+GDeviceChanged(gdh: GDHandle) {
+	$20, $3c, $00, $04, $00, $0a, $ab, $1d
+}
+AllowPurgePixels(pm: PixMapHandle) {
+	$20, $3c, $00, $04, $00, $0b, $ab, $1d
+}
+NoPurgePixels(pm: PixMapHandle) {
+	$20, $3c, $00, $04, $00, $0c, $ab, $1d
+}
+GetPixelsState(pm: PixMapHandle): GWorldFlags {
+	$20, $3c, $00, $04, $00, $0d, $ab, $1d
+}
+SetPixelsState(pm: PixMapHandle, state: GWorldFlags) {
+	$20, $3c, $00, $08, $00, $0e, $ab, $1d
+}
+GetPixBaseAddr(pm: PixMapHandle): Ptr {
+	$20, $3c, $00, $04, $00, $0f, $ab, $1d
+}
+NewScreenBuffer(globalRect: ^Rect, purgeable: Boolean, gdh: ^GDHandle, offscreenPixMap: ^PixMapHandle): QDErr {
+	$20, $3c, $00, $0e, $00, $10, $ab, $1d
+}
+DisposeScreenBuffer(offscreenPixMap: PixMapHandle) {
+	$20, $3c, $00, $04, $00, $11, $ab, $1d
+}
+GetGWorldDevice(offscreenGWorld: GWorldPtr): GDHandle {
+	$20, $3c, $00, $04, $00, $12, $ab, $1d
+}
+QDDone(port: GrafPtr): Boolean {
+	$20, $3c, $00, $04, $00, $13, $ab, $1d
+}
+OffscreenVersion(): LongInt {
+	$70, $14, $ab, $1d
+}
+NewTempScreenBuffer(globalRect: ^Rect, purgeable: Boolean, gdh: ^GDHandle, offscreenPixMap: ^PixMapHandle): QDErr {
+	$20, $3c, $00, $0e, $00, $15, $ab, $1d
+}
+PixMap32Bit(pmHandle: PixMapHandle): Boolean {
+	$20, $3c, $00, $04, $00, $16, $ab, $1d
+}
+GetGWorldPixmap(offscreenGWorld: GWorldPtr): PixMapHandle {
+	$20, $3c, $00, $04, $00, $17, $ab, $1d
+}
+
+GWorldPtr = CGrafPtr;
+
+GWorldFlags enum<LongInt> {
+	pixPurge = $1,
+	noNewDevice = $2,
+	useTempMem = $4,
+	keepLocal = $8,
+	gWorldFlag4 = $10,
+	gWorldFlag5 = $20,
+	pixelsPurgeable = $40,
+	pixelsLocked = $80,
+	gWorldFlag8 = $100,
+	gWorldFlag9 = $200,
+	gWorldFlag10 = $400,
+	gWorldFlag11 = $800,
+	gWorldFlag12 = $1000,
+	gWorldFlag13 = $2000,
+	gWorldFlag14 = $4000,
+	gWorldFlag15 = $8000,
+	mapPix = $10000,
+	newDepth = $20000,
+	alignPix = $40000,
+	newRowBytes = $80000,
+	reallocPix = $100000,
+	gWorldFlag21 = $200000,
+	gWorldFlag22 = $400000,
+	gWorldFlag23 = $800000,
+	gWorldFlag24 = $1000000,
+	gWorldFlag25 = $2000000,
+	gWorldFlag26 = $4000000,
+	gWorldFlag27 = $8000000,
+	clipPix = $10000000,
+	stretchPix = $20000000,
+	ditherPix = $40000000,
+	gwFlagErr = $80000000,
+}

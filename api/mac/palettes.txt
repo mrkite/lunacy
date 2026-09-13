@@ -1,0 +1,109 @@
+InitPalettes() {
+	$aa, $90
+}
+NewPalette(entries: Integer, srcColors: CTabHandle, srcUsage: Integer, srcTolerance: Integer): PaletteHandle {
+	$aa, $91
+}
+GetNewPalette(PaletteID: Integer): PaletteHandle {
+	$aa, $92
+}
+DisposePalette(srcPalette: PaletteHandle) {
+	$aa, $93
+}
+ActivatePalette(srcWindow: WindowPtr) {
+	$aa, $94
+}
+SetPalette(dstWindow: WindowPtr, srcPalette: PaletteHandle, cUpdates: Boolean) {
+	$aa, $95
+}
+GetPalette(srcWindow: WindowPtr): PaletteHandle {
+	$aa, $96
+}
+PmForeColor(dstEntry: Integer) {
+	$aa, $97
+}
+PmBackColor(dstEntry: Integer) {
+	$aa, $98
+}
+AnimateEntry(dstWindow: WindowPtr, dstEntry: Integer, srcRGB: ^RGBColor) {
+	$aa, $99
+}
+AnimatePalette(dstWindow: WindowPtr, srcCTab: CTabHandle, srcIndex: Integer, dstEntry: Integer, dstLength: Integer) {
+	$aa, $9a
+}
+GetEntryColor(srcPalette: PaletteHandle, srcEntry: Integer, dstRGB: ^RGBColor) {
+	$aa, $9b
+}
+SetEntryColor(dstPalette: PaletteHandle, dstEntry: Integer, srcRGB: ^RGBColor) {
+	$aa, $9c
+}
+GetEntryUsage(srcPalette: PaletteHandle, srcEntry: Integer, dstUgae: ^Integer, dstTolerance: ^Integer) {
+	$aa, $9d
+}
+SetEntryUsage(dstPalette: PaletteHandle, dstEntry: Integer, srcUsage: Integer, srcTolerance: Integer) {
+	$aa, $9e
+}
+CTab2Palette(srcCTab: CTabHandle, dstPalette: PaletteHandle, srcUsage: Integer, srcTolerance: Integer) {
+	$aa, $9f
+}
+Palette2CTab(srcPalette: PaletteHandle, dstCTab: CTabHandle) {
+	$aa, $a0
+}
+CopyPalette(srcPalette: PaletteHandle, dstPalette: PaletteHandle, srcEntry: Integer, dstEntry: Integer, dstLength: Integer) {
+	$aa, $a1
+}
+
+Entry2Index(entry: Integer): LongInt {
+	$70, $00, $aa, $a2
+}
+RestoreDeviceClut(gd: GDHandle) {
+	$70, $02, $aa, $a2
+}
+ResizePalette(p: PaletteHandle, size: Integer) {
+	$70, $03, $aa, $a2
+}
+SaveFore(c: ^ColorSpec) {
+	$30, $3c, $04, $0d, $aa, $a2
+}
+SaveBack(c: ^ColorSpec) {
+	$30, $3c, $04, $0e, $aa, $a2
+}
+RestoreFore(c: ^ColorSpec) {
+	$30, $3c, $04, $0f, $aa, $a2
+}
+RestoreBack(c: ^ColorSpec) {
+	$30, $3c, $04, $10, $aa, $a2
+}
+SetDepth(aDevice: GDHandle, depth: Integer, whichFlags: Integer, flags: Integer): OSErr {
+	$30, $3c, $0a, $13, $aa, $a2
+}
+HasDepth(aDevice: GDHandle, depth: Integer, whichFlags: Integer, flgas: Integer): Integer {
+	$30, $3c, $0a, $14, $aa, $a2
+}
+PMgrVersion(): Integer {
+	$70, $15, $aa, $a2
+}
+SetPaletteUpdates(p: PaletteHandle, updates: Integer) {
+	$30, $3c, $06, $16, $aa, $a2
+}
+GetPaletteUpdates(p: PaletteHandle): Integer {
+	$30, $3c, $04, $17, $aa, $a2
+}
+GetGray(device: GDHandle, backGround: ^RGBColor, foreGround: ^RGBColor): Boolean {
+	$30, $3c, $0c, $19, $aa, $a2
+}
+
+ColorInfo struct {
+	ciRGB: RGBColor;
+	ciUsage: Integer;
+	ciTolerance: Integer;
+	ciDataFields: Integer[3];
+}
+
+Palette struct {
+	pmEntries: Integer;
+	pmDataFields: Integer[7];
+	pmInfo: ColorInfo[];
+}
+PalettePtr = ^Palette;
+PaletteHandle = ^PalettePtr;

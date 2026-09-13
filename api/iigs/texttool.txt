@@ -1,0 +1,123 @@
+TxtMaskRec struct {
+	orMask: u16;
+	andMask: u16;
+}
+
+DeviceType enum<u16> {
+	basicType,
+	pascalType,
+	ramBased,
+}
+
+EchoFlag enum<u16> {
+	noEcho,
+	echo,
+}
+
+DeviceRec struct {
+	ptrOrSlot: u32;
+	deviceType: DeviceType;
+}
+
+TextBootInit() {
+	$a2, $0c, $01, $22, $00, $00, $e1
+}
+TextStartUp() {
+	$a2, $0c, $02, $22, $00, $00, $e1
+}
+TextShutDown() {
+	$a2, $0c, $03, $22, $00, $00, $e1
+}
+TextVersion(): i16 {
+	$a2, $0c, $04, $22, $00, $00, $e1
+}
+TextReset() {
+	$a2, $0c, $05, $22, $00, $00, $e1
+}
+TextStatus(): bool {
+	$a2, $0c, $06, $22, $00, $00, $e1
+}
+SetInGlobals(andMask: i16, orMask: i16) {
+	$a2, $0c, $09, $22, $00, $00, $e1
+}
+SetOutGlobals(andMask: i16, orMask: i16) {
+	$a2, $0c, $0a, $22, $00, $00, $e1
+}
+SetErrGlobals(andMask: i16, orMask: i16) {
+	$a2, $0c, $0b, $22, $00, $00, $e1
+}
+GetInGlobals(): TxtMaskRec {
+	$a2, $0c, $0c, $22, $00, $00, $e1
+}
+GetOutGlobals(): TxtMaskRec {
+	$a2, $0c, $0d, $22, $00, $00, $e1
+}
+GetErrGlobals(): TxtMaskRec {
+	$a2, $0c, $0e, $22, $00, $00, $e1
+}
+SetInputDevice(deviceType: DeviceType, ptrOrSlot: i32) {
+	$a2, $0c, $0f, $22, $00, $00, $e1
+}
+SetOutputDevice(deviceType: DeviceType, ptrOrSlot: i32) {
+	$a2, $0c, $10, $22, $00, $00, $e1
+}
+SetErrorDevice(deviceType: DeviceType, ptrOrSlot: i32) {
+	$a2, $0c, $11, $22, $00, $00, $e1
+}
+GetInputDevice(): ^DeviceRec {
+	$a2, $0c, $12, $22, $00, $00, $e1
+}
+GetOutputDevice(): ^DeviceRec {
+	$a2, $0c, $13, $22, $00, $00, $e1
+}
+GetErrorDevice(): ^DeviceRec {
+	$a2, $0c, $14, $22, $00, $00, $e1
+}
+InitTextDev(deviceNum: i16) {
+	$a2, $0c, $15, $22, $00, $00, $e1
+}
+CtlTextDev(deviceNum: i16, controlCode: i16) {
+	$a2, $0c, $16, $22, $00, $00, $e1
+}
+StatusTextdev(deviceNum: i16, requestCode: i16) {
+	$a2, $0c, $17, $22, $00, $00, $e1
+}
+WriteChar(theChar: i16) {
+	$a2, $0c, $18, $22, $00, $00, $e1
+}
+ErrWriteChar(theChar: i16) {
+	$a2, $0c, $19, $22, $00, $00, $e1
+}
+WriteLine(str: ^String255) {
+	$a2, $0c, $1a, $22, $00, $00, $e1
+}
+ErrWriteLine(str: ^String255) {
+	$a2, $0c, $1b, $22, $00, $00, $e1
+}
+WriteString(str: ^String255) {
+	$a2, $0c, $1c, $22, $00, $00, $e1
+}
+ErrWriteString(str: ^String255) {
+	$a2, $0c, $1d, $22, $00, $00, $e1
+}
+TextWriteBlock(textPtr: Ptr, offset: i16, count: i16) {
+	$a2, $0c, $1e, $22, $00, $00, $e1
+}
+ErrWriteBlock(textPtr: Ptr, offset: i16, count: i16) {
+	$a2, $0c, $1f, $22, $00, $00, $e1
+}
+WriteCString(cStrPtr: CStringPtr) {
+	$a2, $0c, $20, $22, $00, $00, $e1
+}
+ErrWriteCString(cStrPtr: CStringPtr) {
+	$a2, $0c, $21, $22, $00, $00, $e1
+}
+ReadChar(echoFlag: EchoFlag): i16 {
+	$a2, $0c, $22, $22, $00, $00, $e1
+}
+TextReadBlock(bufferPtr: Ptr, offset: i16, blockSize: i16, echoFlag: EchoFlag) {
+	$a2, $0c, $23, $22, $00, $00, $e1
+}
+ReadLine(bufferPtr: Ptr, maxCount: i16, eolChar: i16, echoFlag: EchoFlag): i16 {
+	$a2, $0c, $24, $22, $00, $00, $e1
+}

@@ -1,0 +1,100 @@
+SetFractEnable(fractEnable: Boolean) {
+	$a8, $14
+}
+ScrnBitMap() {
+	$a8, $33
+}
+SetFScaleDisable(fscaleDisable: Boolean) {
+	$a8, $34
+}
+FontMetrics(theMetrics: ^FMetricRec) {
+	$a8, $35
+}
+
+IsOutline(numer: Point, denom: Point): Boolean {
+	$70, $00, $a8, $54
+}
+SetOutlinePreferred(outlinePreferred: Boolean) {
+	$70, $01, $a8, $54
+}
+OutlineMetrics(byteCount: Integer, textPtr: Ptr, numer: Point, denom: Point, yMax: ^Integer, yMin: ^Integer, awArray: FixedPtr, lsbArray: FixedPtr, boundsArray: RectPtr): OSErr {
+	$70, $08, $a8, $54
+}
+GetOutlinePreferred(): Boolean {
+	$70, $09, $a8, $54
+}
+SetPreserveGlyph(preserveGlyph: Boolean) {
+	$70, $0a, $a8, $54
+}
+GetPreserveGlyph(): Boolean {
+	$70, $0b, $a8, $54
+}
+FlushFonts(): OSErr {
+	$70, $0c, $a8, $54
+}
+
+InitFonts() {
+	$a8, $fe
+}
+GetFontName(familyID: Integer, theName: ^Str255) {
+	$a8, $ff
+}
+GetFNum(theName: ^Str255, familyID: ^Integer) {
+	$a9, $00
+}
+FMSwapFont(inRect: ^FMInput): FMOutPtr {
+	$a9, $01
+}
+RealFont(fontNum: Integer, size: Integer): Boolean {
+	$a9, $02
+}
+SetFontLock(lockFlag: Boolean) {
+	$a9, $03
+}
+
+GetDefFontSize(): Integer {
+	$3e, $b8, $0b, $a8, $66, $04, $3e, $bc, $00, $0c
+}
+GetSysFont(): Integer {
+	$3e, $b8, $0b, $a6
+}
+GetAppFont(): Integer {
+	$3e, $b8, $09, $84
+}
+
+FMInput struct {
+	family: Integer;
+	size: Integer;
+	face: Style;
+	needBits: Boolean;
+	device: Integer;
+	numer: Point;
+	denom: Point;
+}
+FMOutput struct {
+	errNum: Integer;
+	fontHandle: Handle;
+	bold: Byte;
+	italic: Byte;
+	ulOffset: Byte;
+	ulShadow: Byte;
+	ulThick: Byte;
+	shadow: Byte;
+	extra: SignedByte;
+	ascent: Byte;
+	descent: Byte;
+	widMax: Byte;
+	leading: SignedByte;
+	fOutCurStyle: Byte;
+	numer: Point;
+	denom: Point;
+}
+FMOutPtr = ^FMOutput;
+
+FMetricRec struct {
+	ascent: Fixed;
+	descent: Fixed;
+	leading: Fixed;
+	widMax: Fixed;
+	wTabHandle: Handle;
+}

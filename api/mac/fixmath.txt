@@ -1,0 +1,48 @@
+FixATan2(x: LongInt, y: LongInt): Fixed {
+	$a8, $18
+}
+Long2Fix(x: LongInt): Fixed {
+	$a8, $3f
+}
+Fix2Long(x: Fixed): LongInt {
+	$a8, $40
+}
+Fix2Frac(x: Fixed): Fract {
+	$a8, $41
+}
+Frac2Fix(x: Fract): Fixed {
+	$a8, $42
+}
+Fix2X(x: Fixed): ^Extended {
+	$a8, $43
+}
+X2Fix(x: ^Extended): Fixed {
+	$a8, $44
+}
+Frac2X(x: Fract): ^Extended {
+	$a8, $45
+}
+X2Frac(x: ^Extended): Fract {
+	$a8, $46
+}
+FracCos(x: Fixed): Fract {
+	$a8, $47
+}
+FractSin(x: Fixed): Fract {
+	$a8, $48
+}
+FracSqrt(x: Fract): Fract {
+	$a8, $49
+}
+FracMul(x: Fract, y: Fract): Fract {
+	$a8, $4a
+}
+FractDiv(x: Fract, y: Fract): Fract {
+	$a8, $4b
+}
+UserDelay() {
+	$a8, $4c
+}
+FixDiv(x: Fixed, y: Fixed): Fixed {
+	$a8, $4d
+}

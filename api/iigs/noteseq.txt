@@ -1,0 +1,63 @@
+LocRec struct {
+	curPhraseItem: u16;
+	curPattItem: u16;
+	curLevel: u16;
+}
+
+SeqBootInit() {
+	$a2, $1a, $01, $22, $00, $00, $e1
+}
+SeqStartUp(dPageAddr: i16, mode: i16, updateRate: i16, increment: i16) {
+	$a2, $1a, $02, $22, $00, $00, $e1
+}
+SeqShutDown() {
+	$a2, $1a, $03, $22, $00, $00, $e1
+}
+SeqVersion(): i16 {
+	$a2, $1a, $04, $22, $00, $00, $e1
+}
+SeqReset() {
+	$a2, $1a, $05, $22, $00, $00, $e1
+}
+SeqStatus(): bool {
+	$a2, $1a, $06, $22, $00, $00, $e1
+}
+SetIncr(incremenet: i16) {
+	$a2, $1a, $09, $22, $00, $00, $e1
+}
+ClearIncr() {
+	$a2, $1a, $0a, $22, $00, $00, $e1
+}
+GetTimer(): i16 {
+	$a2, $1a, $0b, $22, $00, $00, $e1
+}
+GetLoc(): ^LocRec {
+	$a2, $1a, $0c, $22, $00, $00, $e1
+}
+SeqAllNotesOff() {
+	$a2, $1a, $0d, $22, $00, $00, $e1
+}
+SetTrkInfo(priority: i16, instIndex: i16, trackNum: i16) {
+	$a2, $1a, $0e, $22, $00, $00, $e1
+}
+StartSeq(errHndlrRoutine: VoidProcPtr, compRoutine: VoidProcPtr, sequence: Handle) {
+	$a2, $1a, $0f, $22, $00, $00, $e1
+}
+StepSeq() {
+	$a2, $1a, $10, $22, $00, $00, $e1
+}
+StopSeq(next: i16) {
+	$a2, $1a, $11, $22, $00, $00, $e1
+}
+SetInstTable(instTable: Handle) {
+	$a2, $1a, $12, $22, $00, $00, $e1
+}
+StartInts() {
+	$a2, $1a, $13, $22, $00, $00, $e1
+}
+StopInts() {
+	$a2, $1a, $14, $22, $00, $00, $e1
+}
+StartSeqRel(errHandlerPtr: VoidProcPtr, compRoutine: VoidProcPtr, sequence: Handle) {
+	$a2, $1a, $15, $22, $00, $00, $e1
+}

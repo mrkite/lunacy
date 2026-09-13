@@ -1,0 +1,23 @@
+NMInstall(nmReqPr: NMRecPtr): OSErr {
+	$20, $5f, $a0, $5e, $3e, $80
+}
+NMRemove(nmReqPtr: NMRecPtr): OSErr {
+	$20, $5f, $a0, $5f, $3e, $80
+}
+
+NMRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	nmFlags: Integer;
+	nmPrivate: LongInt;
+	nmReserved: Integer;
+	nmMark: Integer;
+	nmIcon: Handle;
+	nmSound: Handle;
+	nmStr: StringPtr;
+	nmResp: NMProcPtr;
+	nmRefCon: LongInt;
+}
+NMRecPtr = ^NMRec;
+
+NMProcPtr = ProcPtr;

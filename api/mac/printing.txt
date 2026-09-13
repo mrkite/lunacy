@@ -1,0 +1,245 @@
+PrOpen() {
+	$2f, $3c, $c8, $00, $00, $00, $a8, $fd
+}
+PrClose() {
+	$2f, $3c, $d0, $00, $00, $00, $a8, $fd
+}
+PrintDefault(hPrint: THPrint) {
+	$2f, $3c, $20, $04, $04, $80, $a8, $fd
+}
+PrValidate(hPrint: THPrint): Boolean {
+	$2f, $3c, $52, $04, $04, $98, $a8, $fd
+}
+PrStlDialog(hPrint: THPrint): Boolean {
+	$2f, $3c, $2a, $04, $04, $84, $a8, $fd
+}
+PrJobDialog(hPrint: THPrint): Boolean {
+	$2f, $3c, $32, $04, $04, $88, $a8, $fd
+}
+PrDlgMain(hPrint: THPrint, pDlgInit: PDlgInitProcPtr): Boolean {
+	$2f, $3c, $4a, $04, $08, $94, $a8, $fd
+}
+PrStlInit(hPrint: THPrint): TPPrDlg {
+	$2f, $3c, $3c, $04, $04, $0c, $a8, $fd
+}
+PrJobInit(hPrint: THPrint): TPPrDlg {
+	$2f, $3c, $44, $04, $04, $10, $a8, $fd
+}
+PrJobMerge(hPrintSrc: THPrint, hPrintDst: THPrint) {
+	$2f, $3c, $58, $04, $08, $9c, $a8, $fd
+}
+PrOpenDoc(hPrint: THPrint, pPrPort: TPPrPort, pIOBuf: Ptr): TPPrPort {
+	$2f, $3c, $04, $00, $0c, $00, $a8, $fd
+}
+PrCloseDoc(pPrPort: TPPrPort) {
+	$2f, $3c, $08, $00, $04, $84, $a8, $fd
+}
+PrOpenPage(pPrPort: TPPrPort, pPageFrame: TPRect) {
+	$2f, $3c, $10, $00, $08, $08, $a8, $fd
+}
+PrClosePage(pPrPort: TPPrPort) {
+	$2f, $3c, $18, $00, $04, $0c, $a8, $fd
+}
+PrPicFile(hPrint: THPrint, pPrPort: TPPrPort, pIOBuf: Ptr, pDevBuf: Ptr, prStatus: ^TPrStatus) {
+	$2f, $3c, $60, $05, $14, $80, $a8, $fd
+}
+PrGeneral(pData: ^PrData) {
+	$2f, $3c, $70, $07, $04, $80, $a8, $fd
+}
+PrError(): Integer {
+	$2f, $3c, $ba, $00, $00, $00, $a8, $fd
+}
+PrSetError(iErr: Integer) {
+	$2f, $3c, $c0, $00, $02, $00, $a8, $fd
+}
+PrDrvrVers(): Integer {
+	$2f, $3c, $9a, $00, $00, $00, $a8, $fd
+}
+PrDrvrOpen() {
+	$2f, $3c, $80, $00, $00, $00, $a8, $fd
+}
+PrDrvrClose() {
+	$2f, $3c, $88, $00, $00, $00, $a8, $fd
+}
+PrDrvrDCE(): Handle {
+	$2f, $3c, $94, $00, $00, $00, $a8, $fd
+}
+PrCtlCall(iWhichCtl: Integer, lParam1: LongInt, lParam2: LongInt, lParam3: LongInt) {
+	$2f, $3c, $a0, $00, $0e, $00, $a8, $fd
+}
+
+TPrDlg struct {
+	Dlg: DialogRecord;
+	pFltrProc: ModalFilterProcPtr;
+	pItemProc: PItemProcPtr;
+	hPrintUsr: THPrint;
+	fDoIt: Boolean;
+	fDone: Boolean;
+	lUser1: LongInt;
+	lUser2: LongInt;
+	lUser3: LongInt;
+	lUser4: LongInt;
+}
+TPPrDlg = ^TPrDlg;
+PItemProcPtr(theDialog: DialogPtr, item: Integer);
+PDlgInitProcPtr(hPrint: THPrint): TPPrDlg;
+
+TPrPort struct {
+	gPort: GrafPort;
+	gProcs: QDProcs;
+	lGParam1: LongInt;
+	lGParam2: LongInt;
+	lGParam3: LongInt;
+	lGParam4: LongInt;
+	fOurPtr: Boolean;
+	fOurBits: Boolean;
+}
+TPPrPort = ^TPrPort;
+
+TPRect = ^Rect;
+
+PrIdleProcPtr = ProcPtr;
+
+TPrStatus struct {
+	iTotPages: Integer;
+	iCurPage: Integer;
+	iTotCopies: Integer;
+	iCurCopy: Integer;
+	iTotBands: Integer;
+	iCurBand: Integer;
+	fPgDirty: Boolean;
+	fImaging: Boolean;
+	hPrint: THPrint;
+	pPrPort: TPPrPort;
+	hPic: PicHandle;
+}
+
+TPrint struct {
+	iPrVersion: Integer;
+	prInfo: TPrInfo;
+	rPaper: Rect;
+	prStl: TPrStl;
+	prInfoPT: TPrInfo;
+	prXInfo: TPrXInfo;
+	prJob: TPrJob;
+	printX: Integer[20];
+}
+TPPrint = ^TPrint;
+THPrint = ^TPPrint;
+
+TPrInfo struct {
+	iDev: Integer;
+	iVRes: Integer;
+	iHRes: Integer;
+	rPage: Rect;
+}
+
+TPrJob struct {
+	iFstPage: Integer;
+	iLstPage: Integer;
+	iCopies: Integer;
+	bJDocLoop: SignedByte;
+	fFromUsr: Boolean;
+	pIdleProc: PrIdleProcPtr;
+	pFilename: StringPtr;
+	iFileVol: Integer;
+	bFileVers: SignedByte;
+	bJobX: SignedByte;
+}
+
+TPrStl struct {
+	wDev: Integer;
+	iPageV: Integer;
+	iPageH: Integer;
+	bPort: SignedByte;
+	feed: TFeed;
+}
+
+TFeed enum<SignedByte> {
+	feedCut,
+	feedFanfold,
+	feedMechCut,
+	feedOther,
+}
+
+TScan enum<SignedByte> {
+	scanTB,
+	scanBT,
+	scanLR,
+	scanRL,
+}
+
+TPrXInfo struct {
+	iRowBytes: Integer;
+	iBandV: Integer;
+	iBandH: Integer;
+	iDevBytes: Integer;
+	iBands: Integer;
+	bPatScale: SignedByte;
+	bUlThick: SignedByte;
+	bUlOffset: SignedByte;
+	bUlShadow: SignedByte;
+	scan: TScan;
+	bXInfoX: SignedByte;
+}
+
+PrData union {
+	getRslDataOp: TGetRslBlk;
+	setRslOp: TSetRslBlk;
+	getRotnOp: TGetRotnBlk;
+	draftBitsOp: TDftBitsBlk
+}
+
+TGetRslBlk struct {
+	iOpCode: PrOpcode;
+	iError: Integer;
+	lReserved: LongInt;
+	iRgType: Integer;
+	xRslRg: TRslRg;
+	yRslRg: TRslRg;
+	iRslRecCnt: Integer;
+	rgRslRec: TRslRec[27];
+}
+
+TSetRslBlk struct {
+	iOpCode: PrOpcode;
+	iError: Integer;
+	lReserved: LongInt;
+	hPrint: THPrint;
+	iXRsl: Integer;
+	iYRsl: Integer;
+}
+
+TGetRotnBlk struct {
+	iOpCode: PrOpcode;
+	iError: Integer;
+	lReserved: LongInt;
+	hPrint: THPrint;
+	fLandscape: Boolean;
+	bXtra: SignedByte;
+}
+
+TDftBitsBlk struct {
+	iOpCode: PrOpcode;
+	iError: Integer;
+	lReserved: LongInt;
+	hPrint: THPrint;
+}
+
+TRslRg struct {
+	iMin: Integer;
+	iMax: Integer;
+}
+
+TRslRec struct {
+	iXRsl: Integer;
+	iYRsl: Integer;
+}
+
+PrOpcode enum<Integer> {
+	getRslDataOp = 4,
+	setRslOp = 5,
+	draftBitsOp = 6,
+	noDraftBitsOp = 7,
+	getRotnOp = 8,
+}

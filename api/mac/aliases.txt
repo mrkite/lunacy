@@ -1,0 +1,38 @@
+FindFolder(vRefNum: Integer, folderType: OSType, createFolder: Boolean, foundVRefNum: ^Integer, foundDirID: ^LongInt): OSErr {
+	$70, $00, $a8, $23
+}
+NewAlias(fromFile: FSSpecPtr, target: ^FSSpec, alias: ^AliasHandle): OSErr {
+	$70, $02, $a8, $23
+}
+ResolveAlias(fromFile: FSSpecPtr, alias: AliasHandle, target: ^FSSpec, wasChanged: ^Boolean): OSErr {
+	$70, $03, $a8, $23
+}
+MatchAlias(fromFile: FSSpecPtr, rulesMask: LongInt, alias: AliasHandle, aliasCount: ^Integer, aliasList: FSSpecArrayPtr, needsUpdate: ^Boolean, aliasFilter: AliasFilterProcPtr, yourDataPtr: Ptr): OSErr {
+	$70, $05, $a8, $23
+}
+UpdateAlias(fromFile: FSSpecPtr, target: ^FSSpec, alias: AliasHandle, wasChanged: ^Boolean): OSErr {
+	$70, $06, $a8, $23
+}
+GetAliasInfo(alias: AliasHandle, index: AliasInfoType, theString: ^Str63): OSErr {
+	$70, $07, $a8, $23
+}
+NewAliasMinimal(target: ^FSSpec, alias: ^AliasHandle): OSErr {
+	$70, $08, $a8, $23
+}
+NewAliasMinimalFromFullPath(fullPathLength: Integer, fullPath: Ptr, zoneName: ^Str32, serverName: ^Str31, alias: ^AliasHandle): OSErr {
+	$70, $09, $a8, $23
+}
+ResolveAliasFile(theSpec: ^FSSpec, resolveAliasChains: Boolean, targetIsFolder: ^Boolean, wasAliased: ^Boolean): OSErr {
+	$70, $0c, $a8, $23
+}
+
+AliasFilterProcPtr(cpbPtr: CInfoPBPtr, quitFlag: ^Boolean, myDataPtr: Ptr): Boolean;
+
+AliasInfoType = Integer;
+AliasRecord struct {
+	userType: OSType;
+	aliasSize: Integer;
+}
+AliasPtr = ^AliasRecord;
+AliasHandle = ^AliasPtr;
+

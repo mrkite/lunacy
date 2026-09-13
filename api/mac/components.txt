@@ -1,0 +1,135 @@
+GetComponentVersion(ci: ComponentInstance): LongInt {
+	$2f, $3c, $00, $00, $ff, $fc, $70, $00, $a8, $2a
+}
+ComponentFunctionImplemented(ci: ComponentInstance, ftnNumber: Integer): LongInt {
+	$2f, $3c, $00, $02, $ff, $fd, $70, $00, $a8, $2a
+}
+ComponentSetTarget(ci: ComponentInstance, target: ComponentInstance): LongInt {
+	$2f, $3c, $00, $04, $ff, $fa, $70, $00, $a8, $2a
+}
+RegisterComponent(cd: ^ComponentDescription, componentEntryPoint: ComponentRoutine, global: Integer, componentName: Handle, componentInfo: Handle, componentIcon: Handle): Component {
+	$70, $01, $a8, $2a
+}
+UnregisterComponent(aComponent: Component): OSErr {
+	$70, $02, $a8, $2a
+}
+CountComponents(looking: ^ComponentDescription): LongInt {
+	$70, $03, $a8, $2a
+}
+FindNextComponent(aComponent: Component, looking: ^ComponentDescription): Component {
+	$70, $04, $a8, $2a
+}
+GetComponentInfo(aComponent: Component, cd: ^ComponentDescription, componentName: Handle, componentInfo: Handle, componentIcon: Handle): OSErr {
+	$70, $05, $a8, $2a
+}
+GetComponentListModSeed(): LongInt {
+	$70, $06, $a8, $2a
+}
+OpenComponent(aComponent: Component): ComponentInstance {
+	$70, $07, $a8, $2a
+}
+CloseCompoent(aComponentInstance: ComponentInstance): OSErr {
+	$70, $08, $a8, $2a
+}
+GetComponentInstanceError(aComponentInstance: ComponentInstance): OSErr {
+	$70, $0a, $a8, $2a
+}
+SetComponentInstanceError(aComponentInstance: ComponentInstance, theError: OSErr) {
+	$70, $0b, $a8, $2a
+}
+GetComponentInstanceStorage(aComponentIntsance: ComponentInstance): Handle {
+	$70, $0c, $a8, $2a
+}
+SetComponentInstanceStorage(aComponentInstance: ComponentInstance, theStorage: Handle) {
+	$70, $0d, $a8, $2a
+}
+GetComponentInstanceA5(aComponentInstance: ComponentInstance): LongInt {
+	$70, $0e, $a8, $2a
+}
+SetComponentInstanceA5(aComponentInstance: ComponentInstance, theA5: LongInt) {
+	$70, $0f, $a8, $2a
+}
+GetComponentRefcon(aComponent: Component): LongInt {
+	$70, $10, $a8, $2a
+}
+SetComponentRefcon(aComponent: Component, theRefcon: LongInt) {
+	$70, $11, $a8, $2a
+}
+RegisterComponentResource(cr: ComponentResourceHandle, global: Integer): Component {
+	$70, $12, $a8, $2a
+}
+CountComponentInstances(aComponent: Component): LongInt {
+	$70, $13, $a8, $2a
+}
+RegisterComponentResourceFile(resRefNum: Integer, global: Integer): LongInt {
+	$70, $14, $a8, $2a
+}
+OpenComponentResFile(aComponent: Component): Integer {
+	$70, $15, $a8, $2a
+}
+CloseComponentResFile(refnum: Integer): OSErr {
+	$70, $18, $a8, $2a
+}
+CaptureComponent(capturedComponent: Component, capturingComponent: Component): Component {
+	$70, $1c, $a8, $2a
+}
+UncaptureComponent(aComponent: Component): OSErr {
+	$70, $1d, $a8, $2a
+}
+SetDefaultComponent(aComponent: Component, flags: Integer): OSErr {
+	$70, $1e, $a8, $2a
+}
+OpenDefaultComponent(componentType: OSType, componentSubType: OSType): ComponentInstance {
+	$70, $21, $a8, $2a
+}
+DelegateComponentCall(originalParams: ComponentParameters, ci: ComponentInstance): LongInt {
+	$70, $24, $a8, $2a
+}
+CallComponentFunction(params: ComponentParameters, func: ComponentFunction): LongInt {
+	$70, $ff, $a8, $2a
+}
+
+ComponentParameters struct {
+	flags: Char;
+	paramSize: Char;
+	what: Integer;
+	params: LongInt[];
+}
+
+ComponentDescription struct {
+	componentType: OSType;
+	componentSubType: OSType;
+	componentManufacturer: OSType;
+	componentFlags: LongInt;
+	componentFlagsMask: LongInt;
+}
+
+ResourceSpec struct {
+	resType: OSType;
+	resID: Integer;
+}
+
+ComponentResource struct {
+	cd: ComponentDescription;
+	component: ResourceSpec;
+	componentName: ResourceSpec;
+	componentInfo: ResourceSpec;
+	componentIcon: ResourceSpec;
+}
+ComponentResourcePtr = ^ComponentResource;
+ComponentResourceHandle = ^ComponentResourcePtr;
+
+ComponentResult = LongInt;
+
+ComponentRecord struct {
+	data: LongInt[];
+}
+Component = ^ComponentRecord;
+
+ComponentInstanceRecord struct {
+	data: LongInt[];
+}
+ComponentInstance = ^ComponentInstanceRecord;
+
+ComponentRoutine(params: ComponentParameters, storage: Handle): ComponentResult;
+ComponentFunction(): ComponentResult;

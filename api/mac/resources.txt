@@ -1,0 +1,164 @@
+RGetResource(theType: ResType, theID: Integer): Handle {
+	$a8, $0c
+}
+Count1Resources(theType: ResType): Integer {
+	$a8, $0d
+}
+Get1IndResource(theType: ResType, index: Integer): Handle {
+	$a8, $0e
+}
+Get1IndType(theType: ^ResType, index: Integer) {
+	$a8, $0f
+}
+Unique1ID(theType: ResType): Integer {
+	$a8, $10
+}
+HOpenResFile(vRefNum: Integer, dirID: LongInt, fileName: ^Str255) {
+	$a8, $1a
+}
+HCreateResFile(vRefNum: Integer, dirID: LongInt, fileName: ^Str255) {
+	$a8, $1b
+}
+Count1Types(): Integer {
+	$a8, $1c
+}
+Get1Resource(theType: ResType, theID: Integer): Handle {
+	$a8, $1f
+}
+Get1NamedResource(theType: ResType, name: ^Str255): Handle {
+	$a8, $20
+}
+GetMaxResourceSize(theResource: Handle): LongInt {
+	$a8, $21
+}
+ReadPartialResource(theReosurce: Handle, offset: LongInt, buffer: Ptr, count: LongInt) {
+	$70, $01, $a8, $22
+}
+WritePartialResource(theResource: Handle, offset: LongInt, buffer: Ptr, count: LongInt) {
+	$70, $02, $a8, $22
+}
+SetResourceSize(theResource: Handle, newSize: LongInt) {
+	$70, $03, $a8, $22
+}
+GetNextFOND(fondHandle: Handle): Handle {
+	$70, $0a, $a8, $22
+}
+
+DetachResource(theResource: Handle) {
+	$a9, $92
+}
+SetResPurge(install: Boolean) {
+	$a9, $93
+}
+CurResFile(): Integer {
+	$a9, $94
+}
+InitResources(): Integer {
+	$a9, $95
+}
+RsrcZoneInit() {
+	$a9, $96
+}
+OpenResFile(fileName: ^Str255): Integer {
+	$a9, $97
+}
+UseResFile(refNum: Integer) {
+	$a9, $98
+}
+UpdateResFile(refNum: Integer) {
+	$a9, $99
+}
+CloseResFile(refNum: Integer) {
+	$a9, $9a
+}
+SetResLoad(load: Boolean) {
+	$a9, $9b
+}
+CountResources(theType: ResType): Integer {
+	$a9, $9c
+}
+GetIndResource(theType: ResType, index: Integer): Handle {
+	$a9, $9d
+}
+CountTypes(): Integer {
+	$a9, $9e
+}
+GetIndType(theType: ^ResType, index: Integer) {
+	$a9, $9f
+}
+GetResource(theType: ResType, theID: Integer): Handle {
+	$a9, $a0
+}
+GetNamedResource(theType: ResType, name: ^Str255): Handle {
+	$a9, $a1
+}
+LoadResource(theResource: Handle) {
+	$a9, $a2
+}
+ReleaseResource(theResource: Handle) {
+	$a9, $a3
+}
+HomeResFile(theResource: Handle): Integer {
+	$a9, $a4
+}
+GetResourceSizeOnDisk(theResource: Handle): LongInt {
+	$a9, $a5
+}
+GetResAttrs(theResoure: Handle): Integer {
+	$a9, $a6
+}
+SetResAttrs(theResource: Handle, attrs: Integer) {
+	$a9, $a7
+}
+GetResInfo(theResource: Handle, theID: ^Integer, theType: ^ResType, name: ^Str255) {
+	$a9, $a8
+}
+SetResInfo(theResource: Handle, theID: Integer, name: ^Str255) {
+	$a9, $a9
+}
+ChangedResource(theResource: Handle) {
+	$a9, $aa
+}
+AddResource(theData: Handle, theType: ResType, theID: Integer, name: ^Str255) {
+	$a9, $ab
+}
+AddReference() {
+	$a9, $ac
+}
+RemoveResource(theResource: Handle) {
+	$a9, $ad
+}
+RmveReference() {
+	$a9, $ae
+}
+ResError(): Integer {
+	$a9, $af
+}
+WriteResource(theResource: Handle) {
+	$a9, $b0
+}
+CreateResFile(fileName: ^Str255) {
+	$a9, $b1
+}
+UniqueID(theType: ResType): Integer {
+	$a9, $c1
+}
+OpenRFPerm(fileName: ^Str255, vRefNum: Integer, permission: SignedByte): Integer {
+	$a9, $c4
+}
+RsrcMapEntry(theResource: Handle): LongInt {
+	$a9, $c5
+}
+GetResFileAttrs(refNum: Integer): Integer {
+	$a9, $f6
+}
+SetResFileAttrs(refNum: Integer, attrs: Integer) {
+	$a9, $f7
+}
+
+FSpOpenResFile(spec: ^FSSpec, permission: SignedByte): Integer {
+	$30, $3c, $00, $0d, $aa, $52
+}
+FSpCreateResFile(spec: ^FSSpec, creator: OSType, fileType: OSType, scriptTag: ScriptCode) {
+	$30, $3c, $00, $0e, $aa, $52
+}

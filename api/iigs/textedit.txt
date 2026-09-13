@@ -1,0 +1,326 @@
+TEColorTable struct {
+	contentColor: u16;
+	outlineColor: u16;
+	pageBoundaryColor: u16;
+	hiliteForeColor: u16;
+	hiliteBackColor: u16;
+	vertColorDescriptor: RefDescriptor;
+	vertColorRef: Ref;
+	horzColorDescriptor: RefDescriptor;
+	horzColorRef: Ref;
+	growColorDescriptor: RefDescriptor;
+	growColorRef: Ref;
+}
+
+TERecord struct {
+	ctlNext: CtlRecHndl;
+	ctlOwner: ^Window;
+	ctlRect: Rect;
+	ctlFlag: u8;
+	ctlHilite: u8;
+	ctlValue: u16;
+	ctlProc: CtlDefProc;
+	ctlAction: VoidProcPtr;
+	ctlData: u32;
+	ctlRefCon: u32;
+	ctlColorRef: ^TEColorTable;
+	reserved: u8[16];
+	ctlID: u32;
+	ctlMoreFlags: CtlMoreFlags;
+	ctlVersion: u16;
+	theChar: u16;
+	theModifiers: u16;
+	extendFlag: u16;
+	moveByWord: u16;
+	inputPtr: Ptr;
+	inputLength: u32;
+	theRect: Rect;
+}
+TEHandle = ^^TERecord;
+
+TEInfoRec struct {
+	charCount: u32;
+	lineCount: u32;
+	formatMemory: u32;
+	totalMemory: u32;
+	styleCount: u32;
+	rulerCount: u32;
+}
+
+TEPaintFlags enum<u16> {
+	tePartialLines = $8000,
+	teDontDraw = $4000,
+	teUseFont = $20,
+	teUseSize = $10,
+	teUseForeColor = $8,
+	teUseBackColor = $4,
+	teUseUserData = $2,
+	teUseAttributes = $1,
+}
+
+TEParamBlock struct {
+	pCount: u16;
+	controlID: u32;
+	boundsRect: Rect;
+	procRef: u32;
+	flags: u16;
+	moreFlgas: CtlMoreFlags;
+	refCon: u32;
+	textFlags: u32;
+	indentRect: Rect;
+	vertBar: CtlRecHndl;
+	vertScroll: u16;
+	horzBar: CtlRecHndl;
+	horzScroll: u16;
+	styleRef: TEStyleRef;
+	textDescriptor: TETextDesc;
+	textref: TETextRef;
+	textLength: u32;
+	maxChars: u32;
+	maxLines: u32;
+	maxHeight: u16;
+	pageHeight: u16;
+	headerHeight: u16;
+	footerHeight: u16;
+	pageBoundary: u16;
+	colorRef: Ref;
+	drawMode: Mode;
+	filterProcPtr: VoidProcPtr;
+}
+
+TEStyleRef union {
+	styleIsPtr: ^TEFormat;
+	styleIsHandle: TEFormatHndl;
+	styleIsResource: ResID;
+	styleIsNewH: ^TEFormatHndl;
+}
+
+TEFormat struct {
+	version: u16;
+	rulerListLength: u32;
+	theRulerList: TERuler[];
+	styleListLength: u32;
+	theStyleList: TEStyle[];
+	numberOfStyles: u32;
+	theStyles: TEStyleItem[];
+}
+TEFormatHndl = ^^TEFormat;
+
+TETextDesc enum<u16> {
+	teDataIsPString = 0,
+	teDataIsCString,
+	teDataIsC1Input,
+	teDataIsC1Output,
+	teDataIsTextBox2,
+	teDataIsTextBlock,
+	teTextIsPtr = 0,
+	teTextIsHandle = $8,
+	teTextIsResource = $10,
+	teTextIsNewHandle = $18,
+}
+
+TETextRef union {
+	textIsPStringPtr: StringPtr;
+	textIsCStringPtr: CStringPtr;
+	textIsC1InputPtr: ^GSString255;
+	textIsC1OutputPtr: ^ResultBuf255;
+	textIsTb2Ptr: Ptr;
+	textIsRawPtr: Ptr;
+	textIsPStringHandle: String255Hndl;
+	textIsCStringHandle: CStringHndl;
+	textIsC1InputHandle: GSString255Hndl;
+	textIsC1OutputHandle: ResultBuf255Hndl;
+	textIsTB2Handle: Handle;
+	textIsRawHandle: Handle;
+	textIsPStringResource: ResID;
+	textIsCStringResource: ResID;
+	textIsC1InputResource: ResID;
+	textIsC1OutputResource: ResID;
+	textIsTB2Resource: ResID;
+	textIsRawResource: ResID;
+	TextisPStringNewH: ^String255Hndl;
+	TextIsCStringNewH: ^CStringHndl;
+	TextIsC1InputNewH: ^GSString255Hndl;
+	TextIsC1OutputNewH: ^ResultBuf255Hndl;
+	textIsTB2NewH: ^Handle;
+	textIsRawNewH: ^Handle;
+}
+
+TEStyleDesc enum<u16> {
+	styleIsPtr,
+	styleIsHandle,
+	styleIsResource,
+	styleIsNewHndl,
+}
+
+TEStyleFlags enum<u16> {
+	teSwitchAttributes = 1,
+	teReplaceAtributes = 2,
+	teReplaceUserField = 4,
+	teReplaceBackColor = 8,
+	teReplaceForeColor = $10,
+	teReplaceSize = $20,
+	teReplaceFont = $40,
+}
+
+TEStyleGroup struct {
+	count: u16;
+	styles: TEStyle[];
+}
+TEStyleGroupHndl = ^^TEStyleGroup;
+
+TEJust enum<u16> {
+	teJustLeft = 0,
+	teJustRight = 1,
+	teJustCenter = 2,
+	teJustFull = 3,
+}
+
+TabType enum<u16> {
+	teNoTabs = 0,
+	teColumnTabs = 1,
+	teAbsoluteTabs = 2,
+}
+
+TabKind enum<u16> {
+	teLeftTab = 0,
+	teCenterTab = 1,
+	teRightTab = 2,
+	teDecimalTab = 3,
+}
+
+TEStyle struct {
+	teFont: FontID;
+	foreColor: u16;
+	backColor: u16;
+	reserved: u32;
+}
+
+TEStyleItem struct {
+	length: u32;
+	offset: u32;
+}
+
+TETabItem struct {
+	tabKind: TabKind;
+	tabData: u16;
+}
+
+TERuler struct {
+	leftMargin: u16;
+	leftIndent: u16;
+	rightMargin: u16;
+	just: TEJust;
+	extraLS: u16;
+	flags: u16;
+	userData: u16;
+	tabType: TabType;
+	tabs: TETabItem[];
+	tabTerminator: u16;
+}
+
+TEBootInit() {
+	$a2, $22, $01, $22, $00, $00, $e1
+}
+TEStartup(userID: i16, directPage: i16) {
+	$a2, $22, $02, $22, $00, $00, $e1
+}
+TEShutdown() {
+	$a2, $22, $03, $22, $00, $00, $e1
+}
+TEVersion(): i16 {
+	$a2, $22, $04, $22, $00, $00, $e1
+}
+TEReset() {
+	$a2, $22, $05, $22, $00, $00, $e1
+}
+TEStatus(): bool {
+	$a2, $22, $06, $22, $00, $00, $e1
+}
+TENew(theParms: ^TEParamBlock): TEHandle {
+	$a2, $22, $09, $22, $00, $00, $e1
+}
+TEKill(teH: TEHandle) {
+	$a2, $22, $0a, $22, $00, $00, $e1
+}
+TESetText(textDesc: TETextDesc, textRef: TETextRef, textLength: i32, styleDesc: TEStyleDesc, styleRef: TEStyleRef, teH: TEHandle) {
+	$a2, $22, $0b, $22, $00, $00, $e1
+}
+TEGetText(bufferDesc: i16, bufferRef: TETextRef, bufferLength: i32, styleDesc: TEStyleDesc, styleRef: TEStyleRef, teH: TEHandle): i32 {
+	$a2, $22, $0c, $22, $00, $00, $e1
+}
+TEGetTextInfo(infoRe: ^TEInfoRec, pCount: i16, teH: TEHandle) {
+	$a2, $22, $0d, $22, $00, $00, $e1
+}
+TEIdle(teH: TEHandle) {
+	$a2, $22, $0e, $22, $00, $00, $e1
+}
+TEActivate(teH: TEHandle) {
+	$a2, $22, $0f, $22, $00, $00, $e1
+}
+TEDeactivate(teH: TEHandle) {
+	$a2, $22, $10, $22, $00, $00, $e1
+}
+TEClick(theEventPtr: ^EventRecord, teH: TEHandle) {
+	$a2, $22, $11, $22, $00, $00, $e1
+}
+TEUpdate(teH: TEHandle) {
+	$a2, $22, $12, $22, $00, $00, $e1
+}
+TEPaintText(thePoint: ^GrafPort, start: i32, destRect: ^Rect, paintFlags: TEPaintFlags, teH: TEHandle) {
+	$a2, $22, $13, $22, $00, $00, $e1
+}
+TEKey(theEventPtr: ^EventRecord, teH: TEHandle) {
+	$a2, $22, $14, $22, $00, $00, $e1
+}
+TEInsertPageBreak(teH: TEHandle) {
+	$a2, $22, $15, $22, $00, $00, $e1
+}
+TECut(teH: TEHandle) {
+	$a2, $22, $16, $22, $00, $00, $e1
+}
+TECopy(teH: TEHandle) {
+	$a2, $22, $17, $22, $00, $00, $e1
+}
+TEPaste(teH: TEHandle) {
+	$a2, $22, $18, $22, $00, $00, $e1
+}
+TEClear(teH: TEHandle) {
+	$a2, $22, $19, $22, $00, $00, $e1
+}
+TEInsert(textDesc: TETextDesc, textRef: TETextRef, textLength: i32, styleDesc: TEStyleDesc, styleRef: TEStyleRef, teH: TEHandle) {
+	$a2, $22, $1a, $22, $00, $00, $e1
+}
+TEReplace(textDesc: TETextDesc, textref: TETextRef, textLength: i32, styleDesc: TEStyleDesc, styleRef: TEStyleRef, teH: TEHandle) {
+	$a2, $22, $1b, $22, $00, $00, $e1
+}
+TEGetSelection(selStart: ^i32, selEnd: ^i32, teH: TEHandle) {
+	$a2, $22, $1c, $22, $00, $00, $e1
+}
+TESetSelection(selStart: i32, selEnd: i32, teH: TEHandle) {
+	$a2, $22, $1d, $22, $00, $00, $e1
+}
+TEGetSelectionStyle(commonStyle: ^TEStyle, styleHandle: TEStyleGroupHndl, teH: TEHandle): i16 {
+	$a2, $22, $1e, $22, $00, $00, $e1
+}
+TEStyleChange(flags: TEStyleFlags, newStyle: ^TEStyle, teH: TEHandle) {
+	$a2, $22, $1f, $22, $00, $00, $e1
+}
+TEOffsetToPoint(textOffset: i32, vertPosPtr: Ptr, horzPosPtr: Ptr, teH: TEHandle) {
+	$a2, $22, $20, $22, $00, $00, $e1
+}
+TEPointToOffset(vertPosPtr: Ptr, horzPosPtr: Ptr, teH: TEHandle): i32 {
+	$a2, $22, $21, $22, $00, $00, $e1
+}
+TEGetDefProc(): LongProcPtr {
+	$a2, $22, $22, $22, $00, $00, $e1
+}
+TEGetRuler(rulerDescriptor: RefDescriptor, rulerRef: Ref, teH: TEHandle) {
+	$a2, $22, $23, $22, $00, $00, $e1
+}
+TESetRuler(rulerDescriptor: RefDescriptor, rulerRef: Ref, teH: TEHandle) {
+	$a2, $22, $24, $22, $00, $00, $e1
+}
+TEScroll(scrollDescriptor: RefDescriptor, vertAmount: i32, horzAmount: i32, teH: TEHandle): i32 {
+	$a2, $22, $25, $22, $00, $00, $e1
+}

@@ -100,6 +100,11 @@ impl File {
         self.rs(ofs + 1, len, charset)
     }
 
+    pub fn skipps(&self, ofs: usize) -> usize {
+        let len = usize::from(self.data[ofs]);
+        ofs + len + 1
+    }
+
     pub fn read(&self, ofs: usize, len: usize) -> &[u8] {
         &self.data[ofs..cmp::min(ofs + len, self.data.len())]
     }

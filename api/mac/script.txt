@@ -1,0 +1,259 @@
+FontScript(): Integer {
+	$2f, $3c, $82, $00, $00, $00, $a8, $b5
+}
+IntlScript(): Integer {
+	$2f, $3c, $82, $00, $00, $02, $a8, $b5
+}
+KeyScript(code: Integer) {
+	$2f, $3c, $80, $02, $00, $04, $a8, $b5
+}
+FontToScript(fontNumber: Integer): Integer {
+	$2f, $3c, $82, $02, $00, $06, $a8, $b5
+}
+GetScriptManagerVariable(selector: SMVar): LongInt {
+	$2f, $3c, $84, $02, $00, $08, $a8, $b5
+}
+SetScriptManagerVariable(selector: SMVar, param: LongInt): OSErr {
+	$2f, $3c, $82, $06, $00, $0a, $a8, $b5
+}
+GetScriptVariable(script: ScriptCode, selector: SMScriptVar): LongInt {
+	$2f, $3c, $84, $04, $00, $0c, $a8, $b5
+}
+SetScriptVariable(script: ScriptCode, selector: SMScriptVar, param: LongInt): OSErr {
+	$2f, $3c, $82, $08, $00, $0e, $a8, $b5
+}
+CharByte(textBuf: Ptr, textOffset: Integer): Integer {
+	$2f, $3c, $82, $06, $00, $10, $a8, $b5
+}
+CharacterByteType(textBuf: Ptr, textOffset: Integer, script: ScriptCode): Integer {
+	$2f, $3c, $c2, $06, $00, $10, $a8, $b5
+}
+CharType(texTBuf: Ptr, textOffset: Integer): Integer {
+	$2f, $3c, $82, $06, $00, $12, $a8, $b5
+}
+CharacterType(textBuf: Ptr, textOffset: Integer, script: ScriptCode): Integer {
+	$2f, $3c, $c2, $06, $00, $12, $a8, $b5
+}
+TransliterateText(srcHandle: Handle, dstHandle: Handle, target: Integer, srcMask: LongInt, script: ScriptCode): OSErr {
+	$2f, $3c, $c2, $0e, $00, $18, $a8, $b5
+}
+FillParseTable(table: ^CharByteTable, script: ScriptCode): Boolean {
+	$2f, $3c, $c2, $04, $00, $22, $a8, $b5
+}
+GetScriptUtilityAddress(selector: Integer, before: Boolean, script: ScriptCode): Ptr {
+	$2f, $3c, $c4, $04, $00, $38, $a8, $b5
+}
+SetScriptUtilityAddress(selector: Integer, before: Boolean, routineAddr: Ptr, script: ScriptCode) {
+	$2f, $3c, $c0, $08, $00, $3a, $a8, $b5
+}
+GetScriptQDPatchAddress(trapNum: Integer, before: Boolean, forPrinting: Boolean, script: ScriptCode): Ptr {
+	$2f, $3c, $c4, $06, $00, $3c, $a8, $b5
+}
+SetScriptQDPatchAddress(trapNum: Integer, before: Boolean, forPrinting: Boolean, routineAddr: Ptr, script: ScriptCode) {
+	$2f, $3c, $c0, $0a, $00, $3e, $a8, $b5
+}
+IntlTokenize(tokenParam: TokenBlockPtr): TokenResults {
+	$2f, $3c, $82, $04, $ff, $fa, $a8, $b5
+}
+
+GetIntlResource(theID: Integer): Handle {
+	$3f, $3c, $00, $06, $a9, $ed
+}
+IUSetIntl(refNum: Integer, theID: Integer, intlHandle: Handle) {
+	$3f, $3c, $00, $08, $a9, $ed
+}
+ClearIntlResourceCache() {
+	$3f, $3c, $00, $18, $a9, $ed
+}
+GetIntlResourceTable(script: ScriptCode, tableCode: Integer, itlHandle: ^Handle, offset: ^LongInt, length: ^LongInt) {
+	$3f, $3c, $00, $24, $a9, $ed
+}
+
+GetSysDirection(): Integer {
+	$3e, $b8, $0b, $ac
+}
+SetSysDirection(newDirection: Integer) {
+	$31, $df, $0b, $ac
+}
+
+CharByteTable = SignedByte[256];
+
+TokenBlock struct {
+	source: Ptr;
+	sourceLength: LongInt;
+	tokenList: Ptr;
+	tokenLength: LongInt;
+	tokenCount: LongInt;
+	stringList: Ptr;
+	stringLength: LongInt;
+	stringCount: LongInt;
+	doString: Boolean;
+	doAppend: Boolean;
+	doAlphanumeric: Boolean;
+	doNest: Boolean;
+	leftDelims: DelimType;
+	rightDelims: DelimType;
+	leftComment: CommentType;
+	rightComment: CommentType;
+	escapeCode: TokenType;
+	decimalCode: TokenType;
+	itlResource: Handle;
+	reserved: LongInt[8];
+}
+TokenBlockPtr = ^TokenBlock;
+
+TokenType enum<Integer> {
+	tokenEmpty = -1,
+	tokenUnknown = 0,
+	tokenWhite = 1,
+	tokenLeftLit = 2,
+	tokenRightLit = 3,
+	tokenAlpha = 4,
+	tokenNumreic = 5,
+	tokenNewLine = 6,
+	tokenLeftComment = 7,
+	tokenRightComment = 8,
+	tokenLiteral = 9,
+	tokenEscape = 10,
+	tokenAltNum = 11,
+	tokenRealNum = 12,
+	tokenAltReal = 13,
+	tokenReserve1 = 14,
+	tokenReserve2 = 15,
+	tokenLeftParen = 16,
+	tokenRightParent = 17,
+	tokenLeftBracket = 18,
+	tokenRightBracket = 19,
+	tokenLeftCurly = 20,
+	tokenRightCurly = 21,
+	tokenLeftEnclose = 22,
+	tokenRightEnclose = 23,
+	tokenPlus = 24,
+	tokenMinus = 25,
+	tokenAsterisk = 28,
+	tokenDivide = 27,
+	tokenPlusMinus = 28,
+	tokenSlash = 29,
+	tokenBackSlash = 30,
+	tokenLess = 31,
+	tokenGreat = 32,
+	tokenEqual = 33,
+	tokenLessEqual2 = 34,
+	tokenLessEqual1 = 35,
+	tokenGreatEqual2 = 36,
+	tokenGreatEqual1 = 37,
+	token2Equal = 38,
+	tokenColonEqual = 39,
+	tokenNotEqual = 40,
+	tokenLessGreat = 41,
+	tokenExclamEqual = 42,
+	tokenExclam = 43,
+	tokenTilde = 44,
+	tokenComma = 45,
+	tokenPeriod = 46,
+	tokenLeft2Quote = 47,
+	tokenRight2Quote = 48,
+	tokenLeft1Quote = 49,
+	tokenRight1Quote = 50,
+	token2Quote = 51,
+	token1Quote = 52,
+	tokenSemicolon = 53,
+	tokenPercent = 54,
+	tokenCaret = 55,
+	tokenUnderline = 56,
+	tokenAmpersand = 57,
+	tokenAtSign = 58,
+	tokenBar = 59,
+	tokenQuestion = 60,
+	tokenPi = 61,
+	tokenRoot = 62,
+	tokenSigma = 63,
+	tokenIntegral = 64,
+	tokenMicro = 65,
+	tokenCapPi = 66,
+	tokenInfinity = 67,
+	tokenColon = 68,
+	tokenHash = 69,
+	tokenDollar = 70,
+	tokenNoBreakSpace = 71,
+	tokenFraction = 72,
+	tokenIntlCurrency = 73,
+	tokenLeftSingGuillemet = 74,
+	tokenRightSingGuillemet = 75,
+	tokenPerThousand = 76,
+	tokenEllipsis = 77,
+	tokenCenterDot = 78,
+	tokenNil = 127,
+	delimPad = -2
+}
+
+DelimType = TokenType[2];
+CommentType = TokenType[4];
+
+TokenResults enum<Integer> {
+	tokenOk,
+	tokenOverflow,
+	stringOverflow,
+	badDelim,
+	badEnding,
+	crash,
+}
+
+SMVar enum<Integer> {
+	smVersion = 0,
+	smMunged = 2,
+	smEnabled = 4,
+	smBidirect = 6,
+	smFontForce = 8,
+	smIntlForce = 10,
+	smForced = 12,
+	smDefault = 14,
+	smPrint = 16,
+	smSysScript = 18,
+	smLastScript = 20,
+	smKeyScript = 22,
+	smSysRef = 24,
+	smKeyCache = 26,
+	smKeySwap = 28,
+	smGenFlags = 30,
+	smOverride = 32,
+	smChraPortion = 34,
+	smDoubleByte = 36,
+	smKCHRCache = 38,
+	smRegionCode = 40,
+	smKeyDisableState = 42,
+}
+
+SMScriptVar enum<Integer> {
+	smScriptVersion = 0,
+	smScriptMunged = 2,
+	smScriptEnabled = 4,
+	smScriptRight = 6,
+	smScriptJust = 8,
+	smScriptRedraw = 10,
+	smScriptSysFond = 12,
+	smScriptAppFond = 14,
+	smScriptNumber = 16,
+	smScriptDate = 18,
+	smScriptSort = 20,
+	smScriptFlags = 22,
+	smScriptToken = 24,
+	smScriptEncoding = 26,
+	smScriptLang = 28,
+	smScriptNumDate = 30,
+	smScriptKeys = 32,
+	smScriptIcon = 34,
+	smScriptPrint = 36,
+	smScriptTrap = 38,
+	smScriptCreator = 40,
+	smScriptFile = 42,
+	smScriptName = 44,
+	smScriptMonoFondSize = 78,
+	smScriptPrefFondSize = 80,
+	smScriptSmallFondSize = 82,
+	smScriptSysFondSize = 84,
+	smScriptAppFondSize = 86,
+	smScriptHelpFondSize = 88,
+	smScriptValidStyles = 90,
+	smScriptAliasStyle = 92,
+}

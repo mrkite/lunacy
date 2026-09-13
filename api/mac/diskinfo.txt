@@ -1,0 +1,18 @@
+DIBadMount(where: Point, evtMessage: LongInt): Integer {
+	$3f, $3c, $00, $00, $a9, $e9
+}
+DILoad() {
+	$3f, $3c, $00, $02, $a9, $e9
+}
+DIUnload() {
+	$3f, $3c, $00, $04, $a9, $e9
+}
+DIFormat(drvNum: Integer): OSErr {
+	$3f, $3c, $00, $06, $a9, $e9
+}
+DIVerify(drvNum: Integer): OSErr {
+	$3f, $3c, $00, $08, $a9, $e9
+}
+DIZero(drvNum: Integer, volName: ^Str255): OSErr {
+	$3f, $3c, $00, $0a, $a9, $e9
+}

@@ -1,0 +1,228 @@
+AlertTemplate struct {
+	atBoundsRct: Rect;
+	atAlertID: u16;
+	atStage1: StageBitVector;
+	atStage2: StageBitVector;
+	atStage3: StageBitVector;
+	atStage4: StageBitVector;
+	atItemsList: ^ItemTemplate[5];
+}
+
+DialogTemplate struct {
+	dtBoundsRect: Rect;
+	dtVisible: bool;
+	dtRefCon: u32;
+	dtItemList: ^ItemTemplate[8];
+}
+
+StageBitVector enum<u8> {
+	okDefault = $0,
+	cancelDefault = $40,
+	alertDrawn = $80,
+}
+
+DialogPartCode enum<u16> {
+	inButton = $2,
+	inCheckBox,
+	inRadioButton,
+	inUpArrow,
+	inDownArrow,
+	inPageUp,
+	inPageDown,
+	inStatText,
+	inGrow,
+	inEditLine,
+	inUserItem,
+	inLongStatText,
+	inIconItem,
+	inLongStatText2,
+	inThumb = $81,
+}
+
+DialogItemType enum<u16> {
+	buttonItem = $a,
+	checkItem,
+	radioItem,
+	scrollBarItem,
+	userCtlItem,
+	statText,
+	longStatText,
+	editLine,
+	iconItem,
+	picItem,
+	userItem,
+	userCtlItem2,
+	longStatText2,
+	itemDisable = $8000,
+}
+
+DialogItemID enum<u16> {
+	ok = 1,
+	cancel,
+}
+
+ItemTemplate struct {
+	itemID: DialogItemID;
+	itemRect: Rect;
+	itemType: DialogItemType;
+	itemDescr: Ptr;
+	itemValue: u16;
+	itemFlag: u16;
+	itemColor: Ptr;
+}
+
+DialogBootInit() {
+	$a2, $15, $01, $22, $00, $00, $e1
+}
+DialogStartUp(userID: u16) {
+	$a2, $15, $02, $22, $00, $00, $e1
+}
+DialogShutDown() {
+	$a2, $15, $03, $22, $00, $00, $e1
+}
+DialogVersion(): u16 {
+	$a2, $15, $04, $22, $00, $00, $e1
+}
+DialogReset() {
+	$a2, $15, $05, $22, $00, $00, $e1
+}
+DialogStatus(): bool {
+	$a2, $15, $06, $22, $00, $00, $e1
+}
+ErrorSound(soundProcPtr: VoidProcPtr) {
+	$a2, $15, $09, $22, $00, $00, $e1
+}
+NewModalDialog(dBoundsRectPtr: ^Rect, dVisibleFlag: bool, dRefCon: u32): ^Window {
+	$a2, $15, $0a, $22, $00, $00, $e1
+}
+NewModelessDialog(dBoundsRectPtr: ^Rect, dTitle: ^String255, dBehindPtr: ^Window, dFlag: u16, dRefCon: u32, dRullSizePtr: ^Rect): ^Window {
+	$a2, $15, $0b, $22, $00, $00, $e1
+}
+NewDItem(theDialogPtr: ^Window, itemID: u16, itemRectPtr: ^Rect, itemType: DialogItemType, itemDescr: Ptr, itemValue: u16, itemFlag: u16, itemColorPtr: Ptr) {
+	$a2, $15, $0d, $22, $00, $00, $e1
+}
+CloseDialog(theDialogPtr: ^Window) {
+	$a2, $15, $0c, $22, $00, $00, $e1
+}
+RemoveDItem(theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $0e, $22, $00, $00, $e1
+}
+ModalDialog(filterProcPtr: WordProcPtr): u16 {
+	$a2, $15, $0f, $22, $00, $00, $e1
+}
+IsDialogEvent(theEventPtr: ^EventRecord): bool {
+	$a2, $15, $10, $22, $00, $00, $e1
+}
+DialogSelect(theEventPtr: ^EventRecord, resultPtr: ^^Window, itemHitPtr: ^u16): bool {
+	$a2, $15, $11, $22, $00, $00, $e1
+}
+DlgCut(theDialogPtr: ^Window) {
+	$a2, $15, $12, $22, $00, $00, $e1
+}
+DlgCopy(theDialogPtr: ^Window) {
+	$a2, $15, $13, $22, $00, $00, $e1
+}
+DlgPaste(theDialogPtr: ^Window) {
+	$a2, $15, $14, $22, $00, $00, $e1
+}
+DlgDelete(theDialogPtr: ^Window) {
+	$a2, $15, $15, $22, $00, $00, $e1
+}
+DrawDialog(theDialogPtr: ^Window) {
+	$a2, $15, $16, $22, $00, $00, $e1
+}
+Alert(alertTemplatePtr: ^AlertTemplate, filterProcPtr: WordProcPtr): u16 {
+	$a2, $15, $17, $22, $00, $00, $e1
+}
+StopAlert(alertTemplatePtr: ^AlertTemplate, filterProcPtr: WordProcPtr): u16 {
+	$a2, $15, $18, $22, $00, $00, $e1
+}
+NoteAlert(alertTemplatePtr: ^AlertTemplate, filterProcPtr: WordProcPtr): u16 {
+	$a2, $15, $19, $22, $00, $00, $e1
+}
+CautionAlert(alertTemplatePtr: ^AlertTemplate, filterProcPtr: WordProcPtr): u16 {
+	$a2, $15, $1a, $22, $00, $00, $e1
+}
+ParamText(param0: ^String255, param1: ^String255, param2: ^String255, param3: ^String255) {
+	$a2, $15, $1b, $22, $00, $00, $e1
+}
+SetDAFont(fontHandle: FontHndl) {
+	$a2, $15, $1c, $22, $00, $00, $e1
+}
+GetControlDItem(theDialogPtr: ^Window, itemID: u16): CtlRecHndl {
+	$a2, $15, $1e, $22, $00, $00, $e1
+}
+GetIText(theDialogPtr: ^Window, itemID: u16, text: ^String255) {
+	$a2, $15, $1f, $22, $00, $00, $e1
+}
+SelIText(theDialogPtr: ^Window, itemID: u16, startSel: i16, endSel: i16) {
+	$a2, $15, $21, $22, $00, $00, $e1
+}
+HideDItem(theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $22, $22, $00, $00, $e1
+}
+ShowDItem(theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $23, $22, $00, $00, $e1
+}
+FindDItem(theDialogPtr: ^Window, thePoint: Point): DialogPartCode {
+	$a2, $15, $24, $22, $00, $00, $e1
+}
+UpdateDialog(theDialogPtr: ^Window, updateRgnHandle: RgnHandle) {
+	$a2, $15, $25, $22, $00, $00, $e1
+}
+GetDItemType(theDialogPtr: ^Window, itemID: u16): u16 {
+	$a2, $15, $26, $22, $00, $00, $e1
+}
+SetDItemType(itemType: DialogItemType, theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $27, $22, $00, $00, $e1
+}
+GetDItemBox(theDialogPtr: ^Window, itemID: u16, itemBoxPtr: ^Rect) {
+	$a2, $15, $28, $22, $00, $00, $e1
+}
+SetDItemBox(theDialogPtr: ^Window, itemID: u16, itemBoxPtr: ^Rect) {
+	$a2, $15, $29, $22, $00, $00, $e1
+}
+GetFirstDItem(theDialogPtr: ^Window): u16 {
+	$a2, $15, $2a, $22, $00, $00, $e1
+}
+GetNextDItem(theDialogPtr: ^Window, itemID: u16): u16 {
+	$a2, $15, $2b, $22, $00, $00, $e1
+}
+ModalDialog2(filterProcPtr: WordProcPtr): DialogPartCode {
+	$a2, $15, $2c, $22, $00, $00, $e1
+}
+GetDItemValue(theDialogPtr: ^Window, itemID: u16): u16 {
+	$a2, $15, $2e, $22, $00, $00, $e1
+}
+SetDItemValue(itemValue: u16, theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $2f, $22, $00, $00, $e1
+}
+GetNewModalDialog(dialogTemplatePtr: ^DialogTemplate): ^Window {
+	$a2, $15, $32, $22, $00, $00, $e1
+}
+GetNewDItem(theDialogPtr: ^Window, itemTempltePtr: ^ItemTemplate) {
+	$a2, $15, $33, $22, $00, $00, $e1
+}
+GetAlertStage(): u16 {
+	$a2, $15, $34, $22, $00, $00, $e1
+}
+ResetAlertStage() {
+	$a2, $15, $35, $22, $00, $00, $e1
+}
+DefaultFilter(theDialogPtr: ^Window, theEventPtr: ^EventRecord, itemHitPtr: ^i16): bool {
+	$a2, $15, $36, $22, $00, $00, $e1
+}
+GetDefButton(theDialogPtr: ^Window): u16 {
+	$a2, $15, $37, $22, $00, $00, $e1
+}
+SetDefButton(defButtonID: u16, theDialogPtr: ^Window) {
+	$a2, $15, $38, $22, $00, $00, $e1
+}
+DisableDItem(theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $39, $22, $00, $00, $e1
+}
+EnableDItem(theDialogPtr: ^Window, itemID: u16) {
+	$a2, $15, $3a, $22, $00, $00, $e1
+}
+
+WordProcPtr(): u16;

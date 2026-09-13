@@ -1,0 +1,136 @@
+HideDialogItem(theDialog: DialogPtr, itemNo: Integer) {
+	$a8, $27
+}
+ShowDialogItem(theDialog: DialogPtr, itemNo: Integer) {
+	$a8, $28
+}
+LayerDispatch() {
+	$a8, $29
+}
+UpdateDialog(theDialog: DialogPtr, updateRgn: RgnHandle) {
+	$a9, $78
+}
+InitDialogs(resumeProc: ResumeProcPtr) {
+	$a9, $7b
+}
+GetNewDialog(dialogID: Integer, dStorage: Ptr, behind: WindowPtr): DialogPtr {
+	$a9, $7c
+}
+NewDialog(dStorage: Ptr, boundsRect: ^Rect, title: ^Str255, visible: Boolean, procID: DialogType, behind: WindowPtr, goAwayFlag: Boolean, refCon: LongInt, items: Handle): DialogPtr {
+	$a9, $7d
+}
+SelectDialogItemText(theDialog: DialogPtr, itemNo: Integer, strtSel: Integer, endSel: Integer) {
+	$a9, $7e
+}
+IsDialogEvent(theEvent: ^EventRecord): Boolean {
+	$a9, $7f
+}
+DialogSelect(theEvent: ^EventRecord, theDialog: ^DialogPtr, itemHit: ^Integer): Boolean {
+	$a9, $80
+}
+DrawDialog(theDialog: DialogPtr) {
+	$a9, $81
+}
+CloseDialog(theDialog: DialogPtr) {
+	$a9, $82
+}
+DisposeDialog(theDialog: DialogPtr) {
+	$a9, $83
+}
+FindDialogItem(theDialog: DialogPtr, thePt: Point): Integer {
+	$a9, $84
+}
+Alert(alertID: Integer, filterProc: ModalFilterProcPtr): Integer {
+	$a9, $85
+}
+StopAlert(alertID: Integer, filterProc: ModalFilterProcPtr): Integer {
+	$a9, $86
+}
+NoteAlert(alertID: Integer, filterProc: ModalFilterProcPtr): Integer {
+	$a9, $87
+}
+CautionAlert(alertID: Integer, filterProc: ModalFilterProcPtr): Integer {
+	$a9, $88
+}
+ParamText(param0: ^Str255, param1: ^Str255, param2: ^Str255, param3: ^Str255) {
+	$a9, $8b
+}
+ErrorSound(soundProc: SoundProcPtr) {
+	$a9, $8c
+}
+GetDialogItem(theDialog: DialogPtr, itemNo: Integer, itemType: ^DialogItemType, item: ^Handle, box: ^Rect) {
+	$a9, $8d
+}
+SetDialogItem(theDialog: DialogPtr, itemNo: Integer, itemType: DialogItemType, item: Handle, box: ^Rect) {
+	$a9, $8e
+}
+SetDialogItemText(item: Handle, text: ^Str255) {
+	$a9, $8f
+}
+GetDialogItemText(item: Handle, text: ^Str255) {
+	$a9, $90
+}
+ModalDialog(filterProc: ModalFilterProcPtr, itemHit: ^Integer) {
+	$a9, $91
+}
+NewColorDialog(dStorage: Ptr, boundsRect: ^Rect, title: ^Str255, visible: Boolean, procID: DialogType, behind: WindowPtr, goAwayFlag: Boolean, refCon: LongInt, items: Handle): DialogPtr {
+	$aa, $4b
+}
+GetStdFilterProc(theProc: ^ProcPtr): OSErr {
+	$30, $3c, $02, $03, $aa, $68
+}
+SetDialogDefaultItem(theDialog: DialogPtr, newItem: Integer): OSErr {
+	$30, $3c, $03, $04, $aa, $68
+}
+SetDialogCancelItem(theDialog: DialogPtr, newItem: Integer): OSErr {
+	$30, $3c, $03, $05, $aa, $68
+}
+SetDialogTracksCursor(theDialog: DialogPtr, tracks: Boolean): OSErr {
+	$30, $3c, $03, $06, $aa, $68
+}
+
+GetAlertStage(): Integer {
+	$3e, $b8, $0a, $9a
+}
+ResetAlertStage() {
+	$42, $78, $0a, $9a
+}
+SetDialogFont(fontNum: Integer) {
+	$31, $df, $0a, $fa
+}
+
+ModalFilterProcPtr(theDialog: DialogPtr, theEvent: ^EventRecord, itemHit: ^Integer): Boolean;
+
+DialogRecord struct {
+	window: WindowRecord;
+	items: Handle;
+	textH: TEHandle;
+	editField: Integer;
+	editOpen: Integer;
+	aDefItem: Integer;
+}
+DialogPtr = ^DialogRecord;
+DialogPeek = ^DialogRecord;
+
+SoundProcPtr(soundNo: Integer);
+ResumeProcPtr = ProcPtr;
+
+DialogItemType enum<Integer> {
+	userItem = 0,
+	helpItem = 1,
+	btnCtrl = 4,
+	chkCtrl = 5,
+	radCtrl = 6,
+	resCtrl = 7,
+	statText = 8,
+	editText = 16,
+	iconItem = 32,
+	picItem = 64,
+	itemDisable = 128,
+}
+
+DialogType enum<Integer> {
+	dBoxProc = 1,
+	noGrowDocProc = 4,
+	movableDBoxProc = 5,
+}

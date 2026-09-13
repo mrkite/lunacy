@@ -1,0 +1,84 @@
+GetPictInfo(thePictHandle: PicHandle, thePictInfo: ^PictInfo, verb: Integer, colorsRequestd: Integer, colorPickMethod: Integer, version: Integer): OSErr {
+	$30, $3c, $08, $00, $a8, $31
+}
+GetPixMapInfo(thePixMapHandle: PixMapHandle, thePictInfo: ^PictInfo, verb: Integer, colorsRequested: Integer, colorPickMethod: Integer, version: Integer): OSErr {
+	$30, $3c, $08, $01, $a8, $31
+}
+NewPictInfo(thePictInfoID: ^PictInfoID, verb: Integer, colorsRequested: Integer, colorPickMethod: Integer, version: Integer): OSErr {
+	$30, $3c, $06, $02, $a8, $31
+}
+RecordPictInfo(thePictInfoID: PictInfoID, thePictHandle: PicHandle): OSErr {
+	$30, $3c, $04, $03, $a8, $31
+}
+RecordPixMapInfo(thePictInfoID: PictInfoID, thePixMapHandle: PixMapHandle): OSErr {
+	$30, $3c, $04, $04, $a8, $31
+}
+RetrievePictInfo(thePictInfoID: PictInfoID, thePictInfo: ^PictInfo, colorsRequested: Integer): OSErr {
+	$30, $3c, $05, $05, $a8, $31
+}
+DisposePictInfo(thePictInfoID: PictInfoID): OSErr {
+	$30, $3c, $02, $06, $a8, $31
+}
+
+StdOpcodeProc(fromRect: ^Rect, toRect: ^Rect, opcode: Integer, version: Integer) {
+	$ab, $f8
+}
+
+PictInfo struct {
+	version: Integer;
+	uniqueColors: LongInt;
+	thePalette: PaletteHandle;
+	theColorTable: CTabHandle;
+	hRes: Fixed;
+	vRes: Fixed;
+	depth: Integer;
+	sourceRect: Rect;
+	textCount: LongInt;
+	lineCount: LongInt;
+	rectCount: LongInt;
+	rRectCount: LongInt;
+	ovalCount: LongInt;
+	arcCount: LongInt;
+	polyCount: LongInt;
+	regionCount: LongInt;
+	bitMapCount: LongInt;
+	pixMapCount: LongInt;
+	commentCount: LongInt;
+	uniqueComments: LongInt;
+	commentHandle: CommentSpecHandle;
+	uniqueFonts: LongInt;
+	fontHandle: FontSpecHandle;
+	fontNamesHandle: Handle;
+	reserved1: LongInt;
+	reserved2: LongInt;
+}
+PictInfoPtr = ^PictInfo;
+PictInfoHandle = ^PictInfoPtr;
+
+FontSpec struct {
+	pictFontID: Integer;
+	sysFontID: Integer;
+	size: LongInt[4];
+	style: Integer;
+	nameOffset: LongInt;
+}
+FontSpecPtr = ^FontSpec;
+FontSpecHandle = ^FontSpecPtr;
+
+CommentSpec struct {
+	count: Integer;
+	ID: Integer;
+}
+CommentSpecPtr = ^CommentSpec;
+CommentSpecHandle = ^CommentSpecPtr;
+
+OpenCPicParams struct {
+	srcRect: Rect;
+	hRes: Fixed;
+	vRes: Fixed;
+	version: Integer;
+	reserved1: Integer;
+	reserved2: LongInt;
+}
+
+PictInfoID = LongInt;

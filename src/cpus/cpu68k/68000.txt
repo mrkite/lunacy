@@ -1,0 +1,208 @@
+ay 2-0            An
+dy 2-0            Dn
++y 2-0            (An)+
+-y 2-0            -(An)
+iv 2-0            #v
+aw 2-0 1:15-0     (#$v,An)
+i4 3-0            #$v
+ea 5-0            <ea> (size based on 7-6)
+eb 5-0            <ea>.b
+ew 5-0            <ea>.w
+el 5-0            <ea>.l
+.s 7-6            .b (00) .w (01) .l (10)
+i8 7-0            #$v (sign extend byte)
+~~ 8-0 1:15-0     #$v (00 = 16 bit) relative
+Eb 11-6           <ea>.b
+Ew 11-6           <ea>.w
+El 11-6           <ea>.l
+ax 11-9           An
+dx 11-9           Dn
++x 11-9           (An)+
+-x 11-9           -(An)
+iq 11-9           #v (0 == 8)
+ib 1:8-0          #$v
+iw 1:15-0         #$v
+ls 1:15-0         register list
+~w 1:15-0         #$v relative
+im 1:15-0 2:15-0  #$v (size based on 7-6)
+'c                ccr
+'s                sr
+
+0000 0000 0011 1100 ori ib'c
+0000 0000 .... .... ori .simea
+0000 0010 0011 1100 andi ib'c
+0000 0010 .... .... andi .simea
+0000 0100 .... .... subi .simea
+0000 0110 .... .... addi .simea
+0000 1000 00.. .... btst ibeb
+0000 1000 01.. .... bchg ibeb
+0000 1000 10.. .... bclr ibeb
+0000 1000 11.. .... bset ibeb
+0000 1010 0011 1100 eori ib'c
+0000 1010 .... .... eori .simea
+0000 1100 .... .... cmpi .simea
+0000 ...1 0000 1... movep.w awdx
+0000 ...1 0100 1... movep.l awdx
+0000 ...1 1000 1... movep.w dxaw
+0000 ...1 1100 1... movep.l dxaw
+0000 ...1 00.. .... btst dxeb
+0000 ...1 01.. .... bchg dxeb
+0000 ...1 10.. .... bclr dxeb
+0000 ...1 11.. .... bset dxeb
+
+0001 .... .... .... move.b ebEb
+
+0010 ...0 01.. .... movea.l elax
+0010 .... .... .... move.l elEl
+
+0011 ...0 01.. .... movea.w ewax
+0011 .... .... .... move.w ewEw
+
+0100 ...1 00.. .... chk.l eldx
+0100 ...1 10.. .... chk.w ewdx
+0100 ...1 11.. .... lea elax
+0100 0000 11.. .... move 'sew
+0100 0000 .... .... negx .sea
+0100 0010 .... .... clr .sea
+0100 0100 11.. .... move ew'c
+0100 0100 .... .... neg .sea
+0100 0110 .... .... not .sea
+0100 1000 00.. .... nbcd eb
+0100 1000 0100 0... swap dy
+0100 1000 0100 1... bkpt iv (break)
+0100 1000 01.. .... pea el
+0100 1000 1000 0... ext.w dy
+0100 1000 10.. .... movem.w lsew
+0100 1000 1100 0... ext.l dy
+0100 1000 11.. .... movem.l lsel
+0100 1010 1111 1100 illegal (break)
+0100 1010 11.. .... tas eb
+0100 1010 .... .... tst .sea
+0100 1100 10.. .... movem.w ewls
+0100 1100 11.. .... movem.l ells
+0100 1110 0100 .... trap i4
+0100 1110 0101 0... link ayiw
+0100 1110 0101 1... unlk ay
+0100 1110 0111 0001 nop
+0100 1110 0111 0101 rts (return)
+0100 1110 0111 0110 trapv
+0100 1110 0111 0111 rtr (return)
+0100 1110 10.. .... jsr eb (call)
+0100 1110 11.. .... jmp eb (jump)
+
+0101 0000 1100 1... dbt dy~w (branch)
+0101 0000 11.. .... st eb
+0101 0001 1100 1... dbf dy~w (branch)
+0101 0001 11.. .... sf eb
+0101 0010 1100 1... dbhi dy~w (branch)
+0101 0010 11.. .... shi eb
+0101 0011 1100 1... dbls dy~w (branch)
+0101 0011 11.. .... sls eb
+0101 0100 1100 1... dbcc dy~w (branch)
+0101 0100 11.. .... scc eb
+0101 0101 1100 1... dbcs dy~w (branch)
+0101 0101 11.. .... scs eb
+0101 0110 1100 1... dbne dy~w (branch)
+0101 0110 11.. .... sne eb
+0101 0111 1100 1... dbeq dy~w (branch)
+0101 0111 11.. .... seq eb
+0101 1000 1100 1... dbvc dy~w (branch)
+0101 1000 11.. .... svc eb
+0101 1001 1100 1... dbvs dy~w (branch)
+0101 1001 11.. .... svs eb
+0101 1010 1100 1... dbpl dy~w (branch)
+0101 1010 11.. .... spl eb
+0101 1011 1100 1... dbmi dy~w (branch)
+0101 1011 11.. .... smi eb
+0101 1100 1100 1... dbge dy~w (branch)
+0101 1100 11.. .... sge eb
+0101 1101 1100 1... dblt dy~w (branch)
+0101 1101 11.. .... slt eb
+0101 1110 1100 1... dbgt dy~w (branch)
+0101 1110 11.. .... sgt eb
+0101 1111 1100 1... dble dy_w (branch)
+0101 1111 11.. .... sle eb
+0101 ...0 .... .... addq .siqea
+0101 ...1 .... .... subq .siqeq
+
+0110 0000 .... .... bra ~~ (jump)
+0110 0001 .... .... bsr ~~ (call)
+0110 0010 .... .... bhi ~~ (branch)
+0110 0011 .... .... bls ~~ (branch)
+0110 0100 .... .... bcc ~~ (branch)
+0110 0101 .... .... bcs ~~ (branch)
+0110 0110 .... .... bne ~~ (branch)
+0110 0111 .... .... beq ~~ (branch)
+0110 1000 .... .... bvc ~~ (branch)
+0110 1001 .... .... bvs ~~ (branch)
+0110 1010 .... .... bpl ~~ (branch)
+0110 1011 .... .... bmi ~~ (branch)
+0110 1100 .... .... bge ~~ (branch)
+0110 1101 .... .... blt ~~ (branch)
+0110 1110 .... .... bgt ~~ (branch)
+0110 1111 .... .... ble ~~ (branch)
+
+0111 ...0 .... .... moveq i8dx
+
+1000 ...0 11.. .... divu.w ewdx
+1000 ...0 .... .... or .seadx
+1000 ...1 11.. .... divs.w ewdx
+1000 ...1 0000 0... sbcd dxdy
+1000 ...1 0000 1... sbcd -x-y
+1000 ...1 .... .... or .sdxea
+
+1001 ...0 11.. .... sub.w ewax
+1001 ...0 .... .... sub .seadx
+1001 ...1 11.. .... sub.l elax
+1001 ...1 ..00 0... subx .sdxdy
+1001 ...1 ..00 1... subx .s-x-y
+1001 ...1 .... .... sub .sdxea
+
+1011 ...0 11.. .... cmp.w ewax
+1011 ...0 .... .... cmp .seadx
+1011 ...1 11.. .... cmp.l elax
+1011 ...1 ..00 1... cmpm .s+y+x
+1011 ...1 .... .... eor .sdxea
+
+1100 ...0 11.. .... mulu.w ewdx
+1100 ...0 .... .... and .seadx
+1100 ...1 0000 0... abcd dydx
+1100 ...1 0000 1... abcd -y-x
+1100 ...1 0100 0... exg dydx
+1100 ...1 0100 1... exg ayax
+1100 ...1 1000 1... exg aydx
+1100 ...1 11.. .... muls.w ewdx
+1100 ...1 .... .... and .sdxea
+
+1101 ...0 11.. .... adda.w ewax
+1101 ...0 .... .... add .seadx
+1101 ...1 11.. .... adda.l elax
+1101 ...1 ..00 0... addx .sdydx
+1101 ...1 ..00 1... addx .s-y-x
+1101 ...1 .... .... add .sdxea
+
+1110 0000 11.. .... asr eb
+1110 0010 11.. .... lsr eb
+1110 0100 11.. .... roxr eb
+1110 0110 11.. .... ror eb
+1110 ...0 ..00 0... asr .siqdy
+1110 ...0 ..00 1... lsr .siqdy
+1110 ...0 ..01 0... roxr .siqdy
+1110 ...0 ..01 1... ror .siqdy
+1110 ...0 ..10 0... asr .sdxdy
+1110 ...0 ..10 1... lsr .sdxdy
+1110 ...0 ..11 0... roxr .sdxdy
+1110 ...0 ..11 1... ror .sdxdy
+1110 0001 11.. .... asl eb
+1110 0011 11.. .... lsl eb
+1110 0101 11.. .... roxl eb
+1110 0111 11.. .... rol eb
+1110 ...1 ..00 0... asl .siqdy
+1110 ...1 ..00 1... lsl .siqdy
+1110 ...1 ..01 0... roxl .siqdy
+1110 ...1 ..01 1... rol .siqdy
+1110 ...1 ..10 0... asl .sdxdy
+1110 ...1 ..10 1... lsl .sdxdy
+1110 ...1 ..11 0... roxl .sdxdy
+1110 ...1 ..11 1... rol .sdxdy
+

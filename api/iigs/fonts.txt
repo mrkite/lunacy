@@ -1,0 +1,128 @@
+ScaleWord enum<u16> {
+	dontScaleBit = 1,
+}
+
+Family enum<u16> {
+	newYork = 2,
+	geneva,
+	monaco,
+	venice,
+	london,
+	athens,
+	sanFran,
+	toronto,
+	cairo,
+	losAngeles,
+	times = $14,
+	helvetica,
+	courier,
+	symbol,
+	taliesin,
+	shaston = $fffe,
+}
+
+FamSpecBits enum<u16> {
+	baseOnlyBit = $20
+}
+
+FontSpecBits enum<u16> {
+	memOnlyBit = 1,
+	realOnlyBit = 2,
+	anyFamBit = 4,
+	anyStyleBit = 8,
+	anySizeBit = $10,
+}
+
+FontStatBits enum<u16> {
+	memBit = 1,
+	unrealBit = 2,
+	apFamBit = 4,
+	apVarBit = 8,
+	purgeBit = $10,
+	notDiskBit = $20,
+	notFoundBit = $8000,
+}
+
+FontStatRec struct {
+	resultID: FontID;
+	resultStats: FontStatBits;
+}
+
+FMBootInit() {
+	$a2, $1b, $01, $22, $00, $00, $e1
+}
+FMStartUp(userID: i16, dPageAddr: i16) {
+	$a2, $1b, $02, $22, $00, $00, $e1
+}
+FMShutDown() {
+	$a2, $1b, $03, $22, $00, $00, $e1
+}
+FMVersion(): i16 {
+	$a2, $1b, $04, $22, $00, $00, $e1
+}
+FMReset() {
+	$a2, $1b, $05, $22, $00, $00, $e1
+}
+FMStatus(): bool {
+	$a2, $1b, $06, $22, $00, $00, $e1
+}
+CountFamilies(famSpecs: FamSpecBits): i16 {
+	$a2, $1b, $09, $22, $00, $00, $e1
+}
+FindFamily(famSpecs: FamSpecBits, positionNum: i16, famName: ^String255): i16 {
+	$a2, $1b, $0a, $22, $00, $00, $e1
+}
+GetFamInfo(famNum: Family, famName: ^String255): i16 {
+	$a2, $1b, $0b, $22, $00, $00, $e1
+}
+GetFamNum(famName: ^String255): i16 {
+	$a2, $1b, $0c, $22, $00, $00, $e1
+}
+AddFmaily(famNum: Family, famName: ^String255) {
+	$a2, $1b, $0d, $22, $00, $00, $e1
+}
+InstallFont(desiredID: FontID, scaleWord: ScaleWord) {
+	$a2, $1b, $0e, $22, $00, $00, $e1
+}
+SetPurgeStat(theFontID: FontID, purgeStat: i16) {
+	$a2, $1b, $0f, $22, $00, $00, $e1
+}
+CountFonts(desiredID: FontID, fontSpecs: FontSpecBits): i16 {
+	$a2, $1b, $10, $22, $00, $00, $e1
+}
+FindFontStats(desiredID: FontID, fontSpecs: FontSpecBits, positionNum: i16, resultPtr: ^FontStatRec) {
+	$a2, $1b, $11, $22, $00, $00, $e1
+}
+LoadFont(desiredID: FontID, fontSpecs: FontSpecBits, positionNm: i16, resultPtr: ^FontStatRec) {
+	$a2, $1b, $12, $22, $00, $00, $e1
+}
+LoadSysFont() {
+	$a2, $1b, $13, $22, $00, $00, $e1
+}
+AddFontVar(fontHandle: FontHndl, newSpes: FontSpecBits) {
+	$a2, $1b, $14, $22, $00, $00, $e1
+}
+FixFontMenu(menuID: i16, startingID: i16, famSpecs: FamSpecBits) {
+	$a2, $1b, $15, $22, $00, $00, $e1
+}
+ChooseFont(currentID: FontID, famSpecs: FamSpecBits): FontID {
+	$a2, $1b, $16, $22, $00, $00, $e1
+}
+ItemID2FamNum(itemID: i16): Family {
+	$a2, $1b, $17, $22, $00, $00, $e1
+}
+FMSetSysFont(newFontID: FontID) {
+	$a2, $1b, $18, $22, $00, $00, $e1
+}
+FMGetSysFID(): FontID {
+	$a2, $1b, $19, $22, $00, $00, $e1
+}
+FMGetCurFID(): FontID {
+	$a2, $1b, $1a, $22, $00, $00, $e1
+}
+FamNum2ItemID(famNum: Family): i16 {
+	$a2, $1b, $1b, $22, $00, $00, $e1
+}
+InstallWithStats(desiredID: FontID, scaleWord: ScaleWord, resultPtr: Ptr) {
+	$a2, $1b, $1c, $22, $00, $00, $e1
+}

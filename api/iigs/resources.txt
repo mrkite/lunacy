@@ -1,0 +1,160 @@
+ResID = u32;
+ResAttr = u32;
+
+ResType enum<u32> {
+	rIcon = $8001,
+	rPicture = $8002,
+	rControlList = $8003,
+	rControlTemplate = $8004,
+	rWindow = $8005,
+	rString = $8006,
+	rStringList = $8007,
+	rMenuBar = $8008,
+	rMenu = $8009,
+	rMenuItem = $800a,
+	rTextForLETextBox2 = $800b,
+	rCtlDefProc = $800c,
+	rCtlColorTbl = $800d,
+	rWindParam1 = $800e,
+	rWindParam2 = $800f,
+	rWindColor = $8010,
+	rResName = $8014,
+}
+
+FreeBlockRec struct {
+	blkOffset: u32;
+	blkSize: u32;
+}
+
+ResMap struct {
+	mapNext: ResMapHandle;
+	mapFlag: u16;
+	mapOffset: u32;
+	mapSize: u32;
+	mapToIndex: u16;
+	mapFileNum: u16;
+	mapID: u16;
+	mapIndexSize: u32;
+	mapIndexUsed: u32;
+	mapFreeListSize: u16;
+	mapFreeListUsed: u16;
+	mapFreeList: FreeBlockRec[];
+}
+ResMapHandle = ^^ResMap;
+
+
+LogFlags enum<u16> {
+	resLogOut = 0,
+	resLogIn = 1,
+	resLogApp = 0,
+	resLogSys = 2,
+}
+
+ResourceBootInit() {
+	$a2, $1e, $01, $22, $00, $00, $e1
+}
+ResourceStartup(userID: i16) {
+	$a2, $1e, $02, $22, $00, $00, $e1
+}
+ResourceShutdown() {
+	$a2, $1e, $03, $22, $00, $00, $e1
+}
+ResourceVersion(): i16 {
+	$a2, $1e, $04, $22, $00, $00, $e1
+}
+ResourceReset() {
+	$a2, $1e, $05, $22, $00, $00, $e1
+}
+ResourceStatus(): bool {
+	$a2, $1e, $06, $22, $00, $00, $e1
+}
+CreateResourceFile(auxType: i32, fileType: i16, fileAccess: Access, filename: ^GSString255) {
+	$a2, $1e, $09, $22, $00, $00, $e1
+}
+OpenResourceFile(openAccess: Access, resourceMapPtr: ^ResMap, fileName: ^GSString255): i16 {
+	$a2, $1e, $0a, $22, $00, $00, $e1
+}
+CloseResourceFile(fileID: i16) {
+	$a2, $1e, $0b, $22, $00, $00, $e1
+}
+AddResource(resourceHandle: Handle, resourceAttr: ResAttr, resourceType: ResType, resourceID: ResID) {
+	$a2, $1e, $0c, $22, $00, $00, $e1
+}
+UpdateResourceFile(fileID: i16) {
+	$a2, $1e, $0d, $22, $00, $00, $e1
+}
+LoadResource(resourceType: ResType, resourceID: ResID): Handle {
+	$a2, $1e, $0e, $22, $00, $00, $e1
+}
+RemoveResource(resourceType: ResType, resourceID: ResID) {
+	$a2, $1e, $0f, $22, $00, $00, $e1
+}
+MarkResourceChange(changeFlag: bool, resourceType: ResType, resourceID: ResID) {
+	$a2, $1e, $10, $22, $00, $00, $e1
+}
+SetCurResourceFile(fileID: i16) {
+	$a2, $1e, $11, $22, $00, $00, $e1
+}
+GetCurResourceApp(): i16 {
+	$a2, $1e, $12, $22, $00, $00, $e1
+}
+SetCurResourceApp(userID: i16) {
+	$a2, $1e, $13, $22, $00, $00, $e1
+}
+HomeResourceFile(resourceType: ResType, resourceID: ResID): i16 {
+	$a2, $1e, $15, $22, $00, $00, $e1
+}
+WriteResource(resourceType: ResType, resourceID: ResID) {
+	$a2, $1e, $16, $22, $00, $00, $e1
+}
+ReleaseResource(purgeLevel: i16, resourceType: ResType, resourceID: ResID) {
+	$a2, $1e, $17, $22, $00, $00, $e1
+}
+DetachResource(resourceType: ResType, resourceID: ResID) {
+	$a2, $1e, $18, $22, $00, $00, $e1
+}
+UniqueResourceID(idRange: i16, resourceType: ResType): ResID {
+	$a2, $1e, $19, $22, $00, $00, $e1
+}
+SetResourceID(newID: ResID, resourceType: ResType, currentID: ResID) {
+	$a2, $1e, $1a, $22, $00, $00, $e1
+}
+GetResourceAttr(resourceType: ResType, resourceID: ResID): ResAttr {
+	$a2, $1e, $1b, $22, $00, $00, $e1
+}
+SetResourceAttr(resourceAttr: ResAttr, resourceType: ResType, currentID: ResID) {
+	$a2, $1e, $1c, $22, $00, $00, $e1
+}
+GetResourceSize(resourceType: ResType, currentID: ResID): i32 {
+	$a2, $1e, $1d, $22, $00, $00, $e1
+}
+MatchResourceHandle(foundRec: Ptr, resourceHandle: Handle) {
+	$a2, $1e, $1e, $22, $00, $00, $e1
+}
+GetOpenFileRefNum(fileID: i16): i16 {
+	$a2, $1e, $1f, $22, $00, $00, $e1
+}
+CountReosurces(resourceType: ResType): i32 {
+	$a2, $1e, $20, $22, $00, $00, $e1
+}
+GetIndType(typeIndex: i16): ResType {
+	$a2, $1e, $21, $22, $00, $00, $e1
+}
+GetIndResource(resourceType: ResType, resourceIndex: i32): ResID {
+	$a2, $1e, $23, $22, $00, $00, $e1
+}
+SetResourceLoad(readFlag: i16): i16 {
+	$a2, $1e, $24, $22, $00, $00, $e1
+}
+SetResourceFileDepth(searchDepth: i16): i16 {
+	$a2, $1e, $25, $22, $00, $00, $e1
+}
+GetMapHandle(fileID: i16): ResMapHandle {
+	$a2, $1e, $26, $22, $00, $00, $e1
+}
+LoadAbsResource(loadAddress: Ptr, maxSize: i32, resourceType: ResType, resourceID: ResID): Handle {
+	$a2, $1e, $27, $22, $00, $00, $e1
+}
+ResourceConverter(converterProc: VoidProcPtr, resourceType: ResType, logFlags: LogFlags) {
+	$a2, $1e, $28, $22, $00, $00, $e1
+}

@@ -1,0 +1,358 @@
+Offline() {
+	$a0, $35
+}
+WriteParam(): OSErr {
+	$a0, $38
+}
+ReadDateTime(time: ^LongInt): OSErr {
+	$a0, $39
+}
+SetDateTime(time: LongInt): OSErr {
+	$a0, $3a
+}
+Delay(numTicks: LongInt, finalTicks: ^LongInt) {
+	$a0, $3b
+}
+CmpString() {
+	$a0, $3c
+}
+DrvrInstall() {
+	$a0, $3d
+}
+DrvrRemove() {
+	$a0, $3e
+}
+InitUtil(): OSErr {
+	$a0, $3f, $3e, $80
+}
+AddDrive(drvrRefNum: Integer, drvNum: Integer, qEl: DrvQElPtr) {
+	$a0, $4e
+}
+RDrvrInstall() {
+	$a0, $4f
+}
+
+ReadLocation(loc: ^MachineLocation) {
+	$20, $5f, $20, $3c, $00, $0c, $00, $e4, $a0, $51
+}
+WriteLocation(loc: ^MachineLocation) {
+	$20, $5f, $20, $3c, $00, $0c, $00, $e4, $a0, $52
+}
+
+DTInstall(dtTaskPtr: ^DeferredTask): OSErr {
+	$a0, $82
+}
+
+CommToolboxDispatch() {
+	$a0, $8b
+}
+
+SysEnvirons(versionRequested: Integer, theWorld: ^SysEnvRec): OSErr {
+	$a0, $90
+}
+
+ValidDate(vDate: ^LongDateRec, flags: LongInt, newSecs: ^LongDateTime): Integer {
+	$2f, $3c, $82, $0c, $ff, $e4, $a8, $b5
+}
+ToggleDate(lSecs: ^LongDateTime, field: LongDateField, delta: DateDelta, ch: Integer, params: ^TogglePB): ToggleResults {
+	$2f, $3c, $82, $0e, $ff, $ee, $a8, $b5
+}
+LongSecondsToDate(lSecs: ^LongDateTime, lDate: ^LongDateRec) {
+	$2f, $3c, $80, $08, $ff, $f0, $a8, $b5
+}
+LongDateToSeconds(lDate: ^LongDateRec, lSecs: ^LongDateTime) {
+	$2f, $3c, $80, $08, $ff, $f2, $a8, $b5
+}
+
+Dequeue(qElement: QElemPtr, qHeader: QHdrPtr) {
+	$a9, $6e
+}
+Enqueue(qElement: QElemPtr, qHeader: QHdrPtr) {
+	$a9, $6f
+}
+
+SecondsToDate(secs: LongInt, d: ^DateTimeRec) {
+	$a9, $c6
+}
+DateToSeconds(d: ^DateTimeRec, secs: ^LongInt) {
+	$a9, $c7
+}
+SysBeep(duration: Integer) {
+	$a9, $c8
+}
+
+HandToHand(theHndl: Handle): OSErr {
+	$a9, $e1
+}
+PtrToXHand(srcPtr: Ptr, dstHndl: Handle, size: LongInt): OSErr {
+	$a9, $e2
+}
+PtrToHand(srcPtr: Ptr, dstHndl: ^Handle, size: LongInt): OSErr {
+	$a9, $e3
+}
+HandAndHand(aHndl: Handle, bHndl: Handle): OSErr {
+	$a9, $e4
+}
+
+IsMetric(): Boolean {
+	$3f, $3c, $00, $04, $a9, $ed
+}
+
+PtrAndHand(pntr: Ptr, hndl: Handle, size: LongInt): OSErr {
+	$a9, $ef
+}
+
+SetTrapAddress(trapAddr: LongInt, trapNum: Integer) {
+	$a0, $47
+}
+GetTrapAddress(trapNum: Integer): LongInt {
+	$a1, $46
+}
+SetOSTrapAddress(trapAddr: LongInt, trapNum: Integer) {
+	$a2, $47
+}
+GetOSTrapAddress(trapNum: Integer): LongInt {
+	$a3, $46
+}
+SetToolTrapAddress(trapAddr: LongInt, trapNum: Integer) {
+	$a6, $47
+}
+GetToolTrapAddress(trapNum: Integer): LongInt {
+	$a7, $46
+}
+Unimplemented() {
+	$a8, $9f
+}
+
+GetSysPPtr(): SysPPtr {
+	$2e, $bc, $00, $00, $01, $f8
+}
+SetCurrentA5(): LongInt {
+	$2e, $8d, $2a, $78, $09, $04
+}
+SetA5(newA5: LongInt): LongInt {
+	$2f, $4d, $00, $04, $2a, $5f
+}
+
+QType enum<Integer> {
+	dummyType = 0,
+	vType = 1,
+	ioQType = 2,
+	drvQType = 3,
+	evType = 4,
+	fsQType = 5,
+	sIQType = 6,
+	dtQType = 7,
+	nmType = 8,
+	sleepQType = 16,
+}
+
+QElem struct {
+	qLink: ^QElem;
+	qType: QType;
+	qData: Integer[];
+}
+QElemPtr = ^QElem;
+
+QHdr struct {
+	qFlags: Integer;
+	qHead: QElemPtr;
+	qTail: QElemPtr;
+}
+QHdrPtr = ^QHdr;
+
+DrvQEl struct {
+	qLink: QElemPtr;
+	qType: QType;
+	dQDrive: Integer;
+	dQRefNum: Integer;
+	dQFSID: Integer;
+	dQDrvSz: Integer;
+	dQDrvSz2: Integer;
+}
+DrvQElPtr = ^DrvQEl;
+
+FInfo struct {
+	fdType: OSType;
+	fdCreator: OSType;
+	fdFlags: Integer;
+	fdLocation: Point;
+	fdFldr: Integer;
+}
+
+SysEnvRec struct {
+	environsVersion: Integer;
+	machineType: Integer;
+	systemVersion: Integer;
+	processor: Integer;
+	hasFPU: Boolean;
+	hasColorQD: Boolean;
+	keyboardType: Integer;
+	atDrvrVersNum: Integer;
+	sysVRefNum: Integer;
+}
+
+DateDelta = SignedByte;
+ToggleResults = Integer;
+
+
+TogglePB struct {
+	togFlags: LongInt;
+	amChars: ResType;
+	pmChars: ResType;
+	reserved: LongInt[4];
+}
+
+MachineLocation struct {
+	latitude: Fract;
+	longitude: Fract;
+	gmt: LongInt;
+}
+
+LongDateTime = Int64Bit;
+
+LongDateField enum<Integer> {
+	eraField,
+	yearField,
+	monthField,
+	dayField,
+	hourField,
+	minuteField,
+	secondField,
+	dayOfWeekField,
+	dayOfYearField,
+	weekOfYearfield,
+	pmField,
+	res1Field,
+	res2Field,
+	res3Field,
+}
+
+DateTimeRec struct {
+	year: Integer;
+	month: Integer;
+	day: Integer;
+	hour: Integer;
+	minute: Integer;
+	second: Integer;
+	dayOfWeek: Integer;
+}
+
+LongDateRec struct {
+	list: Integer[14];
+}
+
+SysPPtr = ^SysParmType;
+SysParmType struct {
+	valid: Byte;
+	aTalkA: Byte;
+	aTalkB: Byte;
+	config: Byte;
+	portA: Integer;
+	portB: Integer;
+	alarm: LongInt;
+	font: Integer;
+	kbdPrint: Integer;
+	volClick: Integer;
+	misc: Integer;
+}
+
+DeferredTask struct {
+	qLink: QElemPtr;
+	qType: QType;
+	dtFlags: Integer;
+	dtAddr: ProcPtr;
+	dtParm: LongInt;
+	dtReserved: LongInt;
+}
+
+IOParam struct {
+	ioRefNum: Integer;
+	ioVersNum: SignedByte;
+	ioPermssn: SignedByte;
+	ioMisc: Ptr;
+	ioBuffer: Ptr;
+	ioReqCount: LongInt;
+	ioActCount: LongInt;
+	ioPosMode: Integer;
+	ioPosOffset: LongInt;
+}
+
+FileParam struct {
+	ioFRefNum: Integer;
+	ioFVersNum: SignedByte;
+	filler1: SignedByte;
+	ioFDirIndex: Integer;
+	ioFlAttrib: SignedByte;
+	ioFlVersNum: SignedByte;
+	ioFlFndrInfo: FInfo;
+	ioFlNum: LongInt;
+	ioFlStBlk: Integer;
+	ioFlLgLen: LongInt;
+	ioFlPyLen: LongInt;
+	ioFlRStBlk: Integer;
+	ioFlRLgLen: LongInt;
+	ioFlRPyLen: LongInt;
+	ioFlCrDat: LongInt;
+	ioFlMdDat: LongInt;
+}
+
+VolumeParam struct {
+	filler2: LongInt;
+	ioVolIndex: Integer;
+	ioVCrDate: LongInt;
+	ioVLsBkUp: LongInt;
+	ioVAtrb: Integer;
+	ioVNmFls: Integer;
+	ioVDirSt: Integer;
+	ioVBlLn: Integer;
+	ioVNmAlBlks: Integer;
+	ioVAlBlkSiz: LongInt;
+	ioVClpSiz: LongInt;
+	ioAlBlSt: Integer;
+	ioVNxtFNum: LongInt;
+	ioVFrBlk: Integer;
+}
+
+CntrlParam struct {
+	ioCRefNum: Integer;
+	csCode: CSCode;
+	csParam: Integer[11];
+}
+
+SlotDevParam struct {
+	filler3: LongInt;
+	ioMix: Ptr;
+	ioFlags: Integer;
+	ioSlot: SignedByte;
+	ioID: SignedByte;
+}
+
+MultiDevParam struct {
+	filler4: LongInt;
+	ioMMix: Ptr;
+	ioMFlgas: Integer;
+	ioSEBlkPtr: Ptr;
+}
+
+ParmBlkType union {
+	io: IOParam;
+	file: FileParam;
+	volume: VolumeParam;
+	cntrl: CntrlParam; 
+	slotDev: SlotDevParam;
+	multiDev: MultiDevParam;
+}
+
+ParamBlockRec struct {
+	qLink: QElemPtr;
+	qType: QType;
+	ioTrap: Integer;
+	ioCmdAddr: Ptr;
+	ioCompletion: ProcPtr;
+	ioResult: OSErr;
+	ioNamePtr: StringPtr;
+	ioVRefNum: Integer;
+	pbSub: ParmBlkType;
+}
+ParmBlkPtr = ^ParamBlockRec;

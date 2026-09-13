@@ -1,0 +1,242 @@
+getWVariant(theWindow: WindowPtr): Integer {
+	$a8, $0a
+}
+
+ZoomWindow(theWindow: WindowPtr, partCode: Integer, front: Boolean) {
+	$a8, $3a
+}
+TrackBox(theWindow: WindowPtr, thePt: Point, partCode: Integer): Boolean {
+	$a8, $3b
+}
+
+DrawGrowIcon(theWindow: WindowPtr) {
+	$a9, $04
+}
+DragGrayRgn(theRgn: RgnHandle, startPt: Point, limitRect: ^Rect, slopRect: ^Rect, axis: Axis, actionProc: ProcPtr): LongInt {
+	$a9, $05
+}
+
+ShowHide(theWindow: WindowPtr, showFlag: Boolean) {
+	$a9, $08
+}
+CalcVis(window: WindowPeek) {
+	$a9, $09
+}
+CalcVisBehind(startWindow: WindowPeek, clobberedRgn: RgnHandle) {
+	$a9, $0a
+}
+ClipAbove(window: WindowPeek) {
+	$a9, $0b
+}
+PaintOne(window: WindowPeek, clobberedRgn: RgnHandle) {
+	$a9, $0c
+}
+PaintBehind(startWindow: WindowPeek, clobberedRgn: RgnHandle) {
+	$a9, $0d
+}
+SaveOld(window: WindowPeek) {
+	$a9, $0e
+}
+DrawNew(window: WindowPeek, update: Boolean) {
+	$a9, $0f
+}
+GetWMgrPort(wPort: GrafPtr) {
+	$a9, $10
+}
+CheckUpdate(theEvent: ^EventRecord): Boolean {
+	$a9, $11
+}
+InitWindows() {
+	$a9, $12
+}
+NewWindow(wStorage: Ptr, boundsRect: ^Rect, title: ^Str255, visible: Boolean, theProc: WindowType, behind: WindowPtr, goAwayFlag: Boolean, refCon: LongInt): WindowPtr {
+	$a9, $13
+}
+DisposeWindow(theWindow: WindowPtr) {
+	$a9, $14
+}
+ShowWindow(theWindow: WindowPtr) {
+	$a9, $15
+}
+HideWindow(theWindow: WindowPtr) {
+	$a9, $16
+}
+GetWRefCon(theWindow: WindowPtr): LongInt {
+	$a9, $17
+}
+SetWRefCon(theWindow: WindowPtr, data: LongInt) {
+	$a9, $18
+}
+GetWTitle(theWindow: WindowPtr, title: ^Str255) {
+	$a9, $19
+}
+SetWTitle(theWindow: WindowPtr, title: ^Str255) {
+	$a9, $1a
+}
+MoveWindow(theWindow: WindowPtr, hGlobal: Integer, vGlobal: Integer, front: Boolean) {
+	$a9, $1b
+}
+HiliteWindow(theWindow: WindowPtr, fHilite: Boolean) {
+	$a9, $1c
+}
+SizeWindow(theWindow: WindowPtr, w: Integer, h: Integer, fUpdate: Boolean) {
+	$a9, $1d
+}
+TrackGoAway(theWindow: WindowPtr, thePt: Point): Boolean {
+	$a9, $1e
+}
+SelectWindow(theWindow: WindowPtr) {
+	$a9, $1f
+}
+BringToFront(theWindow: WindowPtr) {
+	$a9, $20
+}
+SendBehind(theWindow: WindowPtr, behindWindow: WindowPtr) {
+	$a9, $21
+}
+BeginUpdate(theWindow: WindowPtr) {
+	$a9, $22
+}
+EndUpdate(theWindow: WindowPtr) {
+	$a9, $23
+}
+FrontWindow(): WindowPtr {
+	$a9, $24
+}
+DragWindow(theWindow: WindowPtr, startPt: Point, boundsRect: ^Rect) {
+	$a9, $25
+}
+DragTheRgn() {
+	$a9, $26
+}
+InvalRgn(badRgn: RgnHandle) {
+	$a9, $27
+}
+InvalRect(badRect: ^Rect) {
+	$a9, $28
+}
+ValidRgn(goodRgn: RgnHandle) {
+	$a9, $29
+}
+ValidRect(goodRect: ^Rect) {
+	$a9, $2a
+}
+GrowWindow(theWindow: WindowPtr, startPt: Point, sizeRect: ^Rect): LongInt {
+	$a9, $2b
+}
+FindWindow(thePoint: Point, theWindow: WindowPtr): WinPartCode {
+	$a9, $2c
+}
+CloseWindow(theWindow: WindowPtr) {
+	$a9, $2d
+}
+SetWindowPic(theWindow: WindowPtr, Pic: PicHandle) {
+	$a9, $2e
+}
+GetWindowPic(theWindow: WindowPtr): PicHandle {
+	$a9, $2f
+}
+PinRect(theRect: ^Rect, thePt: Point): LongInt {
+	$a9, $4e
+}
+
+GetNewWindow(windowID: Integer, wStorage: Ptr, behind: WindowPtr): WindowPtr {
+	$a9, $bd
+}
+
+SetWinColor(theWindow: WindowPtr, newColorTable: WCTabHandle) {
+	$aa, $41
+}
+GetAuxWin(theWindow: WindowPtr, awHndl: ^AuxWinHandle): Boolean {
+	$aa, $42
+}
+NewCWindow(wStorage: Ptr, boundsRect: ^Rect, title: ^Str255, visible: Boolean, procID: WindowType, behind: WindowPtr, goAwayFlga: Boolean, refCon: LongInt): WindowPtr {
+	$aa, $45
+}
+GetNewCWindow(windowID: Integer, wStorage: Ptr, behind: WindowPtr): WindowPtr {
+	$aa, $46
+}
+SetDeskCPat(deskPixPat: PixPatHandle) {
+	$aa, $47
+}
+GetCWMgrPort(wMgrPort: CGrafPtr) {
+	$aa, $48
+}
+
+GetGrayRgn(): RgnHandle {
+	$2e, $b8, $09, $ee
+}
+
+WindowRecord struct {
+	port: GrafPort;
+	windowKind: Integer;
+	visible: Boolean;
+	hilited: Boolean;
+	goAwayFlag: Boolean;
+	spareFlag: Boolean;
+	strucRgn: RgnHandle;
+	contRgn: RgnHandle;
+	updateRgn: RgnHandle;
+	windowDefProc: Handle;
+	dataHandle: Handle;
+	titleHandle: StringHandle;
+	titleWidth: Integer;
+	controlList: ControlHandle;
+	nextWindow: WindowPeek;
+	windowPic: PicHandle;
+	refCon: LongInt;
+}
+WindowPtr = ^WindowRecord;
+WindowPeek = WindowPtr;
+
+
+WindowType enum<Integer> {
+	documentProc = 0,
+	dBoxProc = 1,
+	plainDBox = 2,
+	altDBoxProc = 3,
+	noGrowDocProc = 4,
+	movableDBoxProc = 5,
+	zoomDocProc = 8,
+	zoomNoGrow = 12,
+	rDocProc = 16,
+}
+
+AuxWinRec struct {
+	awNext: AuxWinHandle;
+	awOwner: WindowPtr;
+	awCTable: CTabHandle;
+	dialogCItem: Handle;
+	awFlags: LongInt;
+	awReserved: CTabHandle;
+	awRefCon: LongInt;
+}
+AuxWinPtr = ^AuxWinRec;
+AuxWinHandle = ^AuxWinPtr;
+
+WinCTab struct {
+	wCSeed: LongInt;
+	wCReserved: Integer;
+	ctSize: Integer;
+	ctTable: ColorSpec[5];
+}
+WCTabPtr = ^WinCTab;
+WCTabHandle = ^WCTabPtr;
+
+WinPartCode enum<Integer> {
+	inDesk = 0,
+	inMenuBar = 1,
+	inSysWindow = 2,
+	inContent = 3,
+	inDrag = 4,
+	inGrow = 5,
+	inGoAway = 6,
+	inZoomIn = 7,
+	inZoomOut = 8,
+}
+
+Axis enum<Integer> {
+	noConstraint = 0,
+	hAxisOnly = 1,
+	vAxisOnly = 2,
+}

@@ -1,0 +1,42 @@
+InitializeDictionary(theFSSpecPtr: FSSpecPtr, maximumKeyLength: Integer, keyAttributes: Byte, script: ScriptCode): OSErr {
+	$30, $3c, $05, $00, $aa, $53
+}
+OpenDictionary(theFSSpecPtr: FSSpecPtr, accessPermission: SignedByte, dictionaryReference: ^LongInt): OSErr {
+	$30, $3c, $05, $01, $aa, $53
+}
+CloseDictionary(dictionaryReference: LongInt): OSErr {
+	$30, $3c, $02, $02, $aa, $53
+}
+InsertRecordToDictionary(dictionaryReference: LongInt, key: ^Str255, recordDataHandle: Handle, whichMode: InsertMode): OSErr {
+	$30, $3c, $07, $03, $aa, $53
+}
+DeleteRecordFromDictionary(dictionaryReference: LongInt, key: ^Str255): OSErr {
+	$30, $3c, $04, $04, $aa, $53
+}
+FindRecordInDictionary(dictionaryReference: LongInt, key: ^Str255, requestedAttributeTablePointer: Ptr, recordDataHandle: Handle): OSErr {
+	$30, $3c, $08, $05, $aa, $53
+}
+FindRecordByIndexInDictionary(dictionaryReference: LongInt, recordIndex: LongInt, requestedAttributeTablePointer: Ptr, recordKey: ^Str255, recordDataHandle: Handle): OSErr {
+	$30, $3c, $0a, $06, $aa, $53
+}
+GetDictionaryInformation(dictionaryReference: LongInt, theDictionaryInformation: ^DictionaryInformation): OSErr {
+	$30, $3c, $04, $07, $aa, $53
+}
+CompactDictionary(dictionaryReference: LongInt): OSErr {
+	$30, $3c, $02, $08, $aa, $53
+}
+
+DictionaryInformation struct {
+	dictionaryFSSpec: FSSpec;
+	numberOfRecords: LongInt;
+	currentGarbageSize: LongInt;
+	script: ScriptCode;
+	maximumKeyLength: Integer;
+	keyAttributes: UnsignedByte;
+}
+
+InsertMode enum<Integer> {
+	kInsert = 0,
+	kReplace = 1,
+	kInsertOrReplace = 2,
+}

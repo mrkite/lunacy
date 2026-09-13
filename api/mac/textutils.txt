@@ -1,0 +1,227 @@
+RelString(aStr: ^Str255, bStr: ^Str255, caseSens: Boolean, diacSens: Boolean): Integer {
+	$a0, $50
+}
+
+UprText(textPtr: Ptr, len: Integer) {
+	$30, $1f, $20, $5f, $a0, $54
+}
+LowerText(textPtr: Ptr, len: Integer) {
+	$30, $1f, $20, $5f, $a0, $56
+}
+StripText(textPtr: Ptr, len: Integer) {
+	$30, $1f, $20, $5f, $a2, $56
+}
+UpperText(textPtr: Ptr, len: Integer) {
+	$30, $1f, $20, $5f, $a4, $56
+}
+StripUpperText(textPtr: Ptr, len: Integer) {
+	$30, $1f, $20, $5f, $a6, $56
+}
+
+XMunger(slop: Integer, h0: Handle, o0: LongInt, p1: Ptr, l1: LongInt, p2: Ptr, l2: LongInt): LongInt {
+	$a8, $19
+}
+
+FindWordBreaks(textPtr: Ptr, textLength: Integer, offset: Integer, leadingEdge: Boolean, nBreaks: NBreakTablePtr, offsets: ^OffsetTable) {
+	$2f, $3c, $c0, $12, $00, $1a, $a8, $b5
+}
+FindScriptRun(textPtr: Ptr, textLen: LongInt, lenUsed: ^LongInt): ScriptRunStatus {
+	$2f, $3c, $82, $0c, $00, $26, $a8, $b5
+}
+LowercaseText(textPtr: Ptr, len: Integer, script: ScriptCode) {
+	$3f, $3c, $00, $00, $2f, $3c, $80, $0a, $ff, $b6, $a8, $b5
+}
+StripDiacritics(textPtr: Ptr, len: Integer, script: ScriptCode) {
+	$3f, $3c, $02, $00, $2f, $3c, $80, $0a, $ff, $b6, $a8, $b5
+}
+UppercaseText(textPtr: Ptr, len: Integer, script: ScriptCode) {
+	$3f, $3c, $04, $00, $2f, $3c, $80, $0a, $ff, $b6, $a8, $b5
+}
+UppercaseStripDiacritics(textPtr: Ptr, len: Integer, script: ScriptCode) {
+	$3f, $3c, $06, $00, $2f, $3c, $80, $0a, $ff, $b6, $a8, $b5
+}
+ReplaceText(baseText: Handle, substitutionText: Handle, key: ^Str15): Integer {
+	$2f, $3c, $82, $0c, $ff, $dc, $a8, $b5
+}
+TruncText(width: Integer, textPtr: Ptr, length: ^Integer, truncWhere: TruncCode): Integer {
+	$2f, $3c, $82, $0c, $ff, $de, $a8, $b5
+}
+TrunString(width: Integer, theString: ^Str255, truncWhere: TruncCode): Integer {
+	$2f, $3c, $82, $08, $ff, $e0, $a8, $b5
+}
+NFindWord(textPtr: Ptr, textLength: Integer, offset: Integer, leadingEdge: Boolean, nbreaks: NBreakTablePtr, offsets: ^OffsetTable) {
+	$2f, $3c, $80, $12, $ff, $e2, $a8, $b5
+}
+StringToExtended(source: ^Str255, myFormatRec: ^NumFormatString, partsTable: ^NumberParts, x: ^Extended80): FormatStatus {
+	$2f, $3c, $82, $10, $ff, $e6, $a8, $b5
+}
+ExtendedToString(x: ^Extended80, myFormatRec: ^NumFormatString, partsTable: ^NumberParts, outString: ^Str255): FormatStatus {
+	$2f, $3c, $82, $10, $ff, $e8, $a8, $b5
+}
+FormatRecToString(myCanonical: ^NumFormatString, parseTable: ^NumberParts, outString: ^Str255, positions: ^TripleInt): FormatStatus {
+	$2f, $3c, $82, $10, $ff, $ea, $a8, $b5
+}
+StringToFormatRec(inString: ^Str255, partsTable: ^NumberParts, outString: ^NumFormatString): FormatStatus {
+	$2f, $3c, $82, $0c, $ff, $ec, $a8, $b5
+}
+StringToTime(textPtr: Ptr, textLen: LongInt, theCache: DateCachePtr, lengthUsed: ^LongInt, dateTime: ^LongDateRec): StringToDateStatus {
+	$2f, $3c, $82, $14, $ff, $f4, $a8, $b5
+}
+StringToDate(textPtr: Ptr, textLen: LongInt, theCache: DateCachePtr, lengthUsed: ^LongInt, dateTime: ^LongDateRec): StringToDateStatus {
+	$2f, $3c, $82, $14, $ff, $f6, $a8, $b5
+}
+InitDateCache(theCache: DateCachePtr): OSErr {
+	$2f, $3c, $82, $04, $ff, $f8, $a8, $b5
+}
+StyledLineBreak(textPtr: Ptr, textLen: LongInt, textStart: LongInt, textEnd: LongInt, flags: LongInt, textWidth: ^Fixed, textOffset: ^LongInt): StyledLineBreakCode {
+	$2f, $3c, $82, $1c, $ff, $fe, $a8, $b5
+}
+
+NewString(theString: ^Str255): StringHandle {
+	$a9, $06
+}
+SetString(theString: StringHandle, strNew: ^Str255) {
+	$a9, $07
+}
+
+GetString(stringID: Integer): StringHandle {
+	$a9, $ba
+}
+
+Munger(h: Handle, offset: LongInt, ptr1: Ptr, len1: LongInt, ptr2: Ptr, len2: LongInt): LongInt {
+	$a9, $e0
+}
+
+IUDateString(dateTime: LongInt, longFlag: DateForm, result: ^Str255) {
+	$42, $67, $a9, $ed
+}
+IUTimeString(dateTime: LongInt, wantSeconds: Boolean, result: ^Str255) {
+	$3f, $3c, $00, $02, $a9, $ed
+}
+IUMagString(aPtr: Ptr, bPtr: Ptr, aLen: Integer, bLen: Integer): Integer {
+	$3f, $3c, $00, $0a, $a9, $ed
+}
+IUMagIDString(aPtr: Ptr, bPtr: Ptr, aLen: Integer, bLen: Integer): Integer {
+	$3f, $3c, $00, $0c, $a9, $ed
+}
+DateString(dateTime: LongInt, longFlag: DateForm, result: ^Str255) {
+	$3f, $3c, $00, $0e, $a9, $ed
+}
+TimeString(dateTime: LongInt, wantSeconds: Boolean, result: ^Str255) {
+	$3f, $3c, $00, $10, $a9, $ed
+}
+LongDateString(dateTime: ^LongDateTime, longFlag: DateForm, result: ^Str255, intlHandle: Handle) {
+	$3f, $3c, $00, $14, $a9, $ed
+}
+LongTimeString(dateTime: ^LongDateTime, wantSeconds: Boolean, result: ^Str255, intlHandle: Handle) {
+	$3f, $3c, $00, $16, $a9, $ed
+}
+CompareText(aPtr: Ptr, bPtr: Ptr, aLen: Integer, bLen: Integer): Integer {
+	$3f, $3c, $00, $1a, $a9, $ed
+}
+IdenticalText(aPtr: Ptr, bPtr: Ptr, aLen: Integer, bLen: Integer, itl2Handle: Handle): Integer {
+	$3f, $3c, $00, $1c, $a9, $ed
+}
+ScriptOrder(script1: ScriptCode, script2: ScriptCode): Integer {
+	$3f, $3c, $00, $1e, $a9, $ed
+}
+LanguageOrder(lang1: LangCode, lang2: LangCode): Integer {
+	$3f, $3c, $00, $20, $a9, $ed
+}
+TextOrder(aPtr: Ptr, bPtr: Ptr, aLen: Integer, bLen: Integer, aScript: ScriptCode, bScript: ScriptCode, aLang: LangCode, bLang: LangCode): Integer {
+	$3f, $3c, $00, $22, $a9, $ed
+}
+
+TruncCode enum<Integer> {
+	truncEnd = 0,
+	truncMiddle = $4000,
+}
+
+FVector struct {
+	start: Integer;
+	length: Integer;
+}
+
+TripleInt = FVector[3];
+
+ScriptRunStatus struct {
+	script: SignedByte;
+	variant: SignedByte;
+}
+
+StyledLineBreakCode enum<Integer> {
+	BreakWord, BreakChar, BreakOverflow
+}
+
+StringToDateStatus enum<Integer> {
+	longDateFound = 1,
+	leftOverChars = 2,
+	sepNotIntlSep = 4,
+	fieldOrderNotIntl = 8,
+	extraneousStrings = 16,
+	tooManySeps = 32,
+	sepNotConsistent = 64,
+	fatalDateTime = $8000,
+	tokenErr = $8100,
+	cantReadUtilities = $8200,
+	dateTimeNotFound = $8400,
+	dateTimeInvalid = $8800
+}
+
+LangCode enum<Integer> {
+	systemCurLang = -2,
+	systemDefLeng = -3,
+	currentCurLang = -4,
+	currentDefLang = -5,
+	scriptCurLang = -6,
+	scriptDefLang = -7,
+}
+
+DateForm enum<Integer> {
+	shortDate,
+	longDate,
+	abbrevDate,
+}
+FormatStatus = Integer;
+
+DateCacheRecord struct {
+	hidden: Integer[256];
+}
+DateCachePtr = ^DateCacheRecord;
+
+NumFormatString struct {
+	fLength: Byte;
+	fVersion: Byte;
+	data: SignedByte[254];
+}
+
+NumberParts struct {
+	version: Integer;
+	data: WideChar[31];
+	pePlus: WideCharArr;
+	peMinus: WideCharArr;
+	peMinusPlus: WideCharArr;
+	altNumTable: WideCharArr;
+	reserved: Char[20];
+}
+
+WideChar = Integer;
+WideCharArr struct {
+	size: Integer;
+	data: WideChar[10];
+}
+
+NBreakTable struct {
+	flags1: SignedByte;
+	flags2: SignedByte;
+	version: Integer;
+	classTableOff: Integer;
+	auxCTableOff: Integer;
+	backwdTableOff: Integer;
+	forwdTableOff: Integer;
+	doBackup: Integer;
+	length: Integer;
+	charTypes: SignedByte[256];
+	tables: Integer[];
+}
+NBreakTablePtr = ^NBreakTable;

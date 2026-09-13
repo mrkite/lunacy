@@ -6,6 +6,7 @@ Master widget definition
 */
 
 mod basic;
+mod disassembly;
 mod error;
 mod hex;
 mod image;
@@ -16,6 +17,7 @@ use crate::lunacy::Context;
 use eframe::egui;
 
 pub use basic::Basic;
+pub use disassembly::Disassembly;
 pub use error::ErrorView;
 pub use hex::HexView;
 pub use image::ImageView;
@@ -40,6 +42,8 @@ pub trait Widget {
     fn find_next(&mut self, _ctx: Context) {}
 
     fn find_prev(&mut self, _ctx: Context) {}
+
+    fn menu(&mut self, _ui: &mut egui::Ui, _ctx: Context) {}
 
     fn save(&self, _out: &mut std::fs::File, _ctx: Context) -> Result<(), std::io::Error> {
         Err(std::io::Error::new(

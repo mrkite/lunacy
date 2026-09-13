@@ -1,0 +1,17 @@
+EgretDispatch() {
+	$a0, $92
+}
+Gestalt(selector: OSType, response: ^LongInt): OSErr {
+	$a1, $ad
+}
+NewGestalt(selector: OSType, gestaltFunctions: SelectorFunctionUPP): OSErr {
+	$a3, $ad
+}
+ReplaceGestalt(selector: OSType, gestaltFunction: SelectorFunctionUPP, oldGestaltFunction: SelectorFunctionUPP): OSErr {
+	$a5, $ad
+}
+GetGestaltProcPtr() {
+	$a7, $ad
+}
+
+SelectorFunctionUPP(selector: OSType, response: ^LongInt): OSErr;

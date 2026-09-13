@@ -1,0 +1,829 @@
+Mode enum<u16> {
+	modeCopy,
+	modeOR,
+	modeXOR,
+	modeBIC,
+	modeForeCopy,
+	modeForeOR,
+	modeForeXOR,
+	mdoeForeBIC,
+	notCopy = $8000,
+	notOR,
+	notXOR,
+	notBIC,
+	notForeCopy,
+	notForeOR,
+	notForeXOR,
+	notForeBIC,
+}
+
+GrafPort struct {
+	portInfo: LocInfo;
+	portRect: Rect;
+	clipRgn: RgnHandle;
+	visRgn: RgnHandle;
+	bkPat: Pattern;
+	pnLoc: Point;
+	pnSize: Point;
+	pnMode: Mode;
+	pnPat: Pattern;
+	pnMask: Mask;
+	pnVis: i16;
+	fontHandle: FontHndl;
+	gfontID: FontID;
+	fontFlags: FontFlags;
+	txSize: u16;
+	txFace: TextStyle;
+	txMode: Mode;
+	spExtra: Fixed;
+	chExtra: Fixed;
+	fgColor: MasterColors;
+	bgColor: MasterColors;
+	picSave: Handle;
+	rgnSave: Handle;
+	polySave: Handle;
+	grafProcs: ^QDProcs;
+	arcRot: i16;
+	userField: u32;
+	sysField: u32;
+}
+
+QDProcs struct {
+	stdText: VoidProcPtr;
+	stdLine: VoidProcPtr;
+	stdRect: VoidProcPtr;
+	stdRect: VoidProcPtr;
+	stdRRect: VoidProcPtr;
+	stdOval: VoidProcPtr;
+	stdArc: VoidProcPtr;
+	stdPoly: VoidProcPtr;
+	stdRgn: VoidProcPtr;
+	stdPixels: VoidProcPtr;
+	stdComment: VoidProcPtr;
+	stdTxMeas: VoidProcPtr;
+	stdTxBnds: VoidProcPtr;
+	stdGetPic: VoidProcPtr;
+	stdPutPic: VoidProcPtr;
+}
+
+LocInfo struct {
+	portSCB: u16;
+	ptrToPixImage: Ptr;
+	width: u16;
+	boundsRect: Rect;
+}
+
+RomFontRec struct {
+	rfFamNum: u16;
+	rfFamStyle: u16;
+	rfSize: u16;
+	rfFontHandle: FontHndl;
+	rfNamePtr: Ptr;
+	rfFBRExtent: u16;
+}
+
+Region struct {
+	rgnSize: u16;
+	rgnBBox: Rect;
+	data: u16[];
+}
+RgnHandle = ^^Region;
+
+Pattern = u8[32];
+Mask = u8[8];
+
+PaintParam struct {
+	ptrToSourceLocInfo: ^LocInfo;
+	ptrToDestLocInfo: ^LocInfo;
+	ptrToSourceRect: ^Rect;
+	ptrToDestPoint: ^Point;
+	mode: Mode;
+	maskHandle: Handle;
+}
+
+PenState struct {
+	psPnSize: Point;
+	psPnMode: Mode;
+	psPnPat: Pattern;
+	psPnMask: Mask;
+}
+
+MasterColors enum<u16> {
+	black = 0,
+	blue = $f,
+	darkGreen320 = $80,
+	green320 = $e0,
+	green640 = $f0,
+	lightBlue320 = $4df,
+	purple320 = $72c,
+	darkGray320 = $777,
+	periwinkleBlue320 = $78f,
+	brown320 = $841,
+	lightGray320 = $ccc,
+	red320 = $d00,
+	lilac320 = $daf,
+	red640 = $f00,
+	orange320 = $f70,
+	flesh320 = $fa9,
+	yellow = $ff0,
+	white = $fff,
+}
+
+BufDimRec struct {
+	maxWidth: u16;
+	textBufHeight: u16;
+	textBufferWords: u16;
+	fontWidth: u16;
+}
+
+FontFlags enum<u16> {
+	widMaxSize = 1,
+	zeroSize = 2,
+}
+
+TextStyle enum<u16> {
+	plainMask = 0,
+	boldMask = 1,
+	italicMask = 2,
+	underlineMask = 4,
+	outlineMask = 8,
+	shadowMask = $10,
+}
+
+Font struct {
+	offsetToMF: u16;
+	family: Family;
+	style: TextStyle;
+	size: u16;
+	version: u16;
+	fbrExtent: u16;
+}
+FontHndl = ^^Font;
+
+FontID struct {
+	famNum: Family;
+	fontStyle: u8;
+	fontSize: u8;
+}
+
+FontInfoRecord struct {
+	ascent: i16;
+	descent: i16;
+	widMax: u16;
+	leading: u16;
+}
+
+FontGlobalsRecord struct {
+	fgFontID: u16;
+	fgStyle: TextStyle;
+	fgSize: u16;
+	fgVersion: u16;
+	fgWidMax: u16;
+	fgFBRExtent: u16;
+}
+
+ColorTable struct {
+	entries: u16[16];
+}
+
+ColorValue enum<u16> {
+	blueMask = $f,
+	greenMask = $f0,
+	redMask = $f00,
+}
+
+Cursor struct {
+	cursorHeight: u16;
+	cursorWidth: u16;
+	cursorData: u16[];
+	cursorMask: u16[];
+	cursorHotSpot: Point;
+}
+
+QDBootInit() {
+	$a2, $04, $01, $22, $00, $00, $e1
+}
+QDStartUp(dPageAddr: u16, masterSCB: u16, maxWidth: u16, userID: u16) {
+	$a2, $04, $02, $22, $00, $00, $e1
+}
+QDShutDown() {
+	$a2, $04, $03, $22, $00, $00, $e1
+}
+QDVersion(): u16 {
+	$a2, $04, $04, $22, $00, $00, $e1
+}
+QDReset() {
+	$a2, $04, $05, $22, $00, $00, $e1
+}
+QDStatus(): bool {
+	$a2, $04, $06, $22, $00, $00, $e1
+}
+GetAddress(tableID: u16): Ptr {
+	$a2, $04, $09, $22, $00, $00, $e1
+}
+GrafOn() {
+	$a2, $04, $0a, $22, $00, $00, $e1
+}
+GrafOff() {
+	$a2, $04, $0b, $22, $00, $00, $e1
+}
+GetStandardSCB(): u16 {
+	$a2, $04, $0c, $22, $00, $00, $e1
+}
+InitColorTable(tablePtr: ^ColorTable) {
+	$a2, $04, $0d, $22, $00, $00, $e1
+}
+SetColorTable(tableNumber: u16, srcTablePtr: ^ColorTable) {
+	$a2, $04, $0e, $22, $00, $00, $e1
+}
+GetColorTable(tableNumber: u16, destTablePtr: ^ColorTable) {
+	$a2, $04, $0f, $22, $00, $00, $e1
+}
+SetColorEntry(tableNumber: u16, entryNumber: u16, newColor: ColorValue) {
+	$a2, $04, $10, $22, $00, $00, $e1
+}
+GetColorEntry(tableNumber: u16, entryNumber: u16): MasterColors {
+	$a2, $04, $11, $22, $00, $00, $e1
+}
+SetSCB(scanLine: u16, newSCB: u16) {
+	$a2, $04, $12, $22, $00, $00, $e1
+}
+GetSCB(scanLine: u16): u16 {
+	$a2, $04, $13, $22, $00, $00, $e1
+}
+SetAllSCBs(newSCB: u16) {
+	$a2, $04, $14, $22, $00, $00, $e1
+}
+ClearScreen(colorWord: MasterColors) {
+	$a2, $04, $15, $22, $00, $00, $e1
+}
+SetMasterSCB(masterSCB: u16) {
+	$a2, $04, $16, $22, $00, $00, $e1
+}
+GetMasterSCB(): u16 {
+	$a2, $04, $17, $22, $00, $00, $e1
+}
+OpenPort(portPtr: ^GrafPort) {
+	$a2, $04, $18, $22, $00, $00, $e1
+}
+InitPort(portPtr: ^GrafPort) {
+	$a2, $04, $19, $22, $00, $00, $e1
+}
+ClosePort(portPtr: ^GrafPort) {
+	$a2, $04, $1a, $22, $00, $00, $e1
+}
+SetPort(portPtr: ^GrafPort) {
+	$a2, $04, $1b, $22, $00, $00, $e1
+}
+GetPort(): ^GrafPort {
+	$a2, $04, $1c, $22, $00, $00, $e1
+}
+SetPortLoc(locInfoPtr: ^LocInfo) {
+	$a2, $04, $1d, $22, $00, $00, $e1
+}
+GetPortLoc(locInfoPtr: ^LocInfo) {
+	$a2, $04, $1e, $22, $00, $00, $e1
+}
+SetPortRect(rectPtr: ^Rect) {
+	$a2, $04, $1f, $22, $00, $00, $e1
+}
+GetPortRect(rectPtr: ^Rect) {
+	$a2, $04, $20, $22, $00, $00, $e1
+}
+SetPortSize(portWidth: u16, portheight: u16) {
+	$a2, $04, $21, $22, $00, $00, $e1
+}
+MovePortTo(h: i16, v: i16) {
+	$a2, $04, $22, $22, $00, $00, $e1
+}
+SetOrigin(h: i16, v: i16) {
+	$a2, $04, $23, $22, $00, $00, $e1
+}
+SetClip(aRgnHandle: RgnHandle) {
+	$a2, $04, $24, $22, $00, $00, $e1
+}
+GetClip(aRgnHandle: RgnHandle) {
+	$a2, $04, $25, $22, $00, $00, $e1
+}
+ClipRect(rectPtr: ^Rect) {
+	$a2, $04, $26, $22, $00, $00, $e1
+}
+HidePen() {
+	$a2, $04, $27, $22, $00, $00, $e1
+}
+ShowPen() {
+	$a2, $04, $28, $22, $00, $00, $e1
+}
+GetPen(pointPtr: ^Point) {
+	$a2, $04, $29, $22, $00, $00, $e1
+}
+SetPenState(penStatePtr: ^PenState) {
+	$a2, $04, $2a, $22, $00, $00, $e1
+}
+GetPenState(penStatePtr: ^PenState) {
+	$a2, $04, $2b, $22, $00, $00, $e1
+}
+SetPenSize(penWidth: u16, penHeight: u16) {
+	$a2, $04, $2c, $22, $00, $00, $e1
+}
+GetPenSize(pointPtr: ^Point) {
+	$a2, $04, $2d, $22, $00, $00, $e1
+}
+SetPenMode(penMode: u16) {
+	$a2, $04, $2e, $22, $00, $00, $e1
+}
+GetPenMode(): Mode {
+	$a2, $04, $2f, $22, $00, $00, $e1
+}
+SetPenPat(patternPtr: ^Pattern) {
+	$a2, $04, $30, $22, $00, $00, $e1
+}
+GetPenPat(patternPtr: ^Pattern) {
+	$a2, $04, $31, $22, $00, $00, $e1
+}
+SetPenMask(maskPtr: ^Mask) {
+	$a2, $04, $32, $22, $00, $00, $e1
+}
+GetPenMask(maskPtr: ^Mask) {
+	$a2, $04, $33, $22, $00, $00, $e1
+}
+SetBackPat(patternPtr: ^Pattern) {
+	$a2, $04, $34, $22, $00, $00, $e1
+}
+GetBackPat(patternPtr: ^Pattern) {
+	$a2, $04, $35, $22, $00, $00, $e1
+}
+PenNormal() {
+	$a2, $04, $36, $22, $00, $00, $e1
+}
+SetSolidPenPat(colorNum: MasterColors) {
+	$a2, $04, $37, $22, $00, $00, $e1
+}
+SetSolidBackPat(colorNum: MasterColors) {
+	$a2, $04, $38, $22, $00, $00, $e1
+}
+SolidPattern(colorNum: u16, patternPtr: ^Pattern) {
+	$a2, $04, $39, $22, $00, $00, $e1
+}
+MoveTo(h: i16, v: i16) {
+	$a2, $04, $3a, $22, $00, $00, $e1
+}
+Move(dH: i16, dV: i16) {
+	$a2, $04, $3b, $22, $00, $00, $e1
+}
+LineTo(h: i16, v: i16) {
+	$a2, $04, $3c, $22, $00, $00, $e1
+}
+Line(dH: i16, dV: i16) {
+	$a2, $04, $3d, $22, $00, $00, $e1
+}
+SetPicSave(picSaveValue: i32) {
+	$a2, $04, $3e, $22, $00, $00, $e1
+}
+GetPicSave(): i32 {
+	$a2, $04, $3f, $22, $00, $00, $e1
+}
+SetRgnSave(rgnSaveValue: i32) {
+	$a2, $04, $40, $22, $00, $00, $e1
+}
+GetRgnSave(): i32 {
+	$a2, $04, $41, $22, $00, $00, $e1
+}
+SetPolySave(polySaveValue: i32) {
+	$a2, $04, $42, $22, $00, $00, $e1
+}
+GetPolySave(): i32 {
+	$a2, $04, $43, $22, $00, $00, $e1
+}
+SetGrafProcs(grafProcsPtr: ^QDProcs) {
+	$a2, $04, $44, $22, $00, $00, $e1
+}
+GetGrafProcs(): ^QDProcs {
+	$a2, $04, $45, $22, $00, $00, $e1
+}
+SetUserField(uesrFieldValue: i32) {
+	$a2, $04, $46, $22, $00, $00, $e1
+}
+GetUserField(): i32 {
+	$a2, $04, $47, $22, $00, $00, $e1
+}
+SetSysField(sysFieldValue: i32) {
+	$a2, $04, $48, $22, $00, $00, $e1
+}
+GetSysField(): i32 {
+	$a2, $04, $49, $22, $00, $00, $e1
+}
+SetRect(aRectPtr: ^Rect, left: i16, top: i16, right: i16, bottom: i16) {
+	$a2, $04, $4a, $22, $00, $00, $e1
+}
+OffsetRect(rectPtr: ^Rect, deltaH: i16, deltaV: i16) {
+	$a2, $04, $4b, $22, $00, $00, $e1
+}
+InsetRect(rectPtr: ^Rect, deltaH: i16, deltaV: i16) {
+	$a2, $04, $4c, $22, $00, $00, $e1
+}
+SectRect(rect1Ptr: ^Rect, rect2Ptr: ^Rect, intersectRectPtr: ^Rect): bool {
+	$a2, $04, $4d, $22, $00, $00, $e1
+}
+UnionRect(rect1Ptr: ^Rect, rect2Ptr: ^Rect, unionRectPtr: ^Rect) {
+	$a2, $04, $4e, $22, $00, $00, $e1
+}
+PtInRect(pointPtr: ^Point, rectPtr: ^Rect): bool {
+	$a2, $04, $4f, $22, $00, $00, $e1
+}
+Pt2Rect(point1Point: ^Point, point2Ptr: ^Point, rectPtr: ^Rect) {
+	$a2, $04, $50, $22, $00, $00, $e1
+}
+EqualRect(rect1Ptr: ^Rect, rect2Ptr: ^Rect): bool {
+	$a2, $04, $51, $22, $00, $00, $e1
+}
+NotEmptyRect(rectPtr: ^Rect): bool {
+	$a2, $04, $52, $22, $00, $00, $e1
+}
+FrameRect(rectPtr: ^Rect) {
+	$a2, $04, $53, $22, $00, $00, $e1
+}
+PaintRect(rectPtr: ^Rect) {
+	$a2, $04, $54, $22, $00, $00, $e1
+}
+EraseRect(rectPtr: ^Rect) {
+	$a2, $04, $55, $22, $00, $00, $e1
+}
+InvertRect(rectPtr: ^Rect) {
+	$a2, $04, $56, $22, $00, $00, $e1
+}
+FillRect(rectPtr: ^Rect, patternPtr: ^Pattern) {
+	$a2, $04, $57, $22, $00, $00, $e1
+}
+FrameOval(rectPtr: ^Rect) {
+	$a2, $04, $58, $22, $00, $00, $e1
+}
+PaintOval(rectPtr: ^Rect) {
+	$a2, $04, $59, $22, $00, $00, $e1
+}
+EraseOval(rectPtr: ^Rect) {
+	$a2, $04, $5a, $22, $00, $00, $e1
+}
+InvertOval(rectPtr: ^Rect) {
+	$a2, $04, $5b, $22, $00, $00, $e1
+}
+FillOval(rectPtr: ^Rect, patternPtr: ^Pattern) {
+	$a2, $04, $5c, $22, $00, $00, $e1
+}
+FrameRRect(rectPtr: ^Rect, ovalWidth: u16, ovalHeight: u16) {
+	$a2, $04, $5d, $22, $00, $00, $e1
+}
+PaintRRect(rectPtr: ^Rect, ovalWidth: u16, ovalHeight: u16) {
+	$a2, $04, $5e, $22, $00, $00, $e1
+}
+EraseRRect(rectPtr: ^Rect, ovalWidth: u16, ovalHeight: u16) {
+	$a2, $04, $5f, $22, $00, $00, $e1
+}
+InvertRRect(rectPtr: ^Rect, ovalWidth: u16, ovalHeight: u16) {
+	$a2, $04, $60, $22, $00, $00, $e1
+}
+FillRRect(rectPtr: ^Rect, ovalWidth: u16, ovalHeight: u16, patternPtr: ^Pattern) {
+	$a2, $04, $61, $22, $00, $00, $e1
+}
+FrameArc(rectPtr: ^Rect, startAngle: i16, arcAngle: i16) {
+	$a2, $04, $62, $22, $00, $00, $e1
+}
+PaintArc(rectPtr: ^Rect, startAngle: i16, arcAngle: i16) {
+	$a2, $04, $63, $22, $00, $00, $e1
+}
+EraseArc(rectPtr: ^Rect, startAngle: i16, arcAngle: i16) {
+	$a2, $04, $64, $22, $00, $00, $e1
+}
+InvertArc(rectPtr: ^Rect, startAngle: i16, arcAngle: i16) {
+	$a2, $04, $65, $22, $00, $00, $e1
+}
+FillArc(rectPtr: ^Rect, startAngle: i16, arcAngle: i16) {
+	$a2, $04, $66, $22, $00, $00, $e1
+}
+NewRgn(): RgnHandle {
+	$a2, $04, $67, $22, $00, $00, $e1
+}
+DisposeRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $68, $22, $00, $00, $e1
+}
+CopyRgn(srcRgnHandle: RgnHandle, destRgnHandle: RgnHandle) {
+	$a2, $04, $69, $22, $00, $00, $e1
+}
+SetEmptyRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $6a, $22, $00, $00, $e1
+}
+SetRectRgn(rgnHandle: RgnHandle, left: i16, top: i16, right: i16, bottom: i16) {
+	$a2, $04, $6b, $22, $00, $00, $e1
+}
+RectRgn(aRgnHandle: RgnHandle, rectPtr: ^Rect) {
+	$a2, $04, $6c, $22, $00, $00, $e1
+}
+OpenRgn() {
+	$a2, $04, $6d, $22, $00, $00, $e1
+}
+CloseRgn(aRgnHndl: RgnHandle) {
+	$a2, $04, $6e, $22, $00, $00, $e1
+}
+OffsetRgn(aRgnHandle: RgnHandle, dH: i16, dV: i16) {
+	$a2, $04, $6f, $22, $00, $00, $e1
+}
+InsetRgn(aRgnHandle: RgnHandle, dH: i16, dV: i16) {
+	$a2, $04, $70, $22, $00, $00, $e1
+}
+SectRgn(rgn1Handle: RgnHandle, rgn2Handle: RgnHandle, destRgnHandle: RgnHandle) {
+	$a2, $04, $71, $22, $00, $00, $e1
+}
+UnionRgn(rgn1Handle: RgnHandle, rgn2Handle: RgnHandle, unionRgnHandle: RgnHandle) {
+	$a2, $04, $72, $22, $00, $00, $e1
+}
+DiffRgn(rgn1Handle: RgnHandle, rgn2Handle: RgnHandle, diffRgnHnd: RgnHandle) {
+	$a2, $04, $73, $22, $00, $00, $e1
+}
+XorRgn(rgn1Handle: RgnHandle, rgn2Handle: RgnHandle, xorRgnHandle: RgnHandle) {
+	$a2, $04, $74, $22, $00, $00, $e1
+}
+PtInRgn(pointPtr: ^Point, aRgnHandle: RgnHandle): bool {
+	$a2, $04, $75, $22, $00, $00, $e1
+}
+RectInRgn(rectPtr: ^Rect, aRgnHandle: RgnHandle): bool {
+	$a2, $04, $76, $22, $00, $00, $e1
+}
+EqualRgn(rgn1Handle: RgnHandle, rgn2Handle: RgnHandle): bool {
+	$a2, $04, $77, $22, $00, $00, $e1
+}
+EmptyRgn(aRgnHandle: RgnHandle): bool {
+	$a2, $04, $78, $22, $00, $00, $e1
+}
+FrameRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $79, $22, $00, $00, $e1
+}
+PaintRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $7a, $22, $00, $00, $e1
+}
+EraseRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $7b, $22, $00, $00, $e1
+}
+InvertRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $7c, $22, $00, $00, $e1
+}
+FillRgn(aRgnHandle: RgnHandle, patternPtr: ^Pattern) {
+	$a2, $04, $7d, $22, $00, $00, $e1
+}
+ScrollRect(rectPtr: ^Rect, dH: i16, dV: i16, aRgnHandle: RgnHandle) {
+	$a2, $04, $7e, $22, $00, $00, $e1
+}
+PaintPixels(paintParamPtr: ^PaintParam) {
+	$a2, $04, $7f, $22, $00, $00, $e1
+}
+AddPt(srcPtPtr: ^Point, destPtPtr: ^Point) {
+	$a2, $04, $80, $22, $00, $00, $e1
+}
+SubPt(srcPtPtr: ^Point, destPtPtr: ^Point) {
+	$a2, $04, $81, $22, $00, $00, $e1
+}
+SetPt(srcPtPtr: ^Point, h: i16, v: i16) {
+	$a2, $04, $82, $22, $00, $00, $e1
+}
+EqualPt(point1Ptr: ^Point, point2Ptr: ^Point): bool {
+	$a2, $04, $83, $22, $00, $00, $e1
+}
+LocalToGlobal(pointPtr: ^Point) {
+	$a2, $04, $84, $22, $00, $00, $e1
+}
+GlobalToLocal(pointPtr: ^Point) {
+	$a2, $04, $85, $22, $00, $00, $e1
+}
+Random(): u16 {
+	$a2, $04, $86, $22, $00, $00, $e1
+}
+SetRandSeed(randomSeed: i32) {
+	$a2, $04, $87, $22, $00, $00, $e1
+}
+GetPixel(h: u16, v: u16): u16 {
+	$a2, $04, $88, $22, $00, $00, $e1
+}
+ScalePt(pointPtr: ^Point, srcRectPtr: ^Rect, destRectPtr: ^Rect) {
+	$a2, $04, $89, $22, $00, $00, $e1
+}
+MapPt(pointPt: ^Point, srcRectPtr: ^Rect, destRectPtr: ^Rect) {
+	$a2, $04, $8a, $22, $00, $00, $e1
+}
+MapRect(rectPtr: ^Rect, srcRectPtr: ^Rect, destRectPtr: ^Rect) {
+	$a2, $04, $8b, $22, $00, $00, $e1
+}
+MapRgn(aRgnHandle: RgnHandle, srcRectPtr: ^Rect, destRectPtr: ^Rect) {
+	$a2, $04, $8c, $22, $00, $00, $e1
+}
+SetStdProcs(stdProcsRecPtr: ^QDProcs) {
+	$a2, $04, $8d, $22, $00, $00, $e1
+}
+SetCursor(theCursorPtr: ^Cursor) {
+	$a2, $04, $8e, $22, $00, $00, $e1
+}
+GetCursorAdr(): ^Cursor {
+	$a2, $04, $8f, $22, $00, $00, $e1
+}
+HideCursor() {
+	$a2, $04, $90, $22, $00, $00, $e1
+}
+ShowCursor() {
+	$a2, $04, $91, $22, $00, $00, $e1
+}
+ObscureCursor() {
+	$a2, $04, $92, $22, $00, $00, $e1
+}
+SetFont(newFontHandle: FontHndl) {
+	$a2, $04, $94, $22, $00, $00, $e1
+}
+GetFont(): FontHndl {
+	$a2, $04, $95, $22, $00, $00, $e1
+}
+GetFontInfo(fontInfoRecPtr: ^FontInfoRecord) {
+	$a2, $04, $96, $22, $00, $00, $e1
+}
+GetFontGlobals(fgRecPtr: ^FontGlobalsRecord) {
+	$a2, $04, $97, $22, $00, $00, $e1
+}
+SetFontFlags(fontFlags: FontFlags) {
+	$a2, $04, $98, $22, $00, $00, $e1
+}
+GetFontFlags(): u16 {
+	$a2, $04, $99, $22, $00, $00, $e1
+}
+SetTextFace(textFace: TextStyle) {
+	$a2, $04, $9a, $22, $00, $00, $e1
+}
+GetTextFace(): TextStyle {
+	$a2, $04, $9b, $22, $00, $00, $e1
+}
+SetTextMode(textMode: Mode) {
+	$a2, $04, $9c, $22, $00, $00, $e1
+}
+GetTextMode(): Mode {
+	$a2, $04, $9d, $22, $00, $00, $e1
+}
+SetSpaceExtra(spaceExtra: Fixed) {
+	$a2, $04, $9e, $22, $00, $00, $e1
+}
+GetSpaceExtra(): Fixed {
+	$a2, $04, $9f, $22, $00, $00, $e1
+}
+SetForeColor(foreColor: MasterColors) {
+	$a2, $04, $a0, $22, $00, $00, $e1
+}
+GetForeColor(): MasterColors {
+	$a2, $04, $a1, $22, $00, $00, $e1
+}
+SetBackColor(backColor: MasterColors) {
+	$a2, $04, $a2, $22, $00, $00, $e1
+}
+GetBackColor(): MasterColors {
+	$a2, $04, $a3, $22, $00, $00, $e1
+}
+DrawChar(theChar: i8) {
+	$a2, $04, $a4, $22, $00, $00, $e1
+}
+DrawString(str: ^String255) {
+	$a2, $04, $a5, $22, $00, $00, $e1
+}
+DrawCString(cStringPtr: CStringPtr) {
+	$a2, $04, $a6, $22, $00, $00, $e1
+}
+DrawText(textPtr: Ptr, textLength: u16) {
+	$a2, $04, $a7, $22, $00, $00, $e1
+}
+CharWidth(theChar: i8): u16 {
+	$a2, $04, $a8, $22, $00, $00, $e1
+}
+StringWidth(str: ^String255): u16 {
+	$a2, $04, $a9, $22, $00, $00, $e1
+}
+CStringWidth(cStringPtr: Ptr): u16 {
+	$a2, $04, $aa, $22, $00, $00, $e1
+}
+TextWidth(textPtr: Ptr, textLenght: u16): u16 {
+	$a2, $04, $ab, $22, $00, $00, $e1
+}
+CharBounds(theChar: i8, resultPtr: ^Rect) {
+	$a2, $04, $ac, $22, $00, $00, $e1
+}
+StringBounds(str: ^String255, resultPtr: ^Rect) {
+	$a2, $04, $ad, $22, $00, $00, $e1
+}
+CStringBounds(cStringPtr: Ptr, resultRect: ^Rect) {
+	$a2, $04, $ae, $22, $00, $00, $e1
+}
+TextBounds(textPtr: Ptr, textLength: u16, resultPtr: ^Rect) {
+	$a2, $04, $af, $22, $00, $00, $e1
+}
+SetArcRot() {
+	$a2, $04, $b0, $22, $00, $00, $e1
+}
+GetArcRot(): u16 {
+	$a2, $04, $b1, $22, $00, $00, $e1
+}
+SetSysFont(fontHandle: FontHndl) {
+	$a2, $04, $b2, $22, $00, $00, $e1
+}
+GetSysFont(): FontHndl {
+	$a2, $04, $b3, $22, $00, $00, $e1
+}
+SetVisRgn(aRgnHandle: RgnHandle) {
+	$a2, $04, $b4, $22, $00, $00, $e1
+}
+GetVisRgn(RgnHandle: RgnHandle) {
+	$a2, $04, $b5, $22, $00, $00, $e1
+}
+SetIntUse(useInt: u16) {
+	$a2, $04, $b6, $22, $00, $00, $e1
+}
+FramePoly(polyHandle: Handle) {
+	$a2, $04, $bc, $22, $00, $00, $e1
+}
+PaintPoly(polyHandle: Handle) {
+	$a2, $04, $bd, $22, $00, $00, $e1
+}
+ErasePoly(polyHandle: Handle) {
+	$a2, $04, $be, $22, $00, $00, $e1
+}
+InvertPoly(polyHandle: Handle) {
+	$a2, $04, $bf, $22, $00, $00, $e1
+}
+FillPoly(polyHandle: Handle, patternPtr: ^Pattern) {
+	$a2, $04, $c0, $22, $00, $00, $e1
+}
+OpenPoly(): Handle {
+	$a2, $04, $c1, $22, $00, $00, $e1
+}
+ClosePoly() {
+	$a2, $04, $c2, $22, $00, $00, $e1
+}
+KillPoly(polyHandle: Handle) {
+	$a2, $04, $c3, $22, $00, $00, $e1
+}
+OffsetPoly(polyHandle: Handle, dH: i16, dV: i16) {
+	$a2, $04, $c4, $22, $00, $00, $e1
+}
+MapPoly(polyHandle: Handle, srcRectPtr: ^Rect, destRectPtr: ^Rect) {
+	$a2, $04, $c5, $22, $00, $00, $e1
+}
+SetClipHandle(rgnHandle: RgnHandle) {
+	$a2, $04, $c6, $22, $00, $00, $e1
+}
+GetClipHandle(): RgnHandle {
+	$a2, $04, $c7, $22, $00, $00, $e1
+}
+SetVisHandle(aRgnHandle: RgnHandle) {
+	$a2, $04, $c8, $22, $00, $00, $e1
+}
+GetVisHndle(): RgnHandle {
+	$a2, $04, $c9, $22, $00, $00, $e1
+}
+InitCursor() {
+	$a2, $04, $ca, $22, $00, $00, $e1
+}
+SetBufDims(maxWidth: u16, maxFontHeight: u16, maxFBRExtent: u16) {
+	$a2, $04, $cb, $22, $00, $00, $e1
+}
+ForceBufDims(maxWidth: u16, maxFontHeight: u16, maxFBRExtent: u16) {
+	$a2, $04, $cc, $22, $00, $00, $e1
+}
+SaveBufDims(sizeInfoPtr: ^BufDimRec) {
+	$a2, $04, $cd, $22, $00, $00, $e1
+}
+RestoreBufDims(sizeInfoPtr: ^BufDimRec) {
+	$a2, $04, $ce, $22, $00, $00, $e1
+}
+GetFGSize(): u16 {
+	$a2, $04, $cf, $22, $00, $00, $e1
+}
+SetFontID(fontID: ^FontID) {
+	$a2, $04, $d0, $22, $00, $00, $e1
+}
+GetFontID(): FontID {
+	$a2, $04, $d1, $22, $00, $00, $e1
+}
+SetTextSize(textSize: u16) {
+	$a2, $04, $d2, $22, $00, $00, $e1
+}
+GetTextSize(): u16 {
+	$a2, $04, $d3, $22, $00, $00, $e1
+}
+SetCharExtra(charExtra: Fixed) {
+	$a2, $04, $d4, $22, $00, $00, $e1
+}
+GetCharExtra(): Fixed {
+	$a2, $04, $d5, $22, $00, $00, $e1
+}
+PPToPort(srcLocPtr: ^LocInfo, srcRectPtr: ^Rect, destX: i16, destY: i16, transferMode: Mode) {
+	$a2, $04, $d6, $22, $00, $00, $e1
+}
+InflateTextBuffer(newWidth: u16, newHeight: u16) {
+	$a2, $04, $d7, $22, $00, $00, $e1
+}
+GetROMFont(recordPtr: ^RomFontRec) {
+	$a2, $04, $d8, $22, $00, $00, $e1
+}
+GetFontLore(recordPtr: ^FontGlobalsRecord, recordSize: u16): u16 {
+	$a2, $04, $d9, $22, $00, $00, $e1
+}

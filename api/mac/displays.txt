@@ -1,0 +1,114 @@
+DMGetFirstScreenDevice(activeOnly: Boolean): GDHandle {
+	$70, $00, $ab, $eb
+}
+DMGetNextScreenDevice(theDevice: GDHandle, activeOnly: Boolean): GDHandle {
+	$70, $01, $ab, $eb
+}
+DMDrawDesktopRect(globalRect: ^Rect) {
+	$70, $02, $ab, $eb
+}
+DMDrawDesktopRegion(globalRgn: RgnHandle) {
+	$70, $03, $ab, $eb
+}
+DMGetGDeviceTablecloth(displayDevice: GDHandle, tableclothInstance: ^ComponentInstance): OSErr {
+	$30, $3c, $04, $04, $ab, $eb
+}
+DMSetGDeviceTablecloth(displayDevice: GDHandle, tableclothInstance: ComponentInstance): OSErr {
+	$30, $3c, $04, $05, $ab, $eb
+}
+DMBeginConfigureDisplays(displayState: ^Handle): OSErr {
+	$30, $3c, $02, $06, $ab, $eb
+}
+DMEndConfigureDisplays(displayState: Handle): OSErr {
+	$30, $3c, $02, $07, $ab, $eb
+}
+DMAddDisplay(newDevice: GDHandle, driver: Integer, mode: LongInt, reserved: LongInt, displayID: LongInt, displayComponent: ComponentInstance, displayState: Handle): OSErr {
+	$30, $3c, $0d, $08, $ab, $eb
+}
+DMMoveDisplay(moveDevice: GDHandle, x: Integer, y: Integer, displayState: Handle): OSErr {
+	$30, $3c, $06, $09, $ab, $eb
+}
+DMDisableDisplay(disableDevice: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $04, $0a, $ab, $eb
+}
+DMEnableDisplay(enableDevice: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $04, $0b, $ab, $eb
+}
+DMRemoveDisplay(removeDevice: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $04, $0c, $ab, $eb
+}
+DMGetComponentAnimateTicks(animationComponent: ComponentInstance, goodDelay: ^LongInt, maxDelay: ^LongInt): OSErr {
+	$30, $3c, $06, $0d, $ab, $eb
+}
+DMSetComponentAnimateTicks(animationComponent: ComponentInstance, goodDelay: LongInt, maxDelay: LongInt): OSErr {
+	$30, $3c, $06, $0e, $ab, $eb
+}
+DMGetNextAnimateTime(nextAnimateTime: ^LongInt): OSErr {
+	$30, $3c, $02, $0f, $ab, $eb
+}
+DMSetMainDisplay(newMainDevice: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $04, $10, $ab, $eb
+}
+DMSetDisplayMode(theDevice: GDHandle, mode: LongInt, depthMode: ^LongInt, reserved: LongInt, displayState: Handle): OSErr {
+	$30, $3c, $0a, $11, $ab, $eb
+}
+DMCheckDisplayMode(theDevice: GDHandle, mode: LongInt, depthMode: LongInt, switchFlags: ^LongInt, reserved: LongInt, modeOk: ^Boolean): OSErr {
+	$30, $3c, $0c, $12, $ab, $eb
+}
+DMGetDeskRegion(desktopRegion: ^RgnHandle): OSErr {
+	$30, $3c, $02, $13, $ab, $eb
+}
+DMRegisterNotifyProc(notificationProc: DMNotificationProcPtr, whichPSM: ProcessSerialNumberPtr): OSErr {
+	$30, $3c, $04, $14, $ab, $eb
+}
+DMRemoveNotifyProc(notificationProc: DMNotificationProcPtr, whichPSN: ProcessSerialNumberPtr): OSErr {
+	$30, $3c, $04, $15, $ab, $eb
+}
+DMQDIsMirroringCapable(qdIsMirroringCapable: ^Boolean): OSErr {
+	$30, $3c, $02, $16, $ab, $eb
+}
+DMCanMirrorNow(canMirrorNow: ^Boolean): OSErr {
+	$30, $3c, $02, $17, $ab, $eb
+}
+DMIsMirroringOn(isMirroringOn: ^Boolean): OSErr {
+	$30, $3c, $02, $18, $ab, $eb
+}
+DMMirrorDevices(gd1: GDHandle, gd2: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $06, $19, $ab, $eb
+}
+DMUnmirrorDevice(gDevice: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $04, $1a, $ab, $eb
+}
+DMGetNextMirroredDevice(gDevice: GDHandle, mirroredDevice: ^GDHandle): OSErr {
+	$30, $3c, $04, $1b, $ab, $eb
+}
+DMBlockMirroring(): OSErr {
+	$70, $1c, $ab, $eb
+}
+DMUnblockMirroring(): OSErr {
+	$70, $1d, $ab, $eb
+}
+DMGetDisplayMgrA5World(dmA5: ^LongInt): OSErr {
+	$30, $3c, $02, $1e, $ab, $eb
+}
+DMGetDisplayIDByGDevice(displayDevice: GDHandle, displayID: ^DisplayIDType, failToMain: Boolean): OSErr {
+	$30, $3c, $05, $1f, $ab, $eb
+}
+DMGetGDeviceByDisplayID(displayID: DisplayIDType, displayDevice: ^GDHandle, failToMain: Boolean): OSErr {
+	$30, $3c, $05, $20, $ab, $eb
+}
+DMSetDisplayComponent(theDevice: GDHandle, displayComponent: ComponentInstance): OSErr {
+	$30, $3c, $04, $21, $ab, $eb
+}
+DMGetDisplayComponent(theDevice: GDHandle, displayComponent: ^ComponentInstance): OSErr {
+	$30, $3c, $04, $22, $ab, $eb
+}
+DMNewDisplay(newDevice: ^GDHandle, driverRefNum: Integer, mode: LongInt, reserved: LongInt, displayID: DisplayIDType, displayComponent: ComponentInstance, displayState: Handle): OSErr {
+	$30, $3c, $0d, $23, $ab, $eb
+}
+DMDisposeDisplay(disposeDevice: GDHandle, displayState: Handle): OSErr {
+	$30, $3c, $04, $24, $ab, $eb
+}
+
+DisplayIDType = LongInt;
+DMNotificationProcPtr(theEvent: ^AppleEvent);

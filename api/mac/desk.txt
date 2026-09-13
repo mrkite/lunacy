@@ -1,0 +1,21 @@
+SystemEvent(theEvent: ^EventRecord): Boolean {
+	$a9, $b2
+}
+SystemClick(theEvent: ^EventRecord, theWindow: WindowPtr) {
+	$a9, $b3
+}
+SystemTask() {
+	$a9, $b4
+}
+SystemMenu(menuResult: LongInt) {
+	$a9, $b5
+}
+OpenDeskAcc(deskAccName: ^Str255): Integer {
+	$a9, $b6
+}
+CloseDeskAcc(refNum: Integer) {
+	$a9, $b7
+}
+SystemEdit(editCmd: Integer): Boolean {
+	$a9, $c2
+}

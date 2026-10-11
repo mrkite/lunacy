@@ -1,0 +1,205 @@
+ResetDiskSystem int $13 {
+	ah $00
+	dl drive
+	output
+	ah return code
+}
+
+GetDriveStatus int $13 {
+	ah $01
+	dl drive
+	output
+	ah status
+}
+
+ReadSectors int $13 {
+	ah $02
+	al sectors to read
+	ch cylinder
+	cl sector
+	dh head
+	dl drive
+	es:bx buffer
+	output
+	ah error if cf
+	al read count
+}
+
+WriteSectors int $13 {
+	ah $03
+	al sectors to write
+	ch track
+	cl sector
+	dh head
+	dl drive
+	es:bx buffer
+	output
+	ah error if cf
+	al write count
+}
+
+VerifySectors int $13 {
+	ah $04
+	al sectors to verify
+	ch track
+	cl sector
+	dh head
+	dl drive
+	es:x buffer
+	output
+	ah error if cf
+	al verified count
+}
+
+FormatTrack int $13 {
+	ah $05
+	al sectors to format
+	ch track
+	cl sector
+	dh head
+	dl drive
+	es:bx buffer
+	output
+	ah error if cf
+}
+
+FormatTrackBadSector int $13 {
+	ah $06
+	al interleave
+	ch track
+	cl sector
+	dh head
+	dl drive
+	output
+	ah error if cf
+}
+
+FormatDrive int $13 {
+	ah $07
+	al interleave
+	ch track
+	cl sector
+	dh head
+	dl drive
+	output
+	ah error if cf
+}
+
+ReadDriveParams int $13 {
+	ah $08
+	dl drive
+	output
+	ah error if cf
+	dl num hard drives
+	dh last head
+	cx cyls and sectors per track
+	bl drive type
+	es:di floppy param tbl
+}
+
+InitDrive int $13 {
+	ah $09
+	dl drive
+	output
+	ah error if cf
+}
+
+ReadLongSectors int $13 {
+	ah $0a
+	al sectors to read
+	ch cylinder
+	cl sector
+	dh head
+	dl drive
+	es:bx buffer
+	output
+	ah error if cf
+	al read count
+}
+
+CheckExtensions int $13 {
+	ah $41
+	dl drive
+	bx $55aa
+	output
+	ah version number
+	cx support bitmask
+}
+
+ExtendedReadSectors int $13 {
+	ah $42
+	dl drive
+	ds:si DAP
+	output
+	ah error if cf
+}
+
+ExtendedWriteSectors int $13 {
+	ah $43
+	al flags
+	dl drive
+	ds:si DAP
+	output
+	ah error if cf
+}
+
+ExtendedReadDriveParams int $13 {
+	ah $48
+	dl drive
+	ds:si DriveParams
+	output
+	ah error if cf
+}
+
+GetDriveEmulationType int $13 {
+	ah $4b
+	al $01
+	dl drive
+	ds:si result buffer
+	output
+	ax error if cf
+	ds:si Emulation
+}
+
+Emulation struct {
+	size: u8;
+	bootType: u8;
+	drive: u8;
+	cdromController: u8;
+	LBA: u32;
+	device: u16;
+	cacheSegment: u16;
+	bootSegment: u16;
+	numSectors: u16;
+	cylCount: u8;
+	sectorCount: u8;
+	headCount: u8;
+}
+
+DriveParams struct {
+	size: u16;
+	flags: u16;
+	numCyls: u32;
+	numHeads: u32;
+	numSectorsPerTrack: u32;
+	absSectors: LBA;
+	bytePerSector: u16;
+	EDD: u32;
+}
+
+
+
+
+DAP struct {
+	size: u8;
+	unused: u8;
+	sectorsToRead: u16;
+	destSeg: u16;
+	destOfs: u16;
+	firstSector: LBA;
+}
+
+LBA struct {
+	addressLo: u32;
+	addressHigh: u32;
+}

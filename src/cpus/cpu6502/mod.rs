@@ -12,22 +12,27 @@ use crate::{
         Cpu, CpuLine, CpuState, InstType, Instruction, Operand,
         cpu6502::opcodes::{Addressing, OPCODES},
     },
-    lunacy::File,
+    lunacy::Handle,
 };
-use lazy_static::lazy_static;
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::LazyLock};
 
 #[derive(Clone, Default, PartialEq, Eq, Hash)]
 pub struct State6502 {
     pub addr: u16,
 }
 
+impl State6502 {
+    pub fn new(addr: u16) -> Self {
+        Self { addr }
+    }
+}
+
 impl CpuState for State6502 {
     fn jump(&mut self, addr: u32) {
-        self.addr = addr as u16;
+        self.addr = (addr & 0xffff) as u16;
     }
     fn address(&self) -> u32 {
-        self.addr as u32
+        u32::from(self.addr)
     }
     fn as_any(&mut self) -> &mut dyn std::any::Any {
         self
@@ -71,20 +76,18 @@ pub struct Cpu6502 {}
 impl Cpu for Cpu6502 {
     fn decode(
         &self,
-        file: &File,
+        handle: &Handle,
         offset: usize,
         state: &mut dyn CpuState,
     ) -> Result<Instruction, &'static str> {
-        let state = if let Some(state) = state.as_any().downcast_mut::<State6502>() {
-            state
-        } else {
+        let Some(state) = state.as_any().downcast_mut::<State6502>() else {
             return Err("6502 disassembler called without a 6502 state");
         };
         let start_offset = offset;
-        if offset >= file.len() {
+        if offset >= handle.len() {
             return Err("end of file reached");
         }
-        let opcode = &OPCODES[usize::from(file.r8(offset))];
+        let opcode = &OPCODES[usize::from(handle.r8(offset))];
         let offset = offset + 1;
         if opcode.i == InstType::Invalid {
             return Err("invalid opcode");
@@ -93,7 +96,7 @@ impl Cpu for Cpu6502 {
         let length = SIZES[mode];
         let addr = u32::from(state.addr) + length;
         state.jump(addr);
-        if start_offset + length as usize >= file.len() {
+        if start_offset + length as usize >= handle.len() {
             return Err("end of file reached");
         }
 
@@ -105,52 +108,53 @@ impl Cpu for Cpu6502 {
         match mode {
             Addressing::Imp => operand.oper_type = OperType::None,
             Addressing::Imm => {
-                operand.oper = u16::from(file.r8(offset));
+                operand.oper = u16::from(handle.r8(offset));
                 operand.oper_type = OperType::Imm;
             }
             Addressing::Abs => {
-                operand.oper = file.r16(offset);
+                operand.oper = handle.r16(offset);
                 operand.oper_type = OperType::Abs;
             }
             Addressing::Abx => {
-                operand.oper = file.r16(offset);
+                operand.oper = handle.r16(offset);
                 operand.oper_type = OperType::AbsX;
             }
             Addressing::Aby => {
-                operand.oper = file.r16(offset);
+                operand.oper = handle.r16(offset);
                 operand.oper_type = OperType::AbsY;
             }
             Addressing::Zp => {
-                operand.oper = u16::from(file.r8(offset));
+                operand.oper = u16::from(handle.r8(offset));
                 operand.oper_type = OperType::Abs;
             }
             Addressing::Zpx => {
-                operand.oper = u16::from(file.r8(offset));
+                operand.oper = u16::from(handle.r8(offset));
                 operand.oper_type = OperType::AbsX;
             }
             Addressing::Zpy => {
-                operand.oper = u16::from(file.r8(offset));
+                operand.oper = u16::from(handle.r8(offset));
                 operand.oper_type = OperType::AbsY;
             }
             Addressing::Ind => {
-                operand.oper = file.r16(offset);
+                operand.oper = handle.r16(offset);
                 operand.oper_type = OperType::Ind;
             }
             Addressing::Inx => {
-                operand.oper = u16::from(file.r8(offset));
+                operand.oper = u16::from(handle.r8(offset));
                 operand.oper_type = OperType::IndX;
             }
             Addressing::Iny => {
-                operand.oper = u16::from(file.r8(offset));
+                operand.oper = u16::from(handle.r8(offset));
                 operand.oper_type = OperType::IndY;
             }
             Addressing::Rel => {
-                operand.oper = (addr as u16).wrapping_add(i16::from(file.r8(offset) as i8) as u16);
+                operand.oper = ((addr & 0xffff) as u16)
+                    .wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()));
                 operand.oper_type = OperType::Abs;
             }
         }
 
-        let raw = file.read(start_offset, length as usize).to_vec();
+        let raw = handle.read(start_offset, length as usize).to_vec();
 
         Ok(Instruction {
             name: opcode.n.to_string(),
@@ -167,9 +171,7 @@ impl Cpu for Cpu6502 {
         inst: &Instruction,
         lookup: &dyn Fn(u32) -> Option<String>,
     ) -> CpuLine {
-        let operand = if let Some(operand) = inst.operands.as_any().downcast_ref::<Operand6502>() {
-            operand
-        } else {
+        let Some(operand) = inst.operands.as_any().downcast_ref::<Operand6502>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
                 ..Default::default()
@@ -178,6 +180,7 @@ impl Cpu for Cpu6502 {
         let mut out = CpuLine {
             opcode: format!("{:5}", inst.name),
             address,
+            target: self.target(inst),
             ..Default::default()
         };
         for (idx, code) in inst.raw.iter().enumerate() {
@@ -219,7 +222,7 @@ impl Cpu for Cpu6502 {
                 out.operand = format!("({}), y", operand.to_hex());
                 out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
             }
-            _ => {}
+            OperType::None => {}
         }
         out
     }
@@ -235,24 +238,22 @@ impl Cpu for Cpu6502 {
     }
 }
 
-lazy_static! {
-    static ref SIZES: HashMap<Addressing, u32> = {
-        let mut m = HashMap::new();
-        m.insert(Addressing::Imp, 1);
-        m.insert(Addressing::Imm, 2);
-        m.insert(Addressing::Zp, 2);
-        m.insert(Addressing::Zpx, 2);
-        m.insert(Addressing::Zpy, 2);
-        m.insert(Addressing::Abs, 3);
-        m.insert(Addressing::Abx, 3);
-        m.insert(Addressing::Aby, 3);
-        m.insert(Addressing::Ind, 3);
-        m.insert(Addressing::Inx, 2);
-        m.insert(Addressing::Iny, 2);
-        m.insert(Addressing::Rel, 2);
-        m
-    };
-}
+static SIZES: LazyLock<HashMap<Addressing, u32>> = LazyLock::new(|| {
+    let mut m = HashMap::new();
+    m.insert(Addressing::Imp, 1);
+    m.insert(Addressing::Imm, 2);
+    m.insert(Addressing::Zp, 2);
+    m.insert(Addressing::Zpx, 2);
+    m.insert(Addressing::Zpy, 2);
+    m.insert(Addressing::Abs, 3);
+    m.insert(Addressing::Abx, 3);
+    m.insert(Addressing::Aby, 3);
+    m.insert(Addressing::Ind, 3);
+    m.insert(Addressing::Inx, 2);
+    m.insert(Addressing::Iny, 2);
+    m.insert(Addressing::Rel, 2);
+    m
+});
 
 const HEX: [char; 16] = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',

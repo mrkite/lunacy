@@ -7,30 +7,32 @@ Platforms for disassembly
 
 use crate::{
     cpus::{CpuLine, CpuState, Instruction},
-    lunacy::File,
+    lunacy::Handle,
 };
 
 mod api;
 mod block;
+mod definition;
 mod dos;
 mod fingerprints;
-mod get_addr;
 mod iie;
 mod iigs;
+mod labelwin;
 mod mac;
+mod mzheader;
+mod symbols;
 
 pub use block::BlockCache;
 pub use dos::Dos;
-pub use get_addr::GetAddress;
 pub use iie::IIe;
 pub use iigs::IIgs;
 pub use mac::Mac;
 
 pub trait Platform {
-    fn address(&self, address: &u32) -> String;
+    fn address(&self, address: u32) -> String;
     fn decode(
         &self,
-        file: &File,
+        handle: &Handle,
         offset: usize,
         state: &mut dyn CpuState,
     ) -> Result<Instruction, &'static str>;

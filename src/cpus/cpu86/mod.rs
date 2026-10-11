@@ -12,7 +12,7 @@ use crate::{
         Cpu, CpuLine, CpuState, InstType, Instruction, Operand,
         cpu86::opcodes::{OPCODES, OPCODES0F},
     },
-    lunacy::File,
+    lunacy::Handle,
 };
 
 mod opcodes;
@@ -23,10 +23,19 @@ pub struct State86 {
     pub ofs: u16,
 }
 
+impl State86 {
+    pub fn new(addr: u32) -> Self {
+        Self {
+            seg: u16::try_from((addr >> 4) & 0xffff).unwrap_or_default(),
+            ofs: u16::try_from(addr & 0xf).unwrap_or_default(),
+        }
+    }
+}
+
 impl CpuState for State86 {
     fn jump(&mut self, addr: u32) {
-        self.seg = (addr >> 4) as u16;
-        self.ofs = addr as u16 & 0xf;
+        self.seg = u16::try_from((addr >> 4) & 0xffff).unwrap_or_default();
+        self.ofs = u16::try_from(addr & 0xf).unwrap_or_default();
     }
     fn address(&self) -> u32 {
         (u32::from(self.seg) << 4) + u32::from(self.ofs)
@@ -48,13 +57,23 @@ enum Opr {
 
 #[derive(Default)]
 struct Arg {
-    arg_type: Opr,
+    typ: Opr,
     base: &'static str,
     index: &'static str,
     scale: u8,
     seg: u16,
     ofs: u16,
     disp: u32,
+}
+
+impl From<&Arg> for u32 {
+    fn from(val: &Arg) -> Self {
+        match val.typ {
+            Opr::Abs => (Self::from(val.seg) << 4) + Self::from(val.ofs),
+            Opr::Imm => val.disp,
+            _ => 0,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -64,37 +83,37 @@ struct ModRM {
 }
 
 impl ModRM {
-    pub fn reg(&mut self, file: &File, offset: &mut usize) -> u8 {
+    pub fn reg(&mut self, handle: &Handle, offset: &mut usize) -> u8 {
         if !self.set {
             self.set = true;
-            self.val = file.r8(*offset);
+            self.val = handle.r8(*offset);
             *offset += 1;
         }
         (self.val >> 3) & 7
     }
-    pub fn md(&mut self, file: &File, offset: &mut usize) -> u8 {
+    pub fn md(&mut self, handle: &Handle, offset: &mut usize) -> u8 {
         if !self.set {
             self.set = true;
-            self.val = file.r8(*offset);
+            self.val = handle.r8(*offset);
             *offset += 1;
         }
         self.val >> 6
     }
-    pub fn rm(&mut self, file: &File, offset: &mut usize) -> u8 {
+    pub fn rm(&mut self, handle: &Handle, offset: &mut usize) -> u8 {
         if !self.set {
             self.set = true;
-            self.val = file.r8(*offset);
+            self.val = handle.r8(*offset);
             *offset += 1;
         }
         self.val & 7
     }
 }
 
-fn sib(arg: &mut Arg, md: u8, file: &File, offset: &mut usize) {
-    let sib = file.r8(*offset);
+fn sib(arg: &mut Arg, md: u8, handle: &Handle, offset: &mut usize) {
+    let sib = handle.r8(*offset);
     *offset += 1;
     if (sib & 7) == 5 && md == 0 {
-        arg.disp = file.r32(*offset);
+        arg.disp = handle.r32(*offset);
         *offset += 4;
     } else {
         arg.base = REGNAMES[usize::from(sib & 7) + 1];
@@ -106,9 +125,9 @@ fn sib(arg: &mut Arg, md: u8, file: &File, offset: &mut usize) {
 }
 
 impl Arg {
-    pub fn reg(name: &'static str) -> Self {
+    pub const fn reg(name: &'static str) -> Self {
         Self {
-            arg_type: Opr::Reg,
+            typ: Opr::Reg,
             base: name,
             index: "",
             scale: 0,
@@ -117,9 +136,9 @@ impl Arg {
             disp: 0,
         }
     }
-    pub fn seg_ofs(seg: u16, ofs: u16) -> Self {
+    pub const fn seg_ofs(seg: u16, ofs: u16) -> Self {
         Self {
-            arg_type: Opr::Abs,
+            typ: Opr::Abs,
             base: "",
             index: "",
             scale: 0,
@@ -128,9 +147,9 @@ impl Arg {
             disp: 0,
         }
     }
-    pub fn imm(imm: u32) -> Self {
+    pub const fn imm(imm: u32) -> Self {
         Self {
-            arg_type: Opr::Imm,
+            typ: Opr::Imm,
             base: "",
             index: "",
             scale: 0,
@@ -139,15 +158,15 @@ impl Arg {
             disp: imm,
         }
     }
-    pub fn modrm(md: u8, rm: u8, width: usize, file: &File, offset: &mut usize) -> Self {
+    pub fn modrm(md: u8, rm: u8, width: usize, handle: &Handle, offset: &mut usize) -> Self {
         if md == 3 {
             return Self::reg(REGNAMES[usize::from(rm) + REGOFS[width]]);
         }
         if width <= 2 {
-            return Self::modrm16(md, rm, file, offset);
+            return Self::modrm16(md, rm, handle, offset);
         }
         let mut arg = Self {
-            arg_type: Opr::ExpPtr,
+            typ: Opr::ExpPtr,
             base: "",
             index: "",
             scale: 0,
@@ -157,33 +176,33 @@ impl Arg {
         };
         if md == 0 {
             if rm == 5 {
-                arg.disp = file.r32(*offset);
+                arg.disp = handle.r32(*offset);
                 *offset += 4;
             } else if rm == 4 {
-                sib(&mut arg, md, file, offset);
+                sib(&mut arg, md, handle, offset);
             } else {
                 arg.base = REGNAMES[usize::from(rm) + 1];
             }
         } else {
             if rm == 4 {
-                sib(&mut arg, md, file, offset);
+                sib(&mut arg, md, handle, offset);
             } else {
                 arg.base = REGNAMES[usize::from(rm) + 1];
             }
             if md == 1 {
-                arg.disp = file.r8(*offset) as i8 as u32;
+                arg.disp = i32::from(handle.r8(*offset).cast_signed()).cast_unsigned();
                 *offset += 1;
             } else {
-                arg.disp = file.r32(*offset);
+                arg.disp = handle.r32(*offset);
                 *offset += 4;
             }
         }
         arg
     }
 
-    fn modrm16(md: u8, rm: u8, file: &File, offset: &mut usize) -> Self {
+    fn modrm16(md: u8, rm: u8, handle: &Handle, offset: &mut usize) -> Self {
         let mut arg = Self {
-            arg_type: Opr::ExpPtr,
+            typ: Opr::ExpPtr,
             base: "",
             index: "",
             scale: 0,
@@ -214,7 +233,7 @@ impl Arg {
                 if md != 0 {
                     arg.base = REGNAMES[9 + 5];
                 } else {
-                    arg.disp = u32::from(file.r16(*offset));
+                    arg.disp = u32::from(handle.r16(*offset));
                     *offset += 2;
                 }
             }
@@ -222,10 +241,10 @@ impl Arg {
             _ => {}
         }
         if md == 1 {
-            arg.disp = file.r8(*offset) as i8 as u32;
+            arg.disp = i32::from(handle.r8(*offset).cast_signed()).cast_unsigned();
             *offset += 1;
         } else if md == 2 {
-            arg.disp = file.r16(*offset) as i16 as u32;
+            arg.disp = i32::from(handle.r16(*offset).cast_signed()).cast_unsigned();
             *offset += 2;
         }
         arg
@@ -261,7 +280,7 @@ struct Op {
     name: &'static str,
     args: &'static str,
     i: InstType,
-    children: HashMap<u8, Op>,
+    children: HashMap<u8, Self>,
 }
 
 pub struct Cpu86 {
@@ -271,7 +290,7 @@ pub struct Cpu86 {
 impl Default for Cpu86 {
     fn default() -> Self {
         let mut opcodes = HashMap::new();
-        for opcode in OPCODES.iter() {
+        for opcode in &OPCODES {
             let child = Op {
                 name: opcode.n,
                 args: opcode.a,
@@ -281,7 +300,7 @@ impl Default for Cpu86 {
             if opcode.i == InstType::Prefix {
                 opcodes.insert(opcode.o, child);
             } else if let Some(r) = opcode.r {
-                let e = opcodes.entry(opcode.o).or_insert(Op {
+                let e = opcodes.entry(opcode.o).or_insert_with(|| Op {
                     name: "",
                     args: "",
                     i: InstType::Special,
@@ -292,13 +311,13 @@ impl Default for Cpu86 {
                 opcodes.insert(opcode.o, child);
             }
         }
-        let pfx = opcodes.entry(0x0f).or_insert(Op {
+        let pfx = opcodes.entry(0x0f).or_insert_with(|| Op {
             name: "",
             args: "",
             i: InstType::Prefix,
             children: HashMap::new(),
         });
-        for opcode in OPCODES0F.iter() {
+        for opcode in &OPCODES0F {
             let child = Op {
                 name: opcode.n,
                 args: opcode.a,
@@ -308,7 +327,7 @@ impl Default for Cpu86 {
             if opcode.i == InstType::Prefix {
                 pfx.children.insert(opcode.o, child);
             } else if let Some(r) = opcode.r {
-                let e = pfx.children.entry(opcode.o).or_insert(Op {
+                let e = pfx.children.entry(opcode.o).or_insert_with(|| Op {
                     name: "",
                     args: "",
                     i: InstType::Special,
@@ -324,20 +343,19 @@ impl Default for Cpu86 {
 }
 
 impl Cpu for Cpu86 {
+    #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
-        file: &File,
+        handle: &Handle,
         offset: usize,
         state: &mut dyn CpuState,
     ) -> Result<Instruction, &'static str> {
-        let state = if let Some(state) = state.as_any().downcast_mut::<State86>() {
-            state
-        } else {
+        let Some(state) = state.as_any().downcast_mut::<State86>() else {
             return Err("x86 disassembler called without a x86 state");
         };
         let start_offset = offset;
         let mut offset = offset;
-        let mut op = file.r8(offset);
+        let mut op = handle.r8(offset);
         offset += 1;
         let mut sub = Box::new(Operands86 {
             args: vec![],
@@ -349,49 +367,62 @@ impl Cpu for Cpu86 {
         while opcode.i == InstType::Prefix || opcode.i == InstType::Special {
             if opcode.i == InstType::Prefix {
                 match op {
+                    0x0f => {
+                        // two-byte opcode
+                        op = handle.r8(offset);
+                        offset += 1;
+                        opcode = self
+                            .opcodes
+                            .get(&0xf)
+                            .ok_or("Invalid opcode")?
+                            .children
+                            .get(&op)
+                            .ok_or("Invalid 0f opcode")?;
+                    }
                     0x26 => {
                         // es:
                         sub.flags |= flags::SEG_ES;
-                        op = file.r8(offset);
+                        op = handle.r8(offset);
                         offset += 1;
                         opcode = self.opcodes.get(&op).ok_or("Invalid opcode")?;
                     }
                     0x2e => {
                         // cs:
                         sub.flags |= flags::SEG_CS;
-                        op = file.r8(offset);
+                        op = handle.r8(offset);
                         offset += 1;
                         opcode = self.opcodes.get(&op).ok_or("Invalid opcode")?;
                     }
                     0x36 => {
                         // ss:
                         sub.flags |= flags::SEG_SS;
-                        op = file.r8(offset);
+                        op = handle.r8(offset);
                         offset += 1;
                         opcode = self.opcodes.get(&op).ok_or("Invalid opcode")?;
                     }
                     0xf2 => {
                         // repnz
                         sub.flags |= flags::REPNZ;
-                        op = file.r8(offset);
+                        op = handle.r8(offset);
                         offset += 1;
                         opcode = self.opcodes.get(&op).ok_or("Invalid opcode")?;
                     }
                     0xf3 => {
                         // rep
                         sub.flags |= flags::REPZ;
-                        op = file.r8(offset);
+                        op = handle.r8(offset);
                         offset += 1;
                         opcode = self.opcodes.get(&op).ok_or("Invalid opcode")?;
                     }
                     _ => {
+                        eprintln!("prefix: {op:x}");
                         return Err("Invalid prefix");
                     }
                 }
             } else if opcode.i == InstType::Special {
                 opcode = opcode
                     .children
-                    .get(&modrm.reg(file, &mut offset))
+                    .get(&modrm.reg(handle, &mut offset))
                     .ok_or("Invalid modrm")?;
             }
         }
@@ -407,25 +438,27 @@ impl Cpu for Cpu86 {
                         'h' => sub.args.push(Arg::reg(REGNAMES[REGOFS[1] + 4])),
                         'l' => sub.args.push(Arg::reg(REGNAMES[REGOFS[1]])),
                         'p' => {
-                            let ofs = file.r16(offset);
+                            let ofs = handle.r16(offset);
                             offset += 2;
-                            let seg = file.r16(offset);
+                            let seg = handle.r16(offset);
                             offset += 2;
                             sub.args.push(Arg::seg_ofs(seg, ofs));
                         }
                         'x' => sub.args.push(Arg::reg(REGNAMES[REGOFS[width]])),
                         'v' => {
-                            let ofs = state.ofs + file.r16(offset);
+                            let ofs = state.ofs + handle.r16(offset);
                             offset += 2;
                             let seg = if width == 4 {
-                                let seg = file.r16(offset);
+                                let seg = handle.r16(offset);
                                 offset += 2;
                                 seg
                             } else {
                                 state.seg
                             };
-                            sub.args
-                                .push(Arg::seg_ofs(seg, ofs + (offset - start_offset) as u16));
+                            let ofs = ofs.wrapping_add(
+                                u16::try_from(offset - start_offset).unwrap_or_default(),
+                            );
+                            sub.args.push(Arg::seg_ofs(seg, ofs));
                         }
                         _ => return Err("unhandled a?")?,
                     }
@@ -463,23 +496,26 @@ impl Cpu for Cpu86 {
                 'e' => {
                     // eb ep ev ew
                     let ch = it.next().unwrap();
-                    let md = modrm.md(file, &mut offset);
-                    let rm = modrm.rm(file, &mut offset);
+                    let md = modrm.md(handle, &mut offset);
+                    let rm = modrm.rm(handle, &mut offset);
                     match ch {
-                        'b' => sub.args.push(Arg::modrm(md, rm, 1, file, &mut offset)),
+                        'b' => sub.args.push(Arg::modrm(md, rm, 1, handle, &mut offset)),
                         'p' => {
-                            sub.args.push(Arg::modrm(md, rm, width, file, &mut offset));
+                            sub.args
+                                .push(Arg::modrm(md, rm, width, handle, &mut offset));
                             sub.flags |= flags::FAR;
                         }
-                        'v' => sub.args.push(Arg::modrm(md, rm, width, file, &mut offset)),
-                        'w' => sub.args.push(Arg::modrm(md, rm, 2, file, &mut offset)),
+                        'v' => sub
+                            .args
+                            .push(Arg::modrm(md, rm, width, handle, &mut offset)),
+                        'w' => sub.args.push(Arg::modrm(md, rm, 2, handle, &mut offset)),
                         _ => Err("unhandled e?")?,
                     }
                 }
                 'g' => {
                     // gb gv
                     let ch = it.next().unwrap();
-                    let reg = usize::from(modrm.reg(file, &mut offset));
+                    let reg = usize::from(modrm.reg(handle, &mut offset));
                     match ch {
                         'b' => sub.args.push(Arg::reg(REGNAMES[reg + REGOFS[1]])),
                         'v' => sub.args.push(Arg::reg(REGNAMES[reg + REGOFS[width]])),
@@ -491,26 +527,26 @@ impl Cpu for Cpu86 {
                     let ch = it.next().unwrap();
                     match ch {
                         'b' => {
-                            let val = file.r8(offset);
+                            let val = handle.r8(offset);
                             offset += 1;
                             sub.args.push(Arg::imm(u32::from(val)));
                             sub.flags |= flags::BYTE;
                         }
                         'v' => {
                             if width == 4 {
-                                let val = file.r32(offset);
+                                let val = handle.r32(offset);
                                 offset += 4;
                                 sub.args.push(Arg::imm(val));
                                 sub.flags |= flags::DWORD;
                             } else {
-                                let val = file.r16(offset);
+                                let val = handle.r16(offset);
                                 offset += 2;
                                 sub.args.push(Arg::imm(u32::from(val)));
                                 sub.flags |= flags::WORD;
                             }
                         }
                         'w' => {
-                            let val = file.r16(offset);
+                            let val = handle.r16(offset);
                             offset += 2;
                             sub.args.push(Arg::imm(u32::from(val)));
                             sub.flags |= flags::WORD;
@@ -523,25 +559,31 @@ impl Cpu for Cpu86 {
                     let ch = it.next().unwrap();
                     match ch {
                         'b' => {
-                            let ofs = state.ofs + file.r8(offset) as i8 as u16;
+                            let ofs = state
+                                .ofs
+                                .wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()));
                             offset += 1;
-                            sub.args.push(Arg::seg_ofs(
-                                state.seg,
-                                ofs + (offset - start_offset) as u16,
-                            ));
+                            let ofs = ofs.wrapping_add(
+                                u16::try_from(offset - start_offset).unwrap_or_default(),
+                            );
+                            sub.args.push(Arg::seg_ofs(state.seg, ofs));
                         }
                         'v' => {
-                            let ofs = state.ofs + file.r16(offset);
+                            let ofs = state
+                                .ofs
+                                .wrapping_add_signed(handle.r16(offset).cast_signed());
                             offset += 2;
                             let seg = if width == 4 {
-                                let seg = file.r16(offset);
+                                let seg = handle.r16(offset);
                                 offset += 2;
                                 seg
                             } else {
                                 state.seg
                             };
-                            sub.args
-                                .push(Arg::seg_ofs(seg, ofs + (offset - start_offset) as u16));
+                            let ofs = ofs.wrapping_add(
+                                u16::try_from(offset - start_offset).unwrap_or_default(),
+                            );
+                            sub.args.push(Arg::seg_ofs(seg, ofs));
                         }
                         _ => Err("unhandled j?")?,
                     }
@@ -549,11 +591,12 @@ impl Cpu for Cpu86 {
                 'm' => {
                     // mm mp
                     let ch = it.next().unwrap();
-                    let md = modrm.md(file, &mut offset);
-                    let rm = modrm.rm(file, &mut offset);
+                    let md = modrm.md(handle, &mut offset);
+                    let rm = modrm.rm(handle, &mut offset);
                     match ch {
-                        'm' => sub.args.push(Arg::modrm(md, rm, width, file, &mut offset)),
-                        'p' => sub.args.push(Arg::modrm(md, rm, width, file, &mut offset)),
+                        'm' | 'p' => sub
+                            .args
+                            .push(Arg::modrm(md, rm, width, handle, &mut offset)),
                         _ => Err("unhandled m?")?,
                     }
                 }
@@ -562,22 +605,22 @@ impl Cpu for Cpu86 {
                     let ch = it.next().unwrap();
                     match ch {
                         'b' => {
-                            let mut arg = Arg::imm(u32::from(file.r16(offset)));
+                            let mut arg = Arg::imm(u32::from(handle.r16(offset)));
                             offset += 2;
-                            arg.arg_type = Opr::ExpPtr;
+                            arg.typ = Opr::ExpPtr;
                             sub.args.push(arg);
                         }
                         'v' => {
                             if width == 4 {
-                                let seg = file.r16(offset);
+                                let seg = handle.r16(offset);
                                 offset += 2;
-                                let ofs = file.r16(offset);
+                                let ofs = handle.r16(offset);
                                 offset += 2;
                                 sub.args.push(Arg::seg_ofs(seg, ofs));
                             } else {
-                                let mut arg = Arg::imm(u32::from(file.r16(offset)));
+                                let mut arg = Arg::imm(u32::from(handle.r16(offset)));
                                 offset += 2;
-                                arg.arg_type = Opr::ExpPtr;
+                                arg.typ = Opr::ExpPtr;
                                 sub.args.push(arg);
                             }
                         }
@@ -595,7 +638,7 @@ impl Cpu for Cpu86 {
                         'p' => sub.args.push(Arg::reg(REGNAMES[REGOFS[width] + 4])),
                         's' => sub.args.push(Arg::reg("ss")),
                         'w' => sub.args.push(Arg::reg(
-                            REGNAMES[25 + usize::from(modrm.reg(file, &mut offset))],
+                            REGNAMES[25 + usize::from(modrm.reg(handle, &mut offset))],
                         )),
                         _ => Err("unhandled s?")?,
                     }
@@ -612,12 +655,12 @@ impl Cpu for Cpu86 {
         let mut name = String::new();
         name.push_str(opcode.name);
         let length = offset - start_offset;
-        state.ofs += length as u16;
-        let raw = file.read(start_offset, length).to_vec();
+        state.ofs += u16::try_from(length).unwrap_or_default();
+        let raw = handle.read(start_offset, length).to_vec();
         Ok(Instruction {
             name,
             inst_type: opcode.i,
-            length: length as u32,
+            length: u32::try_from(length).unwrap_or_default(),
             raw,
             operands: sub,
         })
@@ -626,11 +669,9 @@ impl Cpu for Cpu86 {
         &self,
         address: u32,
         inst: &Instruction,
-        _lookup: &dyn Fn(u32) -> Option<String>,
+        lookup: &dyn Fn(u32) -> Option<String>,
     ) -> CpuLine {
-        let sub = if let Some(sub) = inst.operands.as_any().downcast_ref::<Operands86>() {
-            sub
-        } else {
+        let Some(sub) = inst.operands.as_any().downcast_ref::<Operands86>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
                 ..Default::default()
@@ -639,6 +680,7 @@ impl Cpu for Cpu86 {
         let mut out = CpuLine {
             opcode: format!("{:8}", inst.name),
             address,
+            target: self.target(inst),
             ..Default::default()
         };
         for (idx, code) in inst.raw.iter().enumerate() {
@@ -661,16 +703,19 @@ impl Cpu for Cpu86 {
         if sub.flags & flags::REPNZ != 0 {
             out.opcode = format!("repnz {} ", inst.name);
         }
-        for arg in sub.args.iter() {
+        for arg in &sub.args {
             if !out.operand.is_empty() {
                 out.operand.push_str(", ");
             }
-            match arg.arg_type {
+            match arg.typ {
                 Opr::None => {}
                 Opr::Abs => {
-                    // lookup
-                    out.operand
-                        .push_str(format!("{:04x}{:04x}", arg.seg, arg.ofs).as_str());
+                    if let Some(str) = lookup(arg.into()) {
+                        out.operand.push_str(&str);
+                    } else {
+                        out.operand
+                            .push_str(format!("{:04x}:{:04x}", arg.seg, arg.ofs).as_str());
+                    }
                 }
                 Opr::Imm => {
                     out.operand
@@ -679,62 +724,16 @@ impl Cpu for Cpu86 {
                 Opr::Reg => {
                     out.operand.push_str(arg.base);
                 }
-                Opr::ExpPtr => {
-                    if sub.flags & flags::BYTE != 0 {
-                        out.operand.push_str("byte ptr ");
-                    }
-                    if sub.flags & flags::WORD != 0 {
-                        out.operand.push_str("word ptr ");
-                    }
-                    if sub.flags & flags::DWORD != 0 {
-                        out.operand.push_str("dword ptr ");
-                    }
-                    if sub.flags & flags::FAR != 0 {
-                        out.operand.push_str("far ptr ");
-                    }
-                    if sub.flags & flags::SEG_ES != 0 {
-                        out.operand.push_str("es:");
-                    }
-                    if sub.flags & flags::SEG_CS != 0 {
-                        out.operand.push_str("cs:");
-                    }
-                    if sub.flags & flags::SEG_SS != 0 {
-                        out.operand.push_str("ss:");
-                    }
-                    out.operand.push('[');
-                    if !arg.base.is_empty() && !arg.index.is_empty() {
-                        out.operand.push_str(arg.base);
-                        out.operand.push('+');
-                        out.operand.push_str(arg.index);
-                    } else if !arg.base.is_empty() {
-                        out.operand.push_str(arg.base);
-                    } else {
-                        out.operand.push_str(arg.index);
-                    }
-                    if !arg.base.is_empty() || !arg.index.is_empty() {
-                        if arg.scale > 1 {
-                            out.operand.push('*');
-                            out.operand.push_str(SCALES[usize::from(arg.scale)]);
-                        }
-                        if arg.disp != 0 {
-                            if arg.disp & 0x80000000 != 0 {
-                                out.operand.push('+');
-                            }
-                            out.operand.push_str(&to_hex(arg.disp));
-                        }
-                    } else {
-                        out.operand.push_str(&to_hex(arg.disp));
-                    }
-                }
+                Opr::ExpPtr => exp_ptr(sub, arg, &mut out),
             }
         }
         out
     }
     fn target(&self, inst: &Instruction) -> Option<u32> {
         if let Some(sub) = inst.operands.as_any().downcast_ref::<Operands86>() {
-            for arg in sub.args.iter() {
-                if arg.arg_type == Opr::Imm || arg.arg_type == Opr::Abs {
-                    return Some(arg.disp);
+            for arg in &sub.args {
+                if arg.typ == Opr::Imm || arg.typ == Opr::Abs {
+                    return Some(arg.into());
                 }
             }
         }
@@ -742,19 +741,67 @@ impl Cpu for Cpu86 {
     }
 }
 
+fn exp_ptr(sub: &Operands86, arg: &Arg, out: &mut CpuLine) {
+    if sub.flags & flags::BYTE != 0 {
+        out.operand.push_str("byte ptr ");
+    }
+    if sub.flags & flags::WORD != 0 {
+        out.operand.push_str("word ptr ");
+    }
+    if sub.flags & flags::DWORD != 0 {
+        out.operand.push_str("dword ptr ");
+    }
+    if sub.flags & flags::FAR != 0 {
+        out.operand.push_str("far ptr ");
+    }
+    if sub.flags & flags::SEG_ES != 0 {
+        out.operand.push_str("es:");
+    }
+    if sub.flags & flags::SEG_CS != 0 {
+        out.operand.push_str("cs:");
+    }
+    if sub.flags & flags::SEG_SS != 0 {
+        out.operand.push_str("ss:");
+    }
+    out.operand.push('[');
+    if !arg.base.is_empty() && !arg.index.is_empty() {
+        out.operand.push_str(arg.base);
+        out.operand.push('+');
+        out.operand.push_str(arg.index);
+    } else if !arg.base.is_empty() {
+        out.operand.push_str(arg.base);
+    } else {
+        out.operand.push_str(arg.index);
+    }
+    if !arg.base.is_empty() || !arg.index.is_empty() {
+        if arg.scale > 1 {
+            out.operand.push('*');
+            out.operand.push_str(SCALES[usize::from(arg.scale)]);
+        }
+        if arg.disp != 0 {
+            if arg.disp & 0x8000_0000 != 0 {
+                out.operand.push('+');
+            }
+            out.operand.push_str(&to_hex(arg.disp));
+        }
+    } else {
+        out.operand.push_str(&to_hex(arg.disp));
+    }
+    out.operand.push(']');
+}
 fn to_hex(val: u32) -> String {
     if (val & !0xff) == !0xff {
         format!("-${:02x}", !val + 1)
     } else if (val & !0xff) == 0 {
-        format!("${:02x}", val)
+        format!("${val:02x}")
     } else if (val & !0xffff) == !0xffff {
         format!("-${:04x}", !val + 1)
     } else if (val & !0xffff) == 0 {
-        format!("${:04x}", val)
-    } else if (val as i32) < 0 {
+        format!("${val:04x}")
+    } else if val.cast_signed() < 0 {
         format!("-${:08x}", !val + 1)
     } else {
-        format!("${:08x}", val)
+        format!("${val:08x}")
     }
 }
 

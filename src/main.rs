@@ -1,5 +1,3 @@
-use std::env;
-
 /*
 
 Main function for Lunacy
@@ -7,31 +5,27 @@ Main function for Lunacy
 
 */
 use crate::plugins::register_plugins;
-use eframe::egui;
 use lunacy::Lunacy;
+use std::{env, process::exit};
 
 mod cpus;
 mod lunacy;
 mod platforms;
 mod plugins;
+mod screen;
 mod widgets;
 
 #[tokio::main]
-async fn main() -> eframe::Result {
-    register_plugins();
-
-    let icon = eframe::icon_data::from_png_bytes(include_bytes!("../assets/lunacy.png"))
-        .unwrap_or_default();
-
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([800.0, 600.0])
-            .with_icon(icon),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "Lunacy",
-        options,
-        Box::new(|cc| Ok(Box::new(Lunacy::new(cc, env::args().nth(1))))),
-    )
+async fn main() {
+    if let Some(filename) = env::args().nth(1) {
+        register_plugins();
+        let mut lunacy = Lunacy::new(filename.as_str()).unwrap_or_else(|err| {
+            eprintln!("failed to open {filename}: {err}");
+            exit(-1);
+        });
+        lunacy.run().await;
+        Lunacy::shutdown();
+    } else {
+        eprintln!("Usage: lunacy <filename>");
+    }
 }

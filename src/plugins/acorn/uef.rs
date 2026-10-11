@@ -6,79 +6,67 @@ Acorn/BBC Micro: UEF tape encoding
 */
 
 use crate::{
-    lunacy::{Context, File, Message},
+    lunacy::{Context, Handle, Message},
     plugins::Plugin,
-    widgets::{TreeGrid, TreeRow},
+    widgets::{Label, Link, TreeGrid, TreeRow, Widget},
 };
 
 pub struct Uef {}
 
 impl Plugin for Uef {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Acorn/UEF"
     }
 
-    fn supports(&self, file: &File) -> Option<i16> {
-        if file.len() > 12 && file.rs(0, 9, "") == "UEF File!" {
+    fn supports(&self, handle: &Handle) -> Option<i16> {
+        if handle.len() > 12 && handle.rs(0, 9, "") == "UEF File!" {
             Some(60)
         } else {
             None
         }
     }
 
-    fn create(
-        &self,
-        file: &File,
-        ctx: Context,
-    ) -> Result<Box<dyn crate::plugins::Widget>, &'static str> {
-        let parser = Parser::default();
-        let (data, machine) = parser.parse(file)?;
+    fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
+        let (data, machine) = parse(handle);
 
-        let mut treegrid = TreeGrid::new(&["UEF", "Machine"], "uef", move |_| {
-            ctx.post(Message::Open(File::new_from_array(&data, "tape", "")));
-        });
-        let mut row = TreeRow::new(());
-        row.push_column("View tape");
-        row.push_column(&machine);
-        treegrid.add(row);
+        let mut treegrid = TreeGrid::new(&["UEF", "Machine"]);
+        let mut row = TreeRow::default();
+        row.push_column(Link::new("View tape", "", move |ctx: &Context| {
+            ctx.post(Message::Open(Handle::new_from_array(&data, "tape", "")));
+        }));
+        row.push_column(Label::new(&machine));
+        treegrid.add(row, ctx);
 
         Ok(Box::new(treegrid))
     }
 }
 
-#[derive(Default)]
-struct Parser {}
-
-impl Parser {
-    fn parse(&self, file: &File) -> Result<(Vec<u8>, String), &'static str> {
-        let mut tape = vec![];
-        let mut machine = String::new();
-        let mut ofs = 0xc;
-        while ofs < file.len() {
-            let chunkid = file.r16(ofs);
-            let chunklen = file.r32(ofs + 2) as usize;
-            ofs += 6;
-            match chunkid {
-                // target machine
-                5 => {
-                    let m = file.r8(ofs);
-                    machine = if let Some(mach) = MACHINES.get(usize::from(m)) {
-                        mach.to_string()
-                    } else {
-                        format!("${:x} (unknown)", m)
-                    };
-                }
-                // tape data
-                0x100 => tape.extend_from_slice(file.read(ofs, chunklen)),
-                // tape data + parity + stop
-                0x104 => tape.extend_from_slice(file.read(ofs + 3, chunklen - 3)),
-                // ignore all others
-                _ => {}
+fn parse(handle: &Handle) -> (Vec<u8>, String) {
+    let mut tape = vec![];
+    let mut machine = String::new();
+    let mut ofs = 0xc;
+    while ofs < handle.len() {
+        let chunkid = handle.r16(ofs);
+        let chunklen = handle.r32(ofs + 2) as usize;
+        ofs += 6;
+        match chunkid {
+            // target machine
+            5 => {
+                let m = handle.r8(ofs);
+                machine = MACHINES
+                    .get(usize::from(m))
+                    .map_or_else(|| format!("${m:x} (unknown)"), ToString::to_string);
             }
-            ofs += chunklen;
+            // tape data
+            0x100 => tape.extend_from_slice(handle.read(ofs, chunklen)),
+            // tape data + parity + stop
+            0x104 => tape.extend_from_slice(handle.read(ofs + 3, chunklen - 3)),
+            // ignore all others
+            _ => {}
         }
-        Ok((tape, machine))
+        ofs += chunklen;
     }
+    (tape, machine)
 }
 
 const MACHINES: [&str; 5] = [

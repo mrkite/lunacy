@@ -5,321 +5,335 @@ TreeGrid widget
 
 */
 
-use crate::widgets::Widget;
-use eframe::egui::{self, Color32, Rect, Sense, Vec2};
+use crate::{
+    lunacy::{Context, gestalt},
+    screen::{Color, Point, Rect, Screen, Size},
+    widgets::{KeyMap, Label, Scroll, TreeRow, Widget},
+};
+use crossterm::event::{KeyCode, KeyModifiers};
+use std::{cell::RefCell, cmp, rc::Rc};
 
-const INDENT: f32 = 16.0;
-const HEADER_COLOR: Color32 = Color32::BLACK;
-const HEADER_BG: Color32 = Color32::from_rgb(0xc4, 0xab, 0x9a);
-const LABEL_COLOR: Color32 = Color32::from_rgb(0xb9, 0x90, 0x95);
-const HOVER_COLOR: Color32 = Color32::from_rgb(0xde, 0xa3, 0xfc);
-const LINES: Color32 = Color32::from_rgb(0x88, 0x77, 0x88);
+const SELECTOR: char = '►';
+const HEADER_COLOR: Color = Some(0x00_00_01);
+const HEADER_BG: Color = Some(0xc4_ab_9a);
+const FG: Color = Some(0xa6_d6_a1);
+const BG: Color = None;
 
-struct Line {
-    left: f32,
-    top: f32,
-    right: f32,
-    bottom: f32,
+pub struct TreeGrid {
+    bounds: Rect,
+    header_bounds: Rect,
+    headers: Vec<Label>,
+    rows: Vec<TreeRow>,
+    scroll: Scroll,
+    max_row: i32,
+    max_column: usize,
+    cursor: i32,
+    column: usize,
+    selected: Option<Rc<RefCell<dyn Widget>>>,
+    fg: Option<u32>,
+    bg: Option<u32>,
 }
 
-impl Line {
-    fn draw(&self, ui: &mut egui::Ui, left: f32, top: f32) {
-        ui.painter().vline(
-            self.left + left,
-            self.top + top..=self.bottom + top,
-            egui::Stroke::new(1.0, LINES),
-        );
-        ui.painter().hline(
-            self.left + left..=self.right + left,
-            self.bottom + top,
-            egui::Stroke::new(1.0, LINES),
-        );
-    }
-}
-
-pub struct TreeRow<E> {
-    columns: Vec<String>,
-    entry: E,
-    children: Vec<TreeRow<E>>,
-    collapsed: bool,
-    lines: Vec<Line>,
-    top: f32,
-    height: f32,
-}
-
-impl<E> TreeRow<E> {
-    pub fn new(entry: E) -> Self {
+impl Default for TreeGrid {
+    fn default() -> Self {
         Self {
-            entry,
-            columns: vec![],
-            children: vec![],
-            collapsed: false,
-            lines: vec![],
-            top: 0.0,
-            height: 0.0,
-        }
-    }
-    pub fn push_column(&mut self, col: &str) {
-        self.columns.push(col.to_owned());
-    }
-    pub fn push_child(&mut self, row: TreeRow<E>) {
-        self.children.push(row);
-    }
-
-    fn col_size(&self, indent: f32, idx: usize, ui: &mut egui::Ui) -> f32 {
-        let font_id = egui::TextStyle::Body.resolve(ui.style());
-        let mut x = 0.0;
-        if let Some(cell) = self.columns.get(idx) {
-            let galley = ui
-                .painter()
-                .layout_no_wrap(cell.to_owned(), font_id, Color32::WHITE);
-            x = f32::max(x, galley.size().x);
-        }
-        let mut indent = indent;
-        if idx == 0 {
-            x += indent;
-            indent += INDENT;
-        }
-        // only include children if it's expanded
-        if !self.collapsed {
-            for child in self.children.iter() {
-                x = f32::max(x, child.col_size(indent, idx, ui));
-            }
-        }
-        x
-    }
-
-    fn layout(&mut self, indent: f32, top: f32, ui: &mut egui::Ui) {
-        let font_id = egui::TextStyle::Body.resolve(ui.style());
-        self.lines.clear();
-        self.top = top;
-        let mut y = font_id.size;
-
-        if !self.collapsed {
-            let line_left = indent + 4.0;
-            let indent = indent + INDENT;
-            let line_right = indent - 4.0;
-            let mut line_top = y;
-            for child in self.children.iter_mut() {
-                y += ui.spacing().item_spacing.y;
-                child.layout(indent, top + y, ui);
-                let line_bottom = y + font_id.size / 2.0;
-                self.lines.push(Line {
-                    left: line_left,
-                    right: line_right,
-                    top: line_top,
-                    bottom: line_bottom,
-                });
-                line_top = line_bottom;
-                y += child.height;
-            }
-        }
-        self.height = y;
-    }
-
-    fn draw(
-        &mut self,
-        ui: &mut egui::Ui,
-        visible: Rect,
-        indent: f32,
-        left: f32,
-        top: f32,
-        widths: &[f32],
-    ) -> Option<&E> {
-        let font_id = egui::TextStyle::Body.resolve(ui.style());
-        let mut pos = egui::Pos2::new(left, top);
-        let full_width: f32 = widths.iter().sum();
-        let rect = Rect {
-            min: pos,
-            max: egui::Pos2 {
-                x: pos.x + full_width,
-                y: pos.y + font_id.size,
-            },
-        };
-        let response = ui.allocate_rect(rect, Sense::click());
-        let mut clicked = if response.clicked() {
-            self.collapsed = !self.collapsed;
-            Some(&self.entry)
-        } else {
-            None
-        };
-        for (idx, (col, width)) in self.columns.iter().zip(widths).enumerate() {
-            let label = if idx == 0 {
-                pos.x += indent;
-                if !self.children.is_empty() {
-                    if self.collapsed {
-                        format!("\u{229e} {}", col)
-                    } else {
-                        format!("\u{229f} {}", col)
-                    }
-                } else {
-                    col.to_string()
-                }
-            } else {
-                col.to_string()
-            };
-            let galley = ui.painter().layout_no_wrap(
-                label,
-                font_id.clone(),
-                if response.hovered() {
-                    HOVER_COLOR
-                } else {
-                    LABEL_COLOR
-                },
-            );
-            ui.painter().galley(pos, galley, Color32::WHITE);
-            if idx == 0 {
-                pos.x -= indent;
-            }
-            pos.x += width;
-        }
-        if !self.collapsed {
-            for line in self.lines.iter() {
-                line.draw(ui, left, pos.y);
-            }
-            pos.y += font_id.size + ui.spacing().item_spacing.y;
-            for child in self.children.iter_mut() {
-                let height = child.height;
-                if child.top < visible.bottom() && child.top + child.height > visible.top() {
-                    let cc = child.draw(ui, visible, indent + INDENT, left, pos.y, widths);
-                    clicked = clicked.or(cc);
-                }
-                pos.y += height + ui.spacing().item_spacing.y;
-            }
-        }
-        clicked
-    }
-}
-
-pub struct TreeGrid<E, F>
-where
-    F: Fn(&E),
-{
-    id_salt: String,
-    headers: Vec<String>,
-    rows: Vec<TreeRow<E>>,
-    clicked: F,
-    widths: Vec<f32>,
-    size: Vec2,
-    cached_width: f32,
-}
-
-impl<E, F> TreeGrid<E, F>
-where
-    F: Fn(&E),
-{
-    pub fn new(headers: &[&str], id_salt: &str, clicked: F) -> Self {
-        Self {
-            id_salt: id_salt.to_string(),
-            headers: headers.iter().map(|s| s.to_string()).collect(),
+            bounds: Rect::default(),
+            header_bounds: Rect::default(),
+            headers: vec![],
             rows: vec![],
-            clicked,
-            widths: vec![],
-            size: Vec2::default(),
-            cached_width: 0.0,
+            scroll: Scroll::default().with_style(FG, BG),
+            max_row: 0,
+            max_column: 0,
+            cursor: 0,
+            column: 0,
+            selected: None,
+            fg: FG,
+            bg: BG,
+        }
+    }
+}
+
+impl TreeGrid {
+    pub fn new(headers: &[&str]) -> Self {
+        Self {
+            headers: headers
+                .iter()
+                .map(|s| {
+                    Label::new(s)
+                        .with_style(HEADER_COLOR, HEADER_BG)
+                        .with_align(super::Align::Center)
+                })
+                .collect(),
+            ..Default::default()
         }
     }
 
-    pub fn add(&mut self, row: TreeRow<E>) {
+    pub fn clear(&mut self) {
+        self.rows.clear();
+        self.bounds.clear();
+        self.selected = None;
+    }
+
+    pub fn add(&mut self, row: TreeRow, ctx: &Context) {
         self.rows.push(row);
-        self.widths.clear();
+        self.bounds.clear(); // force reflow
+        self.find_selected(0, ctx);
     }
 
-    fn reflow(&mut self, ui: &mut eframe::egui::Ui) {
-        self.widths.clear();
-        let header_font_id = egui::TextStyle::Heading.resolve(ui.style());
-        // calculate column widths
-        for (idx, col) in self.headers.iter().enumerate() {
-            let galley = ui.painter().layout_no_wrap(
-                col.to_owned(),
-                header_font_id.clone(),
-                egui::Color32::WHITE,
-            );
-            let mut width = galley.size().x;
-            for row in self.rows.iter_mut() {
-                width = f32::max(width, row.col_size(0.0, idx, ui));
+    fn find_row(&self, r: i32) -> Option<&TreeRow> {
+        for row in &self.rows {
+            let sel = row.find_row(r);
+            if sel.is_some() {
+                return sel;
             }
-            self.widths.push(width);
         }
-        // try to stretch to fill the available area
-        let baserect = ui.available_rect_before_wrap();
-        let total_width = baserect.width();
+        None
+    }
+
+    fn find_row_mut(&mut self, r: i32) -> Option<&mut TreeRow> {
+        for row in &mut self.rows {
+            let sel = row.find_row_mut(r);
+            if sel.is_some() {
+                return sel;
+            }
+        }
+        None
+    }
+
+    fn find_selected(&mut self, dir: i32, ctx: &Context) {
+        // unhilight old selection
+        if let Some(sel) = self.selected.as_ref() {
+            sel.borrow_mut().focus(false, ctx);
+        }
+
+        let mut column = self.column;
+        self.selected = None;
+        if let Some(row) = self.find_row(self.bounds.t + self.cursor) {
+            let mut dir = dir;
+            let old = column;
+            let mut done = false;
+            while !done {
+                if dir < 0 {
+                    column = cmp::min(column.wrapping_sub(1), self.max_column.saturating_sub(1));
+                } else if dir > 0 && self.max_column > 0 {
+                    column = (column + 1).rem_euclid(self.max_column);
+                }
+                if let Some(col) = row.get(column)
+                    && (col.borrow().gestalt() & gestalt::FOCUS != 0 || (column == old && dir != 0))
+                {
+                    done = true;
+                }
+                if dir == 0 {
+                    dir = 1;
+                }
+            }
+            self.selected = row.get(column).cloned();
+        }
+        self.column = column;
+
+        if let Some(sel) = self.selected.as_ref() {
+            sel.borrow_mut().focus(true, ctx);
+        }
+    }
+
+    fn scroll_to_cursor(&mut self) {
+        self.cursor = self.cursor.clamp(0, self.max_row.saturating_sub(1));
+        if self.cursor < self.scroll.get() {
+            self.scroll.set(self.cursor);
+        }
+        let page = self.bounds.h().saturating_sub(1);
+        if self.cursor >= self.scroll.get() + page {
+            self.scroll.set(self.cursor.saturating_sub(page));
+        }
+    }
+
+    fn layout_children(&mut self) {
+        let mut widths = vec![];
+        for (idx, col) in self.headers.iter().enumerate() {
+            let mut width = col.min_size().w;
+            for row in &self.rows {
+                width = cmp::max(width, row.min_size(0, idx).w);
+            }
+            widths.push(width);
+        }
+
+        let total_width = self.bounds.w().saturating_sub(1); // minus 1 for the selector
         // don't divide by zero
-        if total_width == 0.0 {
+        if total_width == 0 || widths.is_empty() {
             return;
         }
+
         // scale each column to fill the tree bounds
-        let mut maxw: f32 = self.widths.iter().sum();
-        let items = self.widths.len() as f32;
-        maxw += ui.spacing().item_spacing.x * (items - 1.0);
-        // should we expand to fill?
-        if maxw < total_width {
-            let padding = (total_width - maxw) / items;
-            self.widths = self.widths.iter().map(|v| v + padding).collect();
-            // fill out the first element with any remainder
-            self.widths[0] += (total_width - maxw) - padding * items;
-            maxw = total_width;
+        // or remvoe columns if it's too wide
+        let mut done = false;
+        while !done {
+            let mut maxw: i32 = widths.iter().sum();
+            let items = i32::try_from(widths.len()).unwrap_or(i32::MAX);
+            maxw += items - 1; // space between columns
+            if maxw < total_width {
+                let padding = (total_width - maxw) / items;
+                widths = widths.iter().map(|v| v + padding).collect();
+                // fill out the first element with remainder
+                widths[0] += (total_width - maxw) - padding * items;
+                done = true;
+            } else if widths.len() == 1 {
+                // we can't hide any more columns
+                widths[0] = total_width;
+                done = true;
+            } else {
+                // hide last column and try again
+                widths.pop();
+            }
         }
+
+        self.max_column = widths.len();
         // now layout each row
-        let mut y = 0.0;
-        for row in self.rows.iter_mut() {
-            row.layout(0.0, y, ui);
-            y += ui.spacing().item_spacing.y + row.height;
+        let mut x = self.bounds.l;
+        for (idx, width) in widths.iter().enumerate() {
+            let mut width = *width;
+            // first header should cover the selector
+            if idx == 0 {
+                width += 1;
+            }
+            if let Some(header) = self.headers.get_mut(idx) {
+                let c = Rect::new(x, self.header_bounds.t, x + width + 1, self.header_bounds.b);
+                header.layout(&c);
+                x += width + 1; // width + divider
+            }
         }
-        self.size = Vec2 { x: maxw, y };
+        let mut y = self.bounds.t;
+        let mut x = self.bounds.l + 1; // next to selector
+        for row in &mut self.rows {
+            row.layout(&mut x, &mut y, 0, &widths);
+        }
+        self.max_row = y - self.bounds.t;
+        self.scroll.set_range(0, self.max_row, self.bounds.h());
     }
 }
 
-impl<E, F> Widget for TreeGrid<E, F>
-where
-    F: Fn(&E),
-{
-    fn ui(&mut self, ui: &mut eframe::egui::Ui, _ctx: crate::lunacy::Context) {
-        // always draw header
-        let header_font_id = egui::TextStyle::Heading.resolve(ui.style());
-        let rect = ui.available_rect_before_wrap();
-        let header_rect =
-            rect.with_max_y(rect.top() + header_font_id.size + ui.spacing().item_spacing.y * 2.);
-        ui.allocate_rect(header_rect, Sense::hover());
-        let mut left = 0.0;
-
-        egui::ScrollArea::both()
-            .id_salt(&self.id_salt)
-            .show_viewport(ui, |ui, visible| {
-                left = visible.left();
-                let baserect = ui.available_rect_before_wrap();
-                if baserect.width() != self.cached_width || self.widths.is_empty() {
-                    self.reflow(ui);
-                    self.cached_width = baserect.width();
-                }
-                let minrect = baserect
-                    .with_max_x(baserect.left() + self.size.x)
-                    .with_max_y(baserect.top() + self.size.y);
-
-                ui.allocate_rect(minrect, Sense::hover());
-                let mut pos = baserect.left_top();
-                for row in self.rows.iter_mut() {
-                    if row.top < visible.bottom()
-                        && row.top + row.height > visible.top()
-                        && let Some(clicked) =
-                            row.draw(ui, visible, 0.0, pos.x, pos.y, &self.widths)
-                    {
-                        (self.clicked)(clicked);
-                        self.cached_width = 0.0; // force reflow
-                    }
-                    pos.y += row.height + ui.spacing().item_spacing.y;
-                }
-            });
-        // draw header after the scrollview so we can scroll left/right
-        ui.painter().rect_filled(header_rect, 0, HEADER_BG);
-        let mut pos = header_rect.left_top();
-        pos.x -= left;
-        for (h, width) in self.headers.iter().zip(self.widths.iter()) {
-            let galley =
-                ui.painter()
-                    .layout_no_wrap(h.to_string(), header_font_id.clone(), HEADER_COLOR);
-            ui.painter().galley(pos, galley, egui::Color32::WHITE);
-            pos.x += width;
+impl Widget for TreeGrid {
+    fn min_size(&self) -> Size {
+        let mut s = Size::new(0, 1);
+        for (idx, col) in self.headers.iter().enumerate() {
+            let mut col_size = col.min_size();
+            for row in &self.rows {
+                let child_col = row.min_size(0, idx);
+                col_size.h += child_col.h;
+                col_size.w = cmp::max(col_size.w, child_col.w);
+            }
+            if idx > 0 {
+                s.w += 1; // column divider
+            }
+            s.h = cmp::max(s.h, col_size.h);
+            s.w += col_size.w;
         }
+        s
+    }
+
+    fn layout(&mut self, constraint: &Rect) {
+        self.header_bounds = constraint.clone();
+        self.header_bounds.b = self.header_bounds.t + 1;
+        let mut body = constraint.clone();
+        body.t += 1;
+
+        let without_scroll = body.remove_scroll();
+        if self.bounds == without_scroll {
+            // don't reflow unless we need to
+            return;
+        }
+        self.bounds = without_scroll;
+        self.scroll.layout(&body.to_scroll());
+
+        self.layout_children();
+    }
+
+    fn draw(&self, s: &mut Screen, origin: &Point, clip: &Rect) {
+        self.scroll.draw(s, origin, clip);
+        let header_range = clip.intersect(&self.header_bounds.offset(origin));
+        let range = clip.intersect(&self.bounds.offset(origin));
+        for h in &self.headers {
+            h.draw(s, origin, &header_range);
+        }
+        let cursor = self.cursor.wrapping_sub(self.scroll.get());
+        if range.inside(self.bounds.l, cursor + self.bounds.t) {
+            s.draw(
+                self.bounds.l,
+                cursor + self.bounds.t,
+                SELECTOR,
+                self.fg,
+                self.bg,
+            );
+        }
+        let origin = Point::new(origin.x, origin.y.saturating_sub(self.scroll.get()));
+        for row in &self.rows {
+            row.draw(s, &origin, &range);
+        }
+    }
+
+    fn key(&mut self, code: KeyCode, modifiers: KeyModifiers, ctx: &Context) -> bool {
+        if let Some(sel) = self.selected.as_ref()
+            && sel.borrow_mut().key(code, modifiers, ctx)
+        {
+            return true;
+        }
+
+        let mut column_dir = 0;
+        let page = self.bounds.h().saturating_sub(1);
+        match code {
+            KeyCode::Up | KeyCode::Char('k') => self.cursor = self.cursor.saturating_sub(1),
+            KeyCode::Down | KeyCode::Char('j') => self.cursor = self.cursor.saturating_add(1),
+            KeyCode::Left | KeyCode::Char('h') | KeyCode::BackTab => column_dir = -1,
+            KeyCode::Right | KeyCode::Char('l') | KeyCode::Tab => column_dir = 1,
+            KeyCode::PageUp | KeyCode::Char('K') => self.cursor = self.cursor.saturating_sub(page),
+            KeyCode::PageDown | KeyCode::Char('J') => {
+                self.cursor = self.cursor.saturating_add(page);
+            }
+            KeyCode::Home => self.cursor = 0,
+            KeyCode::End => self.cursor = self.max_row,
+            KeyCode::Char('=') => {
+                if let Some(row) = self.find_row_mut(self.bounds.t + self.cursor) {
+                    row.toggle();
+                    self.layout_children();
+                }
+            }
+            _ => return false,
+        }
+        self.scroll_to_cursor();
+        self.find_selected(column_dir, ctx);
+        true
+    }
+
+    fn mouse(&mut self, pt: &Point, is_down: bool, ctx: &Context) -> bool {
+        let top = self.scroll.get();
+        if self.bounds.inside(pt.x, pt.y) {
+            let cursor = pt.y - self.bounds.t;
+            self.cursor = cmp::min(cursor + self.scroll.get(), self.max_row.saturating_sub(1));
+            if let Some(row) = self.find_row_mut(self.bounds.t + self.cursor) {
+                let pt = Point::new(pt.x, pt.y.saturating_add(top));
+                if row.mouse(&pt, is_down, ctx) {
+                    return true;
+                }
+            }
+            self.find_selected(0, ctx);
+            false
+        } else {
+            self.scroll.mouse(pt, is_down, ctx)
+        }
+    }
+
+    fn get_key_map(&self) -> KeyMap {
+        let mut keys = self
+            .selected
+            .as_ref()
+            .map_or_else(KeyMap::default, |sel| sel.borrow().get_key_map());
+        keys.insert("a←↓↑→|hjkl", "move");
+        if let Some(row) = self.find_row(self.bounds.t + self.cursor) {
+            if row.can_expand() {
+                keys.insert("b=", "expand");
+            } else if row.can_collapse() {
+                keys.insert("b=", "collapse");
+            }
+        }
+        keys
     }
 }

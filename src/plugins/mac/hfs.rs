@@ -6,9 +6,9 @@
 */
 
 use crate::{
-    lunacy::{Context, File, Message},
+    lunacy::{Context, Handle, Message},
     plugins::Plugin,
-    widgets::{TreeGrid, TreeRow},
+    widgets::{Blank, Label, Link, TreeGrid, TreeRow, Widget},
 };
 use num_format::{Locale, ToFormattedString};
 use std::{cell::RefCell, cmp, rc::Rc};
@@ -16,68 +16,33 @@ use std::{cell::RefCell, cmp, rc::Rc};
 pub struct Hfs {}
 
 impl Plugin for Hfs {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Mac/HFS"
     }
 
-    fn supports(&self, file: &File) -> Option<i16> {
-        if file.len() < 0x500 {
+    fn supports(&self, handle: &Handle) -> Option<i16> {
+        if handle.len() < 0x500 {
             return None;
         }
-        if file.r16be(0x400) != 0x4244 {
-            if file.r16be(0x454) != 0x4244 || file.r16be(0x462) != 3 || file.r8(0x478) >= 28 {
+        if handle.r16be(0x400) != 0x4244 {
+            if handle.r16be(0x454) != 0x4244 || handle.r16be(0x462) != 3 || handle.r8(0x478) >= 28 {
                 None
             } else {
                 Some(90)
             }
-        } else if file.r16be(0x40e) != 3 || file.r8(0x424) >= 28 {
+        } else if handle.r16be(0x40e) != 3 || handle.r8(0x424) >= 28 {
             None
         } else {
             Some(90)
         }
     }
 
-    fn create(
-        &self,
-        file: &File,
-        ctx: Context,
-    ) -> Result<Box<dyn crate::plugins::Widget>, &'static str> {
-        let parser = Parser::new(file);
+    fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
+        let parser = Rc::new(Parser::new(handle));
         let entries = parser.parse()?;
-        let mut treegrid = TreeGrid::new(
-            &["Filename", "Type", "Creator", "Data", "Res"],
-            &format!("hfs_{}", file.get_name()),
-            move |entry: &Entry| {
-                if entry.is_file {
-                    if entry.res_len > 0 {
-                        ctx.post(
-                            match parser.load_file(entry.res_extents, entry.res_len, entry.id, 0xff)
-                            {
-                                Ok(data) => Message::Open(File::new_from_array(
-                                    &data,
-                                    &format!("{} [res]", entry.name),
-                                    "mac/res",
-                                )),
-                                Err(err) => Message::Error(err.to_string()),
-                            },
-                        );
-                    }
-                    if entry.data_len > 0 {
-                        ctx.post(
-                            match parser.load_file(entry.data_extents, entry.data_len, entry.id, 0)
-                            {
-                                Ok(data) => {
-                                    Message::Open(File::new_from_array(&data, &entry.name, ""))
-                                }
-                                Err(err) => Message::Error(err.to_string()),
-                            },
-                        );
-                    }
-                }
-            },
-        );
-        for entry in entries.iter() {
-            treegrid.add(entry.borrow().render());
+        let mut treegrid = TreeGrid::new(&["Filename", "Type", "Creator", "Data", "Res"]);
+        for entry in &entries {
+            treegrid.add(entry.borrow().render(&parser), ctx);
         }
         Ok(Box::new(treegrid))
     }
@@ -100,31 +65,81 @@ struct Entry {
 
 type EntryPtr = Rc<RefCell<Entry>>;
 impl Entry {
-    fn render(&self) -> TreeRow<Entry> {
-        let mut row = TreeRow::new(self.clone());
-        row.push_column(&self.name);
-        row.push_column(&self.filetype);
-        row.push_column(&self.creator);
-        if self.data_len > 0 {
-            row.push_column(&self.data_len.to_formatted_string(&Locale::en));
+    fn render(&self, parser: &Rc<Parser>) -> TreeRow {
+        let mut row = TreeRow::default();
+        if self.res_len > 0 || self.data_len > 0 {
+            let parser = parser.clone();
+            let entry = self.clone();
+            row.push_column(Link::new(&self.name, "", move |ctx: &Context| {
+                if entry.data_len > 0 {
+                    ctx.post(
+                        match parser.load_file(entry.data_extents, entry.data_len, entry.id, 0) {
+                            Ok(data) => {
+                                Message::Open(Handle::new_from_array(&data, &entry.name, ""))
+                            }
+                            Err(err) => Message::Error(err.to_string()),
+                        },
+                    );
+                } else if entry.res_len > 0 {
+                    ctx.post(
+                        match parser.load_file(entry.res_extents, entry.res_len, entry.id, 0xff) {
+                            Ok(data) => Message::Open(Handle::new_from_array(
+                                &data,
+                                &format!("{} [res]", entry.name),
+                                "mac/res",
+                            )),
+                            Err(err) => Message::Error(err.to_string()),
+                        },
+                    );
+                }
+            }));
         } else {
-            row.push_column("");
+            row.push_column(Label::new(&self.name));
+        }
+        row.push_column(Label::new(&self.filetype));
+        row.push_column(Label::new(&self.creator));
+        if self.data_len > 0 {
+            row.push_column(Label::new(&self.data_len.to_formatted_string(&Locale::en)));
+        } else {
+            row.push_column(Blank::default());
         }
         if self.res_len > 0 {
-            row.push_column(&self.res_len.to_formatted_string(&Locale::en));
+            if self.data_len > 0 {
+                let entry = self.clone();
+                let parser = parser.clone();
+                row.push_column(Link::new(
+                    &self.res_len.to_formatted_string(&Locale::en),
+                    "",
+                    move |ctx: &Context| {
+                        ctx.post(
+                            match parser.load_file(entry.res_extents, entry.res_len, entry.id, 0xff)
+                            {
+                                Ok(data) => Message::Open(Handle::new_from_array(
+                                    &data,
+                                    &format!("{} [res]", entry.name),
+                                    "mac/res",
+                                )),
+                                Err(err) => Message::Error(err.to_string()),
+                            },
+                        );
+                    },
+                ));
+            } else {
+                row.push_column(Label::new(&self.res_len.to_formatted_string(&Locale::en)));
+            }
         } else {
-            row.push_column("");
+            row.push_column(Blank::default());
         }
 
-        for child in self.children.iter() {
-            row.push_child(child.borrow().render());
+        for child in &self.children {
+            row.push_child(child.borrow().render(parser));
         }
         row
     }
 }
 
 struct Parser {
-    file: File,
+    handle: Handle,
     block_size: usize,
     block_start: usize,
     over_node: u32,
@@ -138,35 +153,39 @@ struct Extent {
 }
 
 impl Parser {
-    fn new(file: &File) -> Self {
-        let start = if file.r16be(0x400) != 0x4244 { 0x5d } else { 0 };
-        let block_size = file.r32be(start + 0x414) as usize;
-        let block_start = file.r16be(start + 0x41c) as usize;
+    fn new(handle: &Handle) -> Self {
+        let start = if handle.r16be(0x400) == 0x4244 {
+            0
+        } else {
+            0x5d
+        };
+        let block_size = handle.r32be(start + 0x414) as usize;
+        let block_start = handle.r16be(start + 0x41c) as usize;
         let mut ovr_extents = vec![];
         let mut cat_extents = vec![];
         for i in 0..3 {
             ovr_extents.push(Extent {
-                start: usize::from(file.r16be(start + 0x486 + i * 4)),
-                count: usize::from(file.r16be(start + 0x486 + i * 4 + 2)),
+                start: usize::from(handle.r16be(start + 0x486 + i * 4)),
+                count: usize::from(handle.r16be(start + 0x486 + i * 4 + 2)),
             });
             cat_extents.push(Extent {
-                start: usize::from(file.r16be(start + 0x496 + i * 4)),
-                count: usize::from(file.r16be(start + 0x496 + i * 4 + 2)),
+                start: usize::from(handle.r16be(start + 0x496 + i * 4)),
+                count: usize::from(handle.r16be(start + 0x496 + i * 4 + 2)),
             });
         }
         // read overflow file first
         let block = (ovr_extents[0].start + block_start) * block_size;
-        let over_node = match file.r8(block + 8) {
+        let over_node = match handle.r8(block + 8) {
             1 => {
                 // header node
-                let pos = usize::from(file.r16be(block + block_size - 2)) + block + 2;
-                file.r32be(pos)
+                let pos = usize::from(handle.r16be(block + block_size - 2)) + block + 2;
+                handle.r32be(pos)
             }
-            _ => 0xffffffff,
+            _ => 0xffff_ffff,
         };
 
         Self {
-            file: file.clone(),
+            handle: handle.clone(),
             block_size,
             block_start,
             over_node,
@@ -176,28 +195,28 @@ impl Parser {
     }
 
     fn parse(&self) -> Result<Vec<EntryPtr>, &'static str> {
-        if self.block_size & 0xff000000 != 0 {
+        if self.block_size & 0xff00_0000 != 0 {
             return Err("blocksize is too large");
         }
-        if self.over_node == 0xffffffff {
+        if self.over_node == 0xffff_ffff {
             return Err("invalid overflow table");
         }
 
         // first node better be a header node
         let block = self.block_ofs(self.cat_extents[0].start);
-        let entries = match self.file.r8(block + 8) {
+        let entries = match self.handle.r8(block + 8) {
             1 => {
                 // header node
-                let pos = usize::from(self.file.r16be(block + self.block_size - 2)) + block + 2;
-                self.walk(self.file.r32be(pos))?
+                let pos = usize::from(self.handle.r16be(block + self.block_size - 2)) + block + 2;
+                self.walk(self.handle.r32be(pos))?
             }
             _ => return Err("invalid hfs root"),
         };
         let mut root = vec![];
         // rearrange into a tree
-        for entry in entries.iter() {
+        for entry in &entries {
             let mut found = false;
-            for parent in entries.iter() {
+            for parent in &entries {
                 if !parent.borrow().is_file && parent.borrow().id == entry.borrow().parent {
                     parent.borrow_mut().children.push(entry.clone());
                     found = true;
@@ -218,22 +237,23 @@ impl Parser {
             i += 1;
         }
         let cur = self.block_ofs(self.cat_extents[i].start + node);
-        let kind = self.file.r8(cur + 8);
-        let num_records = self.file.r16be(cur + 10);
+        let kind = self.handle.r8(cur + 8);
+        let num_records = self.handle.r16be(cur + 10);
         let mut entries = vec![];
         match kind {
             0 => {
                 // index node
                 for i in 0..usize::from(num_records) {
-                    let ofs = usize::from(self.file.r16be(cur + self.block_size - (i + 1) * 2));
-                    let keylen = usize::from(self.file.r8(cur + ofs));
-                    entries.extend_from_slice(&self.walk(self.file.r32be(cur + ofs + keylen + 1))?);
+                    let ofs = usize::from(self.handle.r16be(cur + self.block_size - (i + 1) * 2));
+                    let keylen = usize::from(self.handle.r8(cur + ofs));
+                    entries
+                        .extend_from_slice(&self.walk(self.handle.r32be(cur + ofs + keylen + 1))?);
                 }
             }
             0xff => {
                 // leaf node
                 for i in 0..usize::from(num_records) {
-                    let ofs = usize::from(self.file.r16be(cur + self.block_size - (i + 1) * 2));
+                    let ofs = usize::from(self.handle.r16be(cur + self.block_size - (i + 1) * 2));
                     if let Some(entry) = self.leaf(cur + ofs)? {
                         entries.push(entry);
                     }
@@ -247,15 +267,15 @@ impl Parser {
     }
 
     fn leaf(&self, record: usize) -> Result<Option<EntryPtr>, &'static str> {
-        let keylen = self.file.r8(record) + 1;
+        let keylen = self.handle.r8(record) + 1;
         if keylen == 0 {
             // deleted
             return Ok(None);
         }
         let keylen = usize::from(keylen + (keylen & 1));
-        let parent = self.file.r32be(record + 2);
-        let name = self.file.rps(record + 6, "macroman");
-        match self.file.r16be(record + keylen) {
+        let parent = self.handle.r32be(record + 2);
+        let name = self.handle.rps(record + 6, "macroman");
+        match self.handle.r16be(record + keylen) {
             0x100 => {
                 // folder
                 Ok(Some(Rc::new(RefCell::new(Entry {
@@ -264,7 +284,7 @@ impl Parser {
                     name,
                     filetype: String::new(),
                     creator: String::new(),
-                    id: self.file.r32be(record + keylen + 6),
+                    id: self.handle.r32be(record + keylen + 6),
                     data_len: 0,
                     res_len: 0,
                     data_extents: 0,
@@ -278,11 +298,11 @@ impl Parser {
                     is_file: true,
                     parent,
                     name,
-                    filetype: self.file.rs(record + keylen + 4, 4, "macroman"),
-                    creator: self.file.rs(record + keylen + 8, 4, "macroman"),
-                    id: self.file.r32be(record + keylen + 0x14),
-                    data_len: self.file.r32be(record + keylen + 0x1a),
-                    res_len: self.file.r32be(record + keylen + 0x24),
+                    filetype: self.handle.rs(record + keylen + 4, 4, "macroman"),
+                    creator: self.handle.rs(record + keylen + 8, 4, "macroman"),
+                    id: self.handle.r32be(record + keylen + 0x14),
+                    data_len: self.handle.r32be(record + keylen + 0x1a),
+                    res_len: self.handle.r32be(record + keylen + 0x24),
                     data_extents: record + keylen + 0x4a,
                     res_extents: record + keylen + 0x56,
                     children: vec![],
@@ -314,17 +334,17 @@ impl Parser {
             i += 1;
         }
         let cur = self.block_ofs(self.ovr_extents[i].start + node);
-        let kind = self.file.r8(cur + 8);
-        let num_records = self.file.r16be(cur + 10);
+        let kind = self.handle.r8(cur + 8);
+        let num_records = self.handle.r16be(cur + 10);
 
         match kind {
             0 => {
                 // index node
                 for i in 0..usize::from(num_records) {
-                    let ofs = usize::from(self.file.r16be(cur + self.block_size - (i + 1) * 2));
-                    let keylen = usize::from(self.file.r8(cur + ofs));
+                    let ofs = usize::from(self.handle.r16be(cur + self.block_size - (i + 1) * 2));
+                    let keylen = usize::from(self.handle.r8(cur + ofs));
                     let extents =
-                        self.overflow(self.file.r32be(cur + ofs + keylen + 1), id, block, fork)?;
+                        self.overflow(self.handle.r32be(cur + ofs + keylen + 1), id, block, fork)?;
                     if !extents.is_empty() {
                         return Ok(extents);
                     }
@@ -334,8 +354,8 @@ impl Parser {
             0xff => {
                 // leaf node
                 for i in 0..usize::from(num_records) {
-                    let ofs = usize::from(self.file.r16be(cur + self.block_size - (i + 1) * 2));
-                    let extents = self.ovr_leaf(cur + ofs, id, block, fork)?;
+                    let ofs = usize::from(self.handle.r16be(cur + self.block_size - (i + 1) * 2));
+                    let extents = self.ovr_leaf(cur + ofs, id, block, fork);
                     if !extents.is_empty() {
                         return Ok(extents);
                     }
@@ -346,28 +366,22 @@ impl Parser {
         }
     }
 
-    fn ovr_leaf(
-        &self,
-        record: usize,
-        id: u32,
-        block: u16,
-        fork: u8,
-    ) -> Result<Vec<Extent>, &'static str> {
+    fn ovr_leaf(&self, record: usize, id: u32, block: u16, fork: u8) -> Vec<Extent> {
         let mut extents = vec![];
-        let keylen = self.file.r8(record);
+        let keylen = self.handle.r8(record);
         if keylen == 7
-            && self.file.r8(record + 1) == fork
-            && self.file.r32be(record + 2) == id
-            && self.file.r16be(record + 6) == block
+            && self.handle.r8(record + 1) == fork
+            && self.handle.r32be(record + 2) == id
+            && self.handle.r16be(record + 6) == block
         {
             for i in 0..3 {
                 extents.push(Extent {
-                    start: usize::from(self.file.r16be(record + 8 + i * 4)),
-                    count: usize::from(self.file.r16be(record + 8 + i * 4 + 2)),
+                    start: usize::from(self.handle.r16be(record + 8 + i * 4)),
+                    count: usize::from(self.handle.r16be(record + 8 + i * 4 + 2)),
                 });
             }
         }
-        Ok(extents)
+        extents
     }
 
     fn load_file(
@@ -380,8 +394,8 @@ impl Parser {
         let mut extents = vec![];
         for i in 0..3 {
             extents.push(Extent {
-                start: usize::from(self.file.r16be(extent_ofs + i * 4)),
-                count: usize::from(self.file.r16be(extent_ofs + i * 4 + 2)),
+                start: usize::from(self.handle.r16be(extent_ofs + i * 4)),
+                count: usize::from(self.handle.r16be(extent_ofs + i * 4 + 2)),
             });
         }
 
@@ -394,7 +408,7 @@ impl Parser {
         while len > 0 {
             let size = cmp::min(len, self.block_size);
             let pos = self.block_ofs(extents[ext].start + block);
-            data.extend_from_slice(self.file.read(pos, size));
+            data.extend_from_slice(self.handle.read(pos, size));
             len -= size;
             block += 1;
             total_blocks += 1;
@@ -413,7 +427,7 @@ impl Parser {
         Ok(data)
     }
 
-    fn block_ofs(&self, start: usize) -> usize {
+    const fn block_ofs(&self, start: usize) -> usize {
         (start + self.block_start) * self.block_size
     }
 }

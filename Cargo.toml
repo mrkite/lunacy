@@ -1,20 +1,20 @@
 [package]
 name = "lunacy"
-version = "0.1.0"
+version = "0.3.0"
+description = "Viewer for retro filetypes"
+repository = "https://github.com/mrkite/lunacy"
+readme = "README.md"
+license-file = "LICENSE"
+keywords = ["lunacy", "hex", "disassembly", "retro"]
+categories = ["development-tools"]
 edition = "2024"
 
 [dependencies]
 chrono = "0.4.43"
-eframe = {
-  version = "0.36.1",
-  features = ["persistence"]
-}
-egui_extras = "0.36.1"
-image = "0.25.10"
+crossterm = { version = "0.29.0", features = ["event-stream"] }
+futures = "0.3.34"
 lazy_static = "1.5.0"
 num-format = "0.4.4"
-rfd = "0.17.2"
-tokio = {
-  version = "1.53.1",
-  features = ["full"]
-}
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+tokio = { version = "1.53.1", features = ["full"] }

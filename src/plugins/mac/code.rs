@@ -5,49 +5,45 @@
 
 */
 
-use std::collections::HashMap;
-
 use crate::{
     cpus::State68k,
-    lunacy::File,
+    lunacy::{Context, Handle},
     platforms::Mac,
     plugins::{Plugin, mac::resparser::Parser},
     widgets::Widget,
 };
+use std::collections::HashMap;
 
 pub struct Code {}
 
 impl Plugin for Code {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Mac/Code"
     }
 
-    fn supports(&self, file: &File) -> Option<i16> {
-        if file.get_mime() == "mac/res" && has_code(file) {
+    fn supports(&self, handle: &Handle) -> Option<i16> {
+        if handle.get_mime() == "mac/res" && has_code(handle) {
             Some(60) // less than mac/res
         } else {
             None
         }
     }
 
-    fn create(
-        &self,
-        file: &File,
-        ctx: crate::lunacy::Context,
-    ) -> Result<Box<dyn crate::widgets::Widget>, &'static str> {
-        let mut mac = Mac::new(&format!("code_{}", file.get_name()));
-        let parser = Parser::new(file);
-        let entries = parser.parse()?;
+    fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
+        let mut mac = Mac::new(handle.get_name());
+        let parser = Parser::new(handle);
+        let entries = parser.parse();
         let mut a5 = HashMap::new();
         let mut first_entry = None;
         if let Some(codes) = entries.get("CODE") {
-            for entry in codes.iter() {
-                let c = parser.get_res("", &entry.res_type, entry.offset, entry.attr)?;
+            for entry in codes {
+                let c = parser.get_res("", &entry.res_type, entry.offset, entry.attr);
                 let name = format!("CODE {}{}", entry.id, entry.name);
-                mac.add_section(&name, u32::from(entry.id) << 16, c.read(0, c.len()));
+                // we skip the first 4 bytes
+                mac.add_section(&name, u32::from(entry.id) << 16, c.read(4, c.len() - 4));
             }
             if let Some(entry) = codes.first() {
-                let c = parser.get_res("", &entry.res_type, entry.offset, entry.attr)?;
+                let c = parser.get_res("", &entry.res_type, entry.offset, entry.attr);
                 let mut ofs = 8;
                 let jump_len = c.r32be(ofs);
                 ofs += 4;
@@ -70,21 +66,23 @@ impl Plugin for Code {
             }
         }
         let entry = first_entry.unwrap_or(0x10000);
-        mac.add_entry(State68k { addr: entry })?;
+        mac.add_entry(State68k::new(entry))?;
+        mac.disassemble();
         mac.set_a5(&a5);
-        mac.jump(entry as usize, ctx);
-
+        if let Ok(entry) = usize::try_from(entry) {
+            mac.jump(entry, ctx);
+        }
         Ok(Box::new(mac))
     }
 }
 
-fn has_code(file: &File) -> bool {
-    let mapofs = file.r32be(4) as usize;
-    let typelist = mapofs + usize::from(file.r16be(mapofs + 24));
-    let num_types = file.r16be(mapofs + 28);
+fn has_code(handle: &Handle) -> bool {
+    let mapofs = handle.r32be(4) as usize;
+    let typelist = mapofs + usize::from(handle.r16be(mapofs + 24));
+    let num_types = handle.r16be(mapofs + 28);
     for t in 0..=num_types {
         let ofs = typelist + 2 + usize::from(t) * 8;
-        let res_type = file.rs(ofs, 4, "macroman");
+        let res_type = handle.rs(ofs, 4, "macroman");
         if res_type == "CODE" {
             return true;
         }

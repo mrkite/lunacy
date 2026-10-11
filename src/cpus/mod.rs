@@ -10,7 +10,7 @@ mod cpu65816;
 mod cpu68k;
 mod cpu86;
 
-use crate::lunacy::File;
+use crate::lunacy::Handle;
 pub use cpu68k::Cpu68k;
 pub use cpu68k::Operands68k;
 pub use cpu68k::State68k;
@@ -29,7 +29,7 @@ pub trait CpuState {
     fn as_any(&mut self) -> &mut dyn Any;
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum InstType {
     Normal,
     Call,
@@ -60,12 +60,13 @@ pub struct CpuLine {
     pub opcode: String,
     pub operand: String,
     pub comment: String,
+    pub target: Option<u32>,
 }
 
 pub trait Cpu {
     fn decode(
         &self,
-        file: &File,
+        handle: &Handle,
         offset: usize,
         state: &mut dyn CpuState,
     ) -> Result<Instruction, &'static str>;

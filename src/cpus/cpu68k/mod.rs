@@ -5,18 +5,23 @@
 
 */
 
-use std::collections::HashMap;
-
 use crate::{
     cpus::{self, Cpu, CpuLine, CpuState, InstType, Instruction, cpu68k::opcodes::OPCODES},
-    lunacy::File,
+    lunacy::Handle,
 };
+use std::collections::HashMap;
 
 mod opcodes;
 
 #[derive(Clone)]
 pub struct State68k {
     pub addr: u32,
+}
+
+impl State68k {
+    pub fn new(addr: u32) -> Self {
+        Self { addr }
+    }
 }
 
 impl CpuState for State68k {
@@ -91,21 +96,20 @@ impl Default for Cpu68k {
 }
 
 impl Cpu for Cpu68k {
+    #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
-        file: &File,
+        handle: &Handle,
         offset: usize,
         state: &mut dyn CpuState,
     ) -> Result<Instruction, &'static str> {
-        let state = if let Some(state) = state.as_any().downcast_mut::<State68k>() {
-            state
-        } else {
+        let Some(state) = state.as_any().downcast_mut::<State68k>() else {
             return Err("68k disassembler called without a 68k state");
         };
         let start_offset = offset;
         let mut offset = offset;
         let mut saved_constant = None;
-        let opcode = file.r16be(offset);
+        let opcode = handle.r16be(offset);
         offset += 2;
         let group = (opcode >> 12) as u8;
         for op in OPCODES
@@ -127,7 +131,7 @@ impl Cpu for Cpu68k {
                             it.next();
                         }
                         '%' => {
-                            saved_constant = Some(file.r16be(offset));
+                            saved_constant = Some(handle.r16be(offset));
                             offset += 2;
                             it.next();
                         }
@@ -137,7 +141,7 @@ impl Cpu for Cpu68k {
                                 'w' => {
                                     op.oper_type = Opr::RegIndDisp;
                                     op.width = 0;
-                                    op.constant = u32::from(file.r16be(offset));
+                                    op.constant = u32::from(handle.r16be(offset));
                                     offset += 2;
                                     op.reg = (opcode & 7) as u8;
                                 }
@@ -155,30 +159,27 @@ impl Cpu for Cpu68k {
                         'd' => {
                             let ch = it.next().unwrap();
                             op.oper_type = Opr::Reg;
-                            op.reg = match ch {
+                            op.reg = (match ch {
                                 'x' => opcode >> 9,
                                 _ => opcode,
-                            } as u8
-                                & 7;
+                            } & 7) as u8;
                         }
                         '+' => {
                             let ch = it.next().unwrap();
                             op.oper_type = Opr::RegPost;
-                            op.reg = match ch {
+                            op.reg = (match ch {
                                 'x' => opcode >> 9,
                                 _ => opcode,
-                            } as u8
-                                & 7;
+                            } & 7) as u8;
                             op.reg += 8;
                         }
                         '-' => {
                             let ch = it.next().unwrap();
                             op.oper_type = Opr::RegPre;
-                            op.reg = match ch {
+                            op.reg = (match ch {
                                 'x' => opcode >> 9,
                                 _ => opcode,
-                            } as u8
-                                & 7;
+                            } & 7) as u8;
                             op.reg += 8;
                         }
                         'i' => {
@@ -187,7 +188,7 @@ impl Cpu for Cpu68k {
                             op.constant = match ch {
                                 'v' => u32::from(opcode & 7),
                                 '4' => u32::from(opcode & 0xf),
-                                '8' => (opcode & 0xff) as i8 as i32 as u32,
+                                '8' => i32::from((opcode & 0xff) as i8).cast_unsigned(),
                                 'q' => {
                                     if (opcode & 0xe00) == 0 {
                                         8
@@ -196,48 +197,43 @@ impl Cpu for Cpu68k {
                                     }
                                 }
                                 'b' => {
-                                    let cons = (file.r16be(offset) & 0xff) as i8 as i32 as u32;
+                                    let cons = i32::from((handle.r16be(offset) & 0xff) as i8)
+                                        .cast_unsigned();
                                     offset += 2;
                                     cons
                                 }
                                 'w' => {
-                                    let cons = file.r16be(offset) as i16 as i32 as u32;
+                                    let cons = i32::from(handle.r16be(offset).cast_signed())
+                                        .cast_unsigned();
                                     offset += 2;
                                     cons
                                 }
-                                'm' => {
-                                    if let Some(w) = sub.width {
-                                        match w {
-                                            0 => {
-                                                let cons =
-                                                    (file.r16be(offset) & 0xff) as i8 as i32 as u32;
-                                                offset += 2;
-                                                cons
-                                            }
-                                            1 => {
-                                                let cons = file.r16be(offset) as i16 as i32 as u32;
-                                                offset += 2;
-                                                cons
-                                            }
-                                            2 => {
-                                                let cons = file.r32be(offset);
-                                                offset += 4;
-                                                cons
-                                            }
-                                            _ => 0,
-                                        }
-                                    } else {
-                                        0
+                                'm' => sub.width.map_or(0, |w| match w {
+                                    0 => {
+                                        let cons = i32::from((handle.r16be(offset) & 0xff) as i8)
+                                            .cast_unsigned();
+                                        offset += 2;
+                                        cons
                                     }
-                                }
+                                    1 => {
+                                        let cons = i32::from(handle.r16be(offset).cast_signed())
+                                            .cast_unsigned();
+                                        offset += 2;
+                                        cons
+                                    }
+                                    2 => {
+                                        let cons = handle.r32be(offset);
+                                        offset += 4;
+                                        cons
+                                    }
+                                    _ => 0,
+                                }),
                                 _ => panic!("missing immediate variant"),
                             };
                         }
                         'e' => {
                             let ch = it.next().unwrap();
-                            if !check_ea((opcode >> 3) as u8 & 7, opcode as u8 & 7) {
-                                found = false
-                            } else {
+                            if check_ea(((opcode >> 3) & 7) as u8, (opcode & 7) as u8) {
                                 let size = if ch == 'a'
                                     && let Some(w) = sub.width
                                 {
@@ -247,20 +243,20 @@ impl Cpu for Cpu68k {
                                 };
                                 parse_ea(
                                     &mut op,
-                                    (opcode >> 3) as u8 & 7,
-                                    opcode as u8 & 7,
+                                    ((opcode >> 3) & 7) as u8,
+                                    (opcode & 7) as u8,
                                     size,
-                                    file,
+                                    handle,
                                     &mut offset,
                                     state.addr,
                                 );
+                            } else {
+                                found = false;
                             }
                         }
                         'E' => {
                             let ch = it.next().unwrap();
-                            if !check_ea((opcode >> 6) as u8 & 7, (opcode >> 9) as u8 & 7) {
-                                found = false
-                            } else {
+                            if check_ea(((opcode >> 6) & 7) as u8, ((opcode >> 9) & 7) as u8) {
                                 let size = if ch == 'a'
                                     && let Some(w) = sub.width
                                 {
@@ -270,20 +266,22 @@ impl Cpu for Cpu68k {
                                 };
                                 parse_ea(
                                     &mut op,
-                                    (opcode >> 6) as u8 & 7,
-                                    (opcode >> 9) as u8 & 7,
+                                    ((opcode >> 6) & 7) as u8,
+                                    ((opcode >> 9) & 7) as u8,
                                     size,
-                                    file,
+                                    handle,
                                     &mut offset,
                                     state.addr,
                                 );
+                            } else {
+                                found = false;
                             }
                         }
                         'l' => {
                             it.next();
                             op.oper_type = Opr::RegList;
-                            let mut list = saved_constant.unwrap_or({
-                                let list = file.r16be(offset);
+                            let mut list = saved_constant.unwrap_or_else(|| {
+                                let list = handle.r16be(offset);
                                 offset += 2;
                                 list
                             });
@@ -301,12 +299,13 @@ impl Cpu for Cpu68k {
                         '~' => {
                             let ch = it.next().unwrap();
                             op.oper_type = Opr::Abs;
-                            let mut rel = 0;
-                            if ch == '~' {
-                                rel = (opcode & 0xff) as i8 as i32;
-                            }
+                            let mut rel = if ch == '~' {
+                                i32::from((opcode & 0xff) as i8)
+                            } else {
+                                0
+                            };
                             if rel == 0 {
-                                rel = file.r16be(offset) as i16 as i32;
+                                rel = i32::from(handle.r16be(offset).cast_signed());
                                 offset += 2;
                             }
                             op.constant = state.addr.wrapping_add_signed(rel) + 2;
@@ -314,7 +313,7 @@ impl Cpu for Cpu68k {
                         '\'' => {
                             let ch = it.next().unwrap();
                             op.oper_type = Opr::Flags;
-                            op.constant = if ch == 'c' { 0 } else { 1 };
+                            op.constant = u32::from(ch != 'c');
                         }
                         _ => found = false,
                     }
@@ -322,14 +321,15 @@ impl Cpu for Cpu68k {
                 }
 
                 if found {
-                    let length = (offset - start_offset) as u32;
-                    state.addr += length;
-                    let raw = file.read(start_offset, length as usize).to_vec();
+                    let length = offset - start_offset;
+                    let ins_len = u32::try_from(length).unwrap_or_default();
+                    state.addr += ins_len;
+                    let raw = handle.read(start_offset, length).to_vec();
 
                     return Ok(Instruction {
                         name: op.n.to_string(),
                         inst_type: op.i,
-                        length,
+                        length: ins_len,
                         raw,
                         operands: sub,
                     });
@@ -337,9 +337,9 @@ impl Cpu for Cpu68k {
             }
         }
         if (opcode & 0xf000) == 0xa000 {
-            let length = (offset - start_offset) as u32;
-            state.addr += length;
-            let raw = file.read(start_offset, length as usize).to_vec();
+            let length = offset - start_offset;
+            state.addr += u32::try_from(length).unwrap_or_default();
+            let raw = handle.read(start_offset, length).to_vec();
             let mut sub = Box::new(Operands68k::default());
             let op = Operand {
                 oper_type: Opr::Abs,
@@ -350,7 +350,7 @@ impl Cpu for Cpu68k {
             return Ok(Instruction {
                 name: "db".to_owned(),
                 inst_type: InstType::Normal,
-                length,
+                length: u32::try_from(length).unwrap_or_default(),
                 raw,
                 operands: sub,
             });
@@ -358,15 +358,14 @@ impl Cpu for Cpu68k {
         Err("opcode not found")
     }
 
+    #[allow(clippy::too_many_lines)]
     fn disassemble(
         &self,
         address: u32,
         inst: &Instruction,
         lookup: &dyn Fn(u32) -> Option<String>,
     ) -> CpuLine {
-        let sub = if let Some(sub) = inst.operands.as_any().downcast_ref::<Operands68k>() {
-            sub
-        } else {
+        let Some(sub) = inst.operands.as_any().downcast_ref::<Operands68k>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
                 ..Default::default()
@@ -375,6 +374,7 @@ impl Cpu for Cpu68k {
         let mut out = CpuLine {
             opcode: inst.name.clone(),
             address,
+            target: self.target(inst),
             ..Default::default()
         };
         for (idx, code) in inst.raw.iter().enumerate() {
@@ -400,7 +400,7 @@ impl Cpu for Cpu68k {
             out.opcode.push(' ');
         }
 
-        for op in sub.operands.iter() {
+        for op in &sub.operands {
             if !out.operand.is_empty() {
                 out.operand.push_str(", ");
             }
@@ -437,13 +437,12 @@ impl Cpu for Cpu68k {
                     .as_str(),
                 ),
                 Opr::RegIndDisp => {
+                    out.operand.push_str(&to_hex(op.constant, lookup));
                     if op.reg == 13 {
                         // A5
                         // dump a5 symbol
-                        out.operand.push_str(&to_hex(op.constant, lookup));
                         out.operand.push_str("(a5)");
                     } else {
-                        out.operand.push_str(&to_hex(op.constant, lookup));
                         out.operand.push_str(
                             format!("({}{}", if op.reg & 8 == 8 { 'a' } else { 'd' }, op.reg & 7)
                                 .as_str(),
@@ -456,7 +455,7 @@ impl Cpu for Cpu68k {
                     }
                 }
                 Opr::RegIndex => {
-                    let v = (op.constant & 0xff) as i8 as i32 as u32;
+                    let v = i32::from((op.constant & 0xff) as i8).cast_unsigned();
                     out.operand.push_str(&to_hex(v, lookup));
                     out.operand.push_str(
                         format!(
@@ -488,45 +487,7 @@ impl Cpu for Cpu68k {
                 }
                 Opr::RegList => {
                     let list = op.constant;
-                    let mut start = None;
-                    let mut end = None;
-                    let mut multi = false;
-                    let mut off = false;
-                    for i in 0..16 {
-                        if (list & (1 << i)) != 0 {
-                            end = Some(i & 7);
-                            if start.is_none() {
-                                start = Some(i & 7);
-                            }
-                            if i == 7 {
-                                off = true;
-                            }
-                        } else if start.is_some() {
-                            off = true;
-                        }
-                        if off {
-                            if multi {
-                                out.operand.push('/');
-                            }
-                            multi = true;
-                            if let Some(start) = start {
-                                out.operand.push_str(
-                                    format!("{}{}", if i & 8 == 8 { 'a' } else { 'd' }, start)
-                                        .as_str(),
-                                );
-                            }
-                            if start != end
-                                && let Some(end) = end
-                            {
-                                out.operand.push_str(
-                                    format!("-{}{}", if i & 8 == 8 { 'a' } else { 'd' }, end)
-                                        .as_str(),
-                                );
-                            }
-                            start = None;
-                            off = false;
-                        }
-                    }
+                    reg_list(list, &mut out);
                 }
             }
         }
@@ -535,7 +496,7 @@ impl Cpu for Cpu68k {
 
     fn target(&self, inst: &Instruction) -> Option<u32> {
         if let Some(sub) = inst.operands.as_any().downcast_ref::<Operands68k>() {
-            for opr in sub.operands.iter() {
+            for opr in &sub.operands {
                 if opr.oper_type == Opr::Imm || opr.oper_type == Opr::Abs {
                     return Some(opr.constant);
                 }
@@ -545,7 +506,7 @@ impl Cpu for Cpu68k {
     }
 }
 
-fn check_ea(mode: u8, var: u8) -> bool {
+const fn check_ea(mode: u8, var: u8) -> bool {
     if mode < 7 { true } else { var < 5 }
 }
 
@@ -554,7 +515,7 @@ fn parse_ea(
     mode: u8,
     var: u8,
     size: char,
-    file: &File,
+    handle: &Handle,
     offset: &mut usize,
     address: u32,
 ) {
@@ -582,15 +543,15 @@ fn parse_ea(
         5 => {
             op.oper_type = Opr::RegIndDisp;
             op.width = 0;
-            op.constant = u32::from(file.r16be(*offset));
+            op.constant = u32::from(handle.r16be(*offset));
             *offset += 2;
             op.reg = var + 8;
         }
         6 => {
             op.oper_type = Opr::RegIndex;
-            let imm = file.r16be(*offset);
+            let imm = handle.r16be(*offset);
             *offset += 2;
-            op.constant = (imm & 0xff) as i8 as i32 as u32;
+            op.constant = i32::from((imm & 0xff) as i8).cast_unsigned();
             op.reg = var + 8;
             op.index = (imm >> 12) as u8 & 0xf;
             op.width = if (imm & 0x800) == 0x800 { 2 } else { 1 };
@@ -598,25 +559,25 @@ fn parse_ea(
         7 => match var {
             0 => {
                 op.oper_type = Opr::Abs;
-                op.constant = u32::from(file.r16be(*offset));
+                op.constant = u32::from(handle.r16be(*offset));
                 *offset += 2;
             }
             1 => {
                 op.oper_type = Opr::Abs;
-                op.constant = file.r32be(*offset);
+                op.constant = handle.r32be(*offset);
                 *offset += 4;
             }
             2 => {
                 op.oper_type = Opr::Abs;
-                let rel = file.r16be(*offset) as i16 as i32;
+                let rel = i32::from(handle.r16be(*offset).cast_signed());
                 *offset += 2;
                 op.constant = address.wrapping_add_signed(rel) + 2;
             }
             3 => {
                 op.oper_type = Opr::RegIndDisp;
-                let imm = file.r16be(*offset);
+                let imm = handle.r16be(*offset);
                 *offset += 2;
-                let rel = (imm & 0xff) as i8 as i32;
+                let rel = i32::from((imm & 0xff) as i8);
                 op.constant = address.wrapping_add_signed(rel) + 2;
                 op.reg = (imm >> 12) as u8 & 0xf;
                 op.width = if (imm & 0x800) == 0x800 { 2 } else { 1 };
@@ -625,17 +586,17 @@ fn parse_ea(
                 op.oper_type = Opr::Imm;
                 op.constant = match size {
                     'b' => {
-                        let c = (file.r16be(*offset) & 0xff) as i8 as i32 as u32;
+                        let c = i32::from((handle.r16be(*offset) & 0xff) as i8).cast_unsigned();
                         *offset += 2;
                         c
                     }
                     'w' => {
-                        let c = u32::from(file.r16be(*offset));
+                        let c = u32::from(handle.r16be(*offset));
                         *offset += 2;
                         c
                     }
                     'l' => {
-                        let c = file.r32be(*offset);
+                        let c = handle.r32be(*offset);
                         *offset += 4;
                         c
                     }
@@ -648,9 +609,48 @@ fn parse_ea(
     }
 }
 
+fn reg_list(list: u32, out: &mut CpuLine) {
+    let mut start = None;
+    let mut end = None;
+    let mut multi = false;
+    let mut off = false;
+    for i in 0..16 {
+        if (list & (1 << i)) != 0 {
+            end = Some(i & 7);
+            if start.is_none() {
+                start = Some(i & 7);
+            }
+            if i == 7 {
+                off = true;
+            }
+        } else if start.is_some() {
+            off = true;
+        }
+        if off {
+            if multi {
+                out.operand.push('/');
+            }
+            multi = true;
+            if let Some(start) = start {
+                out.operand
+                    .push_str(format!("{}{}", if i & 8 == 8 { 'a' } else { 'd' }, start).as_str());
+            }
+            if start != end
+                && let Some(end) = end
+            {
+                out.operand
+                    .push_str(format!("-{}{}", if i & 8 == 8 { 'a' } else { 'd' }, end).as_str());
+            }
+            start = None;
+            off = false;
+        }
+    }
+}
 fn can_fourcc(val: u32) -> bool {
     for i in 0..4 {
-        let c = (val >> ((3 - i) * 8)) as u8;
+        let Ok(c) = u8::try_from((val >> ((3 - i) * 8)) & 0xff) else {
+            return false;
+        };
         if !(b' '..=b'~').contains(&c) {
             return false;
         }
@@ -662,8 +662,8 @@ fn to_fourcc(val: u32) -> String {
     let mut s = String::new();
     s.push('\'');
     for i in 0..4 {
-        let c = (val >> ((3 - i) * 8)) as u8;
-        s.push(c as char);
+        let c = char::try_from((val >> ((3 - i) * 8)) & 0xff).unwrap_or('?');
+        s.push(c);
     }
     s.push('\'');
     s
@@ -679,15 +679,15 @@ fn to_hex(val: u32, lookup: &dyn Fn(u32) -> Option<String>) -> String {
     } else if (val & !0xff) == !0xff {
         format!("$-{:02x}", !val + 1)
     } else if (val & !0xff) == 0 {
-        format!("${:02x}", val)
+        format!("${val:02x}")
     } else if (val & !0xffff) == !0xffff {
         format!("$-{:04x}", !val + 1)
     } else if (val & !0xffff) == 0 {
-        format!("${:04x}", val)
-    } else if (val as i32) < 0 {
+        format!("${val:04x}")
+    } else if val.cast_signed() < 0 {
         format!("$-{:08x}", !val + 1)
     } else {
-        format!("${:08x}", val)
+        format!("${val:08x}")
     }
 }
 

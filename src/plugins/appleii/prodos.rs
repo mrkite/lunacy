@@ -4,22 +4,23 @@ Apple II : ProDOS filesystem parser
 @copyright 2026 Sean Kasun
 
 */
+
 use crate::{
-    lunacy::{Context, File, Message},
+    lunacy::{Context, Handle, Message},
     plugins::{Plugin, appleii::prodos_files::get_prodos_type},
-    widgets::{TreeGrid, TreeRow},
+    widgets::{Blank, Label, Link, TreeGrid, TreeRow, Widget},
 };
 use num_format::{Locale, ToFormattedString};
-use std::cmp;
+use std::{cmp, rc::Rc};
 
 pub struct Prodos {}
 
 impl Plugin for Prodos {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Apple/Prodos"
     }
 
-    fn supports(&self, file: &File) -> Option<i16> {
+    fn supports(&self, file: &Handle) -> Option<i16> {
         if file.len() < 512 {
             return None;
         }
@@ -30,7 +31,7 @@ impl Plugin for Prodos {
             return Some(90);
         }
         // check sector format
-        if (file.len() > 1536 && (file.len() & 511) == 0) || file.len() == 256 * 13 * 35 {
+        if (file.len() > 1536 && file.len().trailing_zeros() >= 9) || file.len() == 256 * 13 * 35 {
             if is_prodos(file, 2 * 512) {
                 return Some(90);
             }
@@ -41,50 +42,29 @@ impl Plugin for Prodos {
         None
     }
 
-    fn create(
-        &self,
-        file: &File,
-        ctx: Context,
-    ) -> Result<Box<dyn crate::plugins::Widget>, &'static str> {
+    fn create(&self, file: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
         // should we slice the 2mg header off?
         let file = if file.r4(0) == "2IMG" {
             let len = (file.r32(0x14) * 512) as usize;
             let ofs = file.r32(0x18) as usize;
-            &File::new_from_array(file.read(ofs, len), file.get_name(), file.get_mime())
+            &Handle::new_from_array(file.read(ofs, len), file.get_name(), file.get_mime())
         } else {
             file
         };
-        let parser = Parser::new(file);
+        let parser = Rc::new(Parser::new(file));
         let root = parser.get_directory(2)?;
-        let mut treegrid = TreeGrid::new(
-            &["Filename", "Ext", "Data", "Res", "Date", "Type"],
-            &format!("prodos_{}", file.get_name()),
-            move |entry: &Entry| {
-                if let Some(id) = entry.data.as_ref() {
-                    ctx.post(match parser.load_file(id) {
-                        Ok(data) => Message::Open(File::new_from_array(&data, &id.name, &id.mime)),
-                        Err(err) => Message::Error(err.to_string()),
-                    });
-                }
-                if let Some(id) = entry.res.as_ref() {
-                    ctx.post(match parser.load_file(id) {
-                        Ok(data) => Message::Open(File::new_from_array(&data, &id.name, &id.mime)),
-                        Err(err) => Message::Error(err.to_string()),
-                    });
-                }
-            },
-        );
-        treegrid.add(root.render());
+        let mut treegrid = TreeGrid::new(&["Filename", "Ext", "Data", "Res", "Date", "Type"]);
+        treegrid.add(root.render(&parser), ctx);
         Ok(Box::new(treegrid))
     }
 }
 
-fn is_prodos(file: &File, start: usize) -> bool {
+fn is_prodos(file: &Handle, start: usize) -> bool {
     if file.r16(start) != 0 {
         return false;
     }
     let t = file.r8(start + 4);
-    if (t & 0xf0) != 0xf0 || (t & 0xf) == 0 {
+    if (t & 0xf0) != 0xf0 || t.trailing_zeros() >= 4 {
         return false;
     }
     let ch = file.r8(start + 5);
@@ -102,39 +82,84 @@ struct Entry {
     aux: u16,
     mod_date: u16,
     mod_time: u16,
-    children: Vec<Entry>,
+    children: Vec<Self>,
 }
 impl Entry {
-    fn render(&self) -> TreeRow<Entry> {
-        let mut row = TreeRow::new(self.clone());
-        row.push_column(&self.name);
-        row.push_column(&self.ext);
-        if let Some(data) = &self.data {
-            row.push_column(&data.len.to_formatted_string(&Locale::en));
+    fn render(&self, parser: &Rc<Parser>) -> TreeRow {
+        let mut row = TreeRow::default();
+        if self.data.is_some() || self.res.is_some() {
+            let entry = self.clone();
+            let parser = parser.clone();
+            let mime = if let Some(id) = entry.data.as_ref() {
+                &id.mime.clone()
+            } else if let Some(id) = entry.res.as_ref() {
+                &id.mime.clone()
+            } else {
+                ""
+            };
+            row.push_column(Link::new(&self.name, mime, move |ctx: &Context| {
+                if let Some(id) = entry.data.as_ref() {
+                    ctx.post(match parser.load_file(id) {
+                        Ok(data) => {
+                            Message::Open(Handle::new_from_array(&data, &id.name, &id.mime))
+                        }
+                        Err(err) => Message::Error(err.to_string()),
+                    });
+                } else if let Some(id) = entry.res.as_ref() {
+                    ctx.post(match parser.load_file(id) {
+                        Ok(data) => {
+                            Message::Open(Handle::new_from_array(&data, &id.name, &id.mime))
+                        }
+                        Err(err) => Message::Error(err.to_string()),
+                    });
+                }
+            }));
         } else {
-            row.push_column("");
+            row.push_column(Label::new(&self.name));
         }
-        if let Some(res) = self.res.as_ref().cloned() {
-            row.push_column(&res.len.to_formatted_string(&Locale::en));
+        row.push_column(Label::new(&self.ext));
+        if let Some(data) = &self.data {
+            row.push_column(Label::new(&data.len.to_formatted_string(&Locale::en)));
         } else {
-            row.push_column("");
+            row.push_column(Blank::default());
+        }
+        if let Some(res) = self.res.clone() {
+            if self.data.is_some() {
+                let parser = parser.clone();
+                row.push_column(Link::new(
+                    &res.len.to_formatted_string(&Locale::en),
+                    &res.mime.clone(),
+                    move |ctx: &Context| {
+                        ctx.post(match parser.load_file(&res) {
+                            Ok(data) => {
+                                Message::Open(Handle::new_from_array(&data, &res.name, &res.mime))
+                            }
+                            Err(err) => Message::Error(err.to_string()),
+                        });
+                    },
+                ));
+            } else {
+                row.push_column(Label::new(&res.len.to_formatted_string(&Locale::en)));
+            }
+        } else {
+            row.push_column(Blank::default());
         }
         if self.mod_date > 0 {
             let year = ((self.mod_date >> 9) & 0x7f) + 1900;
-            row.push_column(&format!(
+            row.push_column(Label::new(&format!(
                 "{:04}-{:02}-{:02} {:02}:{:02}",
                 year,
                 (self.mod_date >> 5) & 0xf,
                 self.mod_date & 0x1f,
                 (self.mod_time >> 8) & 0x1f,
                 self.mod_time & 0x3f
-            ));
+            )));
         } else {
-            row.push_column("");
+            row.push_column(Blank::default());
         }
-        row.push_column(&self.desc);
-        for child in self.children.iter() {
-            row.push_child(child.render());
+        row.push_column(Label::new(&self.desc));
+        for child in &self.children {
+            row.push_child(child.render(parser));
         }
         row
     }
@@ -143,11 +168,11 @@ impl Entry {
 struct Parser {
     sec_per_track: usize,
     prodos_order: bool,
-    file: File,
+    file: Handle,
 }
 
 impl Parser {
-    fn new(file: &File) -> Self {
+    fn new(file: &Handle) -> Self {
         let sec_per_track = if file.len() == 35 * 13 * 256 { 13 } else { 16 };
         let mut parser = Self {
             sec_per_track,
@@ -207,7 +232,7 @@ impl Parser {
         Ok(dir)
     }
 
-    fn get_file(&self, block: &File, ofs: usize, key: u16, storage: u8) -> Entry {
+    fn get_file(&self, block: &Handle, ofs: usize, key: u16, storage: u8) -> Entry {
         let mut entry = Entry {
             filetype: block.r8(ofs + 0x10),
             aux: block.r16(ofs + 0x1f),
@@ -249,16 +274,16 @@ impl Parser {
         entry
     }
 
-    fn get_block(&self, key: usize) -> File {
+    fn get_block(&self, key: usize) -> Handle {
         if self.prodos_order {
-            File::new_from_array(self.file.read(key * 512, 512), "", "")
+            Handle::new_from_array(self.file.read(key * 512, 512), "", "")
         } else {
             let track = key / (self.sec_per_track / 2);
             let block = key % (self.sec_per_track / 2);
             let mut data = vec![];
             data.extend_from_slice(self.read_sector(track, block * 2));
             data.extend_from_slice(self.read_sector(track, block * 2 + 1));
-            File::new_from_array(&data, "", "")
+            Handle::new_from_array(&data, "", "")
         }
     }
 

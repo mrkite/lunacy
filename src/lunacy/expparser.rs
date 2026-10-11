@@ -42,8 +42,8 @@ struct Op {
 
 struct Tree {
     op: Option<Box<Op>>,
-    left: Option<Box<Tree>>,
-    right: Option<Box<Tree>>,
+    left: Option<Box<Self>>,
+    right: Option<Box<Self>>,
     leaf: i32,
 }
 
@@ -79,7 +79,7 @@ impl Reader {
             .collect()
     }
 
-    fn consume(&mut self, token: &Token) {
+    const fn consume(&mut self, token: &Token) {
         self.pos += token.len;
     }
 
@@ -146,10 +146,10 @@ impl ExpParser {
             pos: 0,
         };
         let tree = self.parse(0, &mut reader)?;
-        if reader.pos != reader.chars.len() {
-            Err("expected operator")
-        } else {
+        if reader.pos == reader.chars.len() {
             Self::eval(tree)
+        } else {
+            Err("expected operator")
         }
     }
 
@@ -233,14 +233,14 @@ impl ExpParser {
         } else if reader.chars[token.start] == '(' {
             reader.consume(&token);
             let t = self.parse(0, reader)?;
-            if reader.chars[reader.pos] != ')' {
-                Err("expected ')'")
-            } else {
+            if reader.chars[reader.pos] == ')' {
                 reader.pos += 1;
                 Ok(t)
+            } else {
+                Err("expected ')'")
             }
         } else {
-            Ok(self.leaf(reader))
+            Ok(leaf(reader))
         }
     }
 
@@ -258,7 +258,7 @@ impl ExpParser {
             return token;
         }
         let mut token_pos = None;
-        for t in self.terminators.iter() {
+        for t in &self.terminators {
             if let Some(ofs) = reader.find(t)
                 && token_pos.is_none_or(|v| v >= ofs)
             {
@@ -279,40 +279,6 @@ impl ExpParser {
         token
     }
 
-    fn leaf(&self, reader: &mut Reader) -> Tree {
-        let mut base: i32 = 10;
-        let mut val: i32 = 0;
-        if reader.chars[reader.pos] == '$' {
-            reader.pos += 1;
-            base = 16;
-        } else if reader.chars[reader.pos] == '0'
-            && reader.pos + 1 < reader.chars.len()
-            && (reader.chars[reader.pos + 1] == 'b'
-                || reader.chars[reader.pos + 1] == 'o'
-                || reader.chars[reader.pos + 1] == 'x')
-        {
-            reader.pos += 1;
-            if reader.chars[reader.pos] == 'b' {
-                base = 2;
-            } else if reader.chars[reader.pos] == 'o' {
-                base = 8;
-            } else {
-                base = 16;
-            }
-            reader.pos += 1;
-        }
-        while let Some(v) = reader.in_base(base) {
-            val *= base;
-            val += v;
-        }
-        Tree {
-            op: None,
-            left: None,
-            right: None,
-            leaf: val,
-        }
-    }
-
     fn add(&mut self, token: &'static str, prec: i16, assoc: Assoc, id: Id) {
         if assoc == Assoc::Unary {
             self.unaries.insert(token, Op { prec, assoc, id });
@@ -324,5 +290,39 @@ impl ExpParser {
 
     fn add_terminator(&mut self, token: &'static str) {
         self.terminators.insert(token);
+    }
+}
+
+fn leaf(reader: &mut Reader) -> Tree {
+    let mut base: i32 = 10;
+    let mut val: i32 = 0;
+    if reader.chars[reader.pos] == '$' {
+        reader.pos += 1;
+        base = 16;
+    } else if reader.chars[reader.pos] == '0'
+        && reader.pos + 1 < reader.chars.len()
+        && (reader.chars[reader.pos + 1] == 'b'
+            || reader.chars[reader.pos + 1] == 'o'
+            || reader.chars[reader.pos + 1] == 'x')
+    {
+        reader.pos += 1;
+        if reader.chars[reader.pos] == 'b' {
+            base = 2;
+        } else if reader.chars[reader.pos] == 'o' {
+            base = 8;
+        } else {
+            base = 16;
+        }
+        reader.pos += 1;
+    }
+    while let Some(v) = reader.in_base(base) {
+        val *= base;
+        val += v;
+    }
+    Tree {
+        op: None,
+        left: None,
+        right: None,
+        leaf: val,
     }
 }

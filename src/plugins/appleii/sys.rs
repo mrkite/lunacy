@@ -6,7 +6,7 @@ Apple II : Sys executable
 
 use crate::{
     cpus::State6502,
-    lunacy::{Context, File},
+    lunacy::{Context, Handle},
     platforms::IIe,
     plugins::Plugin,
     widgets::Widget,
@@ -15,21 +15,23 @@ use crate::{
 pub struct Sys {}
 
 impl Plugin for Sys {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Apple/Sys"
     }
-    fn supports(&self, file: &File) -> Option<i16> {
-        let mime = file.get_mime();
+    fn supports(&self, handle: &Handle) -> Option<i16> {
+        let mime = handle.get_mime();
         if mime.starts_with("prodos/ff:") {
             Some(90)
         } else {
             None
         }
     }
-    fn create(&self, file: &File, _ctx: Context) -> Result<Box<dyn Widget>, &'static str> {
-        let mut iie = IIe::new(&format!("sys_{}", file.get_name()));
-        iie.add_section("main", 0x2000, file.read(0, file.len()));
-        iie.add_entry(State6502 { addr: 0x2000 })?;
+    fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
+        let mut iie = IIe::new(handle.get_name());
+        iie.add_section("main", 0x2000, handle.read(0, handle.len()));
+        iie.add_entry(State6502::new(0x2000))?;
+        iie.disassemble();
+        iie.jump(0x2000, ctx);
         Ok(Box::new(iie))
     }
 }

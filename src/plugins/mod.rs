@@ -21,31 +21,26 @@ mod tandy;
 mod vic20;
 mod zxspectrum;
 
-use crate::lunacy::File;
+use crate::lunacy::{Context, Handle};
 use crate::{
-    lunacy::Context,
     plugins::{ascii::ASCII, hex::Hex},
     widgets::Widget,
 };
-use lazy_static::lazy_static;
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, LazyLock, Mutex},
 };
 
 pub trait Plugin {
     fn get_name(&self) -> &str;
-    fn supports(&self, file: &File) -> Option<i16>;
-    fn create(&self, file: &File, ctx: Context) -> Result<Box<dyn Widget>, &'static str>;
+    fn supports(&self, handle: &Handle) -> Option<i16>;
+    fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str>;
 }
 
-lazy_static! {
-    static ref PLUGINS: Arc<Mutex<Vec<Box<dyn Plugin + Send>>>> = Arc::new(Mutex::new(Vec::new()));
-    static ref CHARSETS: Arc<Mutex<HashMap<String, &'static [char; 256]>>> =
-        Arc::new(Mutex::new(HashMap::new()));
-    static ref APIS: Arc<Mutex<HashMap<String, &'static [u8]>>> =
-        Arc::new(Mutex::new(HashMap::new()));
-}
+type PluginTable = Arc<Mutex<Vec<Box<dyn Plugin + Send>>>>;
+static PLUGINS: LazyLock<PluginTable> = LazyLock::new(|| Arc::new(Mutex::new(Vec::new())));
+type CharsetTable = Arc<Mutex<HashMap<String, &'static [char; 256]>>>;
+static CHARSETS: LazyLock<CharsetTable> = LazyLock::new(|| Arc::new(Mutex::new(HashMap::new())));
 
 pub fn register_plugin(plugin: impl Plugin + 'static + Send) {
     let mut registry = PLUGINS.lock().unwrap();

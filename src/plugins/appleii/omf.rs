@@ -6,7 +6,7 @@ Apple IIgs : OMF executable or library
 
 use crate::{
     cpus::State65816,
-    lunacy::{Context, File},
+    lunacy::{Context, Handle},
     platforms::IIgs,
     plugins::Plugin,
     widgets::Widget,
@@ -16,12 +16,12 @@ use std::collections::HashMap;
 pub struct Omf {}
 
 impl Plugin for Omf {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Apple/OMF"
     }
 
-    fn supports(&self, file: &File) -> Option<i16> {
-        let mime = file.get_mime();
+    fn supports(&self, handle: &Handle) -> Option<i16> {
+        let mime = handle.get_mime();
         if mime.starts_with("prodos/b3:") || mime.starts_with("prodos/ba:") {
             Some(90)
         } else {
@@ -29,27 +29,29 @@ impl Plugin for Omf {
         }
     }
 
-    fn create(&self, file: &File, ctx: Context) -> Result<Box<dyn Widget>, &'static str> {
-        let mut iigs = IIgs::new(&format!("omf_{}", file.get_name()));
-        let parser = Parser::new(file);
+    fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
+        let mut iigs = IIgs::new(handle.get_name());
+        let parser = Parser::new(handle);
         let segments = parser.parse()?;
-        for seg in segments.iter() {
+        for seg in &segments {
             iigs.add_section(&seg.name, seg.mapped, &seg.data);
         }
-        let mut top = 0;
-        for seg in segments.iter() {
-            if seg.kind & 0x1f == 0 {
-                if top == 0 {
-                    top = seg.mapped + seg.entry;
+        let mut top = None;
+        for seg in &segments {
+            if seg.kind.trailing_zeros() >= 5 {
+                if top.is_none() {
+                    top = Some(seg.mapped + seg.entry);
                 }
                 // code
-                iigs.add_entry(State65816 {
-                    addr: seg.mapped + seg.entry,
-                    ..Default::default()
-                })?;
+                iigs.add_entry(State65816::new(seg.mapped + seg.entry, 0))?;
             }
         }
-        iigs.jump(top as usize, ctx);
+        iigs.disassemble();
+        if let Some(top) = top
+            && let Ok(addr) = usize::try_from(top)
+        {
+            iigs.jump(addr, ctx);
+        }
         Ok(Box::new(iigs))
     }
 }
@@ -85,11 +87,11 @@ struct Segment {
 }
 
 impl Segment {
-    fn is_dps(&self) -> bool {
+    const fn is_dps(&self) -> bool {
         self.kind & 0x1f == 0x12
     }
 
-    fn is_jump(&self) -> bool {
+    const fn is_jump(&self) -> bool {
         self.kind & 0x1f == 0x02
     }
 
@@ -125,7 +127,7 @@ impl Segment {
             for pair in memory.chunks(2) {
                 let base = pair[0];
                 // skip special?
-                let base = if (self.kind & 0x1f) != 0x12 && (base & 0xff0000) == 0 {
+                let base = if (self.kind & 0x1f) != 0x12 && (base & 0xff_0000) == 0 {
                     base + 0x10000 // not in bank 0
                 } else {
                     base
@@ -164,48 +166,50 @@ impl Segment {
 }
 
 struct Parser {
-    file: File,
+    handle: Handle,
 }
 
 impl Parser {
-    fn new(file: &File) -> Self {
-        Self { file: file.clone() }
+    fn new(handle: &Handle) -> Self {
+        Self {
+            handle: handle.clone(),
+        }
     }
 
     fn parse(&self) -> Result<Vec<Segment>, &'static str> {
-        let mut segments = self.load_segments()?;
-        self.map_segments(&mut segments)?;
+        let mut segments = self.load_segments();
+        map_segments(&mut segments)?;
         self.reloc_segments(&mut segments)?;
         segments.sort();
         Ok(segments)
     }
 
-    fn load_segments(&self) -> Result<Vec<Segment>, &'static str> {
+    fn load_segments(&self) -> Vec<Segment> {
         let mut ofs = 0;
         let mut segments = vec![];
-        while ofs < self.file.len() {
+        while ofs < self.handle.len() {
             let mut seg = Segment {
-                bytecnt: self.file.r32(ofs),
-                resspc: self.file.r32(ofs + 4),
-                length: self.file.r32(ofs + 8),
-                lablen: self.file.r8(ofs + 0xd),
-                numlen: self.file.r8(ofs + 0xe),
-                banksize: self.file.r32(ofs + 0x10),
-                kind: self.file.r16(ofs + 0x14),
+                bytecnt: self.handle.r32(ofs),
+                resspc: self.handle.r32(ofs + 4),
+                length: self.handle.r32(ofs + 8),
+                lablen: self.handle.r8(ofs + 0xd),
+                numlen: self.handle.r8(ofs + 0xe),
+                banksize: self.handle.r32(ofs + 0x10),
+                kind: self.handle.r16(ofs + 0x14),
                 // unknown word at +16
-                org: self.file.r32(ofs + 0x18),
-                align: self.file.r32(ofs + 0x1c),
+                org: self.handle.r32(ofs + 0x18),
+                align: self.handle.r32(ofs + 0x1c),
                 // byte ordering at +20
-                segnum: self.file.r16(ofs + 0x22),
-                entry: self.file.r32(ofs + 0x24),
+                segnum: self.handle.r16(ofs + 0x22),
+                entry: self.handle.r32(ofs + 0x24),
                 ..Default::default()
             };
-            let kind = u16::from(self.file.r8(ofs + 0xc));
-            let version = self.file.r8(ofs + 0xf);
-            let dispname = self.file.r16(ofs + 0x28);
-            let dispdata = self.file.r16(ofs + 0x2a);
+            let kind = u16::from(self.handle.r8(ofs + 0xc));
+            let version = self.handle.r8(ofs + 0xf);
+            let dispname = self.handle.r16(ofs + 0x28);
+            let dispdata = self.handle.r16(ofs + 0x2a);
             let skip = if seg.lablen == 0 {
-                seg.lablen = self.file.r8(ofs + usize::from(dispname) + 0xa);
+                seg.lablen = self.handle.r8(ofs + usize::from(dispname) + 0xa);
                 if seg.lablen == 0 {
                     seg.lablen = 10;
                     0
@@ -221,7 +225,7 @@ impl Parser {
             // it is followed by the segname, which is the actual segment name.
 
             // first check if loadname is valid
-            seg.name = self.file.rs(
+            seg.name = self.handle.rs(
                 ofs + usize::from(dispname) + skip,
                 usize::from(seg.lablen),
                 "",
@@ -236,42 +240,7 @@ impl Parser {
             ofs += seg.bytecnt as usize;
             segments.push(seg);
         }
-        Ok(segments)
-    }
-
-    fn map_segments(&self, segments: &mut Vec<Segment>) -> Result<(), &'static str> {
-        // use a memory map that denotes runs of available ram
-        let mut memory = vec![
-            0x300,    // min
-            0x7f0000, // max
-        ];
-        // first map any segments that know where they belong
-        for seg in segments.iter_mut() {
-            seg.map(&mut memory, false)?;
-            memory.sort();
-        }
-
-        // now map everything else by first fit
-        for seg in segments.iter_mut() {
-            seg.map(&mut memory, true)?;
-            memory.sort();
-        }
-
-        // create a direct page if it doesn't exist
-        let mut found = false;
-        for seg in segments.iter() {
-            if seg.is_dps() {
-                found = true;
-            }
-        }
-        if !found {
-            let mut seg: Segment = Default::default();
-            seg.init_dps();
-            seg.map(&mut memory, true)?;
-            segments.push(seg);
-        }
-
-        Ok(())
+        segments
     }
 
     fn reloc_segments(&self, segments: &mut [Segment]) -> Result<(), &'static str> {
@@ -286,142 +255,32 @@ impl Parser {
             let mut ofs = seg.offset;
             let mut done = false;
             while !done {
-                let opcode = self.file.r8(ofs);
+                let opcode = self.handle.r8(ofs);
                 ofs += 1;
                 match opcode {
                     seg_op::DONE => done = true,
-                    seg_op::RELOC => {
-                        let num_bytes = self.file.r8(ofs);
-                        let bit_shift = self.file.r8(ofs + 1) as i8;
-                        let offset = self.file.r32(ofs + 2) as usize;
-                        let sub_offset = self.file.r32(ofs + 6) + seg.mapped;
-                        ofs += 10;
-                        let sub_offset = if bit_shift < 0 {
-                            sub_offset >> -bit_shift
-                        } else {
-                            sub_offset << bit_shift
-                        };
-                        patch(&mut data, offset, num_bytes, sub_offset);
-                    }
-                    seg_op::INTERSEG => {
-                        let num_bytes = self.file.r8(ofs);
-                        let bit_shift = self.file.r8(ofs + 1) as i8;
-                        let offset = self.file.r32(ofs + 2) as usize;
-                        // filenum
-                        let segnum = self.file.r16(ofs + 8);
-                        let sub_offset = self.file.r32(ofs + 10);
-                        ofs += 14;
-                        let sub_offset = if let Some(remap) = seg_map.get(&segnum) {
-                            sub_offset + remap
-                        } else {
-                            sub_offset
-                        };
-                        let sub_offset = if bit_shift < 0 {
-                            sub_offset >> -bit_shift
-                        } else {
-                            sub_offset << bit_shift
-                        };
-                        patch(&mut data, offset, num_bytes, sub_offset);
-                    }
+                    seg_op::RELOC => ofs = self.parse_reloc(ofs, seg.mapped, &mut data),
+                    seg_op::INTERSEG => ofs = self.parse_interseg(ofs, &seg_map, &mut data),
                     seg_op::DS => {
-                        pc += self.file.r32(ofs);
+                        pc += self.handle.r32(ofs);
                         ofs += 4;
                     }
                     seg_op::LCONST => {
-                        let count = self.file.r32(ofs) as usize;
+                        let count = self.handle.r32(ofs) as usize;
                         ofs += 4;
-                        let v = self.file.read(ofs, count);
+                        let v = self.handle.read(ofs, count);
                         ofs += count;
                         let start = (pc - seg.mapped) as usize;
                         data[start..start + count].copy_from_slice(v);
-                        pc += count as u32;
+                        pc += u32::try_from(count).unwrap_or_default();
                     }
-                    seg_op::CRELOC => {
-                        let num_bytes = self.file.r8(ofs);
-                        let bit_shift = self.file.r8(ofs + 1) as i8;
-                        let offset = usize::from(self.file.r16(ofs + 2));
-                        let sub_offset = u32::from(self.file.r16(ofs + 4)) + seg.mapped;
-                        ofs += 6;
-                        let sub_offset = if bit_shift < 0 {
-                            sub_offset >> -bit_shift
-                        } else {
-                            sub_offset << bit_shift
-                        };
-                        patch(&mut data, offset, num_bytes, sub_offset);
-                    }
-                    seg_op::CINTERSEG => {
-                        let num_bytes = self.file.r8(ofs);
-                        let bit_shift = self.file.r8(ofs + 1) as i8;
-                        let offset = usize::from(self.file.r16(ofs + 2));
-                        let segnum = u16::from(self.file.r8(ofs + 4));
-                        let sub_offset = u32::from(self.file.r16(ofs + 5));
-                        ofs += 7;
-                        let sub_offset = if let Some(remap) = seg_map.get(&segnum) {
-                            sub_offset + remap
-                        } else {
-                            sub_offset
-                        };
-                        let sub_offset = if bit_shift < 0 {
-                            sub_offset >> -bit_shift
-                        } else {
-                            sub_offset << bit_shift
-                        };
-                        patch(&mut data, offset, num_bytes, sub_offset);
-                    }
-                    seg_op::SUPER => {
-                        let super_len = self.file.r32(ofs) as usize + ofs + 4;
-                        let super_type = self.file.r8(ofs + 4);
-                        ofs += 5;
-                        let mut super_page = 0;
-                        while ofs < super_len {
-                            let num_ofs = self.file.r8(ofs);
-                            ofs += 1;
-                            if num_ofs & 0x80 != 0 {
-                                super_page += 256 * usize::from(num_ofs & 0x7f);
-                                continue;
-                            }
-                            for _ in 0..=num_ofs {
-                                let offset = super_page | usize::from(self.file.r8(ofs));
-                                ofs += 1;
-                                let mut subofs = offset;
-                                let mut sub_offset =
-                                    u32::from(data[subofs]) | u32::from(data[subofs + 1]) << 8;
-                                subofs += 2;
-                                let num_bytes = if super_type == 0 || super_type == 1 {
-                                    sub_offset += seg.mapped;
-                                    super_type + 2
-                                } else if super_type < 14 {
-                                    // INTERSEG1-12
-                                    let segnum = u16::from(data[subofs]);
-                                    if let Some(sub) = seg_map.get(&segnum) {
-                                        sub_offset += sub;
-                                    }
-                                    3
-                                } else if super_type < 26 {
-                                    // INTERSEG13-14
-                                    let segnum = u16::from(super_type - 13);
-                                    if let Some(sub) = seg_map.get(&segnum) {
-                                        sub_offset += sub;
-                                    }
-                                    2
-                                } else {
-                                    // INTERSEG25-36
-                                    let segnum = u16::from(super_type - 25);
-                                    if let Some(sub) = seg_map.get(&segnum) {
-                                        sub_offset += sub;
-                                    }
-                                    sub_offset >>= 16;
-                                    2
-                                };
-                                patch(&mut data, offset, num_bytes, sub_offset);
-                            }
-                            super_page += 256;
-                        }
-                    }
+                    seg_op::CRELOC => ofs = self.parse_creloc(ofs, seg.mapped, &mut data),
+                    seg_op::CINTERSEG => ofs = self.parse_cinterseg(ofs, &seg_map, &mut data),
+                    seg_op::SUPER => ofs = self.parse_super(ofs, seg.mapped, &seg_map, &mut data),
                     opcode => {
                         if opcode < 0xe0 {
                             let count = usize::from(opcode);
-                            let v = self.file.read(ofs, count);
+                            let v = self.handle.read(ofs, count);
                             ofs += count;
                             let start = (pc - seg.mapped) as usize;
                             data[start..start + count].copy_from_slice(v);
@@ -440,11 +299,9 @@ impl Parser {
                         | u32::from(data[i + 7]) << 8
                         | u32::from(data[i + 8]) << 16
                         | u32::from(data[i + 9]) << 24;
-                    let sub_offset = if let Some(sub) = seg_map.get(&segnum) {
-                        sub_offset + sub
-                    } else {
-                        sub_offset
-                    };
+                    let sub_offset = seg_map
+                        .get(&segnum)
+                        .map_or(sub_offset, |sub| sub_offset + sub);
                     patch(&mut data, i + 11, 3, sub_offset);
                 }
             }
@@ -452,6 +309,163 @@ impl Parser {
         }
         Ok(())
     }
+
+    fn parse_reloc(&self, ofs: usize, mapped: u32, data: &mut [u8]) -> usize {
+        let num_bytes = self.handle.r8(ofs);
+        let bit_shift = self.handle.r8(ofs + 1).cast_signed();
+        let offset = self.handle.r32(ofs + 2) as usize;
+        let sub_offset = self.handle.r32(ofs + 6) + mapped;
+        let sub_offset = if bit_shift < 0 {
+            sub_offset >> -bit_shift
+        } else {
+            sub_offset << bit_shift
+        };
+        patch(data, offset, num_bytes, sub_offset);
+        ofs + 10
+    }
+
+    fn parse_creloc(&self, ofs: usize, mapped: u32, data: &mut [u8]) -> usize {
+        let num_bytes = self.handle.r8(ofs);
+        let bit_shift = self.handle.r8(ofs + 1).cast_signed();
+        let offset = usize::from(self.handle.r16(ofs + 2));
+        let sub_offset = u32::from(self.handle.r16(ofs + 4)) + mapped;
+        let sub_offset = if bit_shift < 0 {
+            sub_offset >> -bit_shift
+        } else {
+            sub_offset << bit_shift
+        };
+        patch(data, offset, num_bytes, sub_offset);
+        ofs + 6
+    }
+
+    fn parse_interseg(&self, ofs: usize, seg_map: &HashMap<u16, u32>, data: &mut [u8]) -> usize {
+        let num_bytes = self.handle.r8(ofs);
+        let bit_shift = self.handle.r8(ofs + 1).cast_signed();
+        let offset = self.handle.r32(ofs + 2) as usize;
+        // filenum
+        let segnum = self.handle.r16(ofs + 8);
+        let sub_offset = self.handle.r32(ofs + 10);
+        let sub_offset = seg_map
+            .get(&segnum)
+            .map_or(sub_offset, |remap| sub_offset + remap);
+        let sub_offset = if bit_shift < 0 {
+            sub_offset >> -bit_shift
+        } else {
+            sub_offset << bit_shift
+        };
+        patch(data, offset, num_bytes, sub_offset);
+        ofs + 14
+    }
+
+    fn parse_cinterseg(&self, ofs: usize, seg_map: &HashMap<u16, u32>, data: &mut [u8]) -> usize {
+        let num_bytes = self.handle.r8(ofs);
+        let bit_shift = self.handle.r8(ofs + 1).cast_signed();
+        let offset = usize::from(self.handle.r16(ofs + 2));
+        let segnum = u16::from(self.handle.r8(ofs + 4));
+        let sub_offset = u32::from(self.handle.r16(ofs + 5));
+        let sub_offset = seg_map
+            .get(&segnum)
+            .map_or(sub_offset, |remap| sub_offset + remap);
+        let sub_offset = if bit_shift < 0 {
+            sub_offset >> -bit_shift
+        } else {
+            sub_offset << bit_shift
+        };
+        patch(data, offset, num_bytes, sub_offset);
+        ofs + 7
+    }
+
+    fn parse_super(
+        &self,
+        ofs: usize,
+        mapped: u32,
+        seg_map: &HashMap<u16, u32>,
+        data: &mut [u8],
+    ) -> usize {
+        let super_len = self.handle.r32(ofs) as usize + ofs + 4;
+        let super_type = self.handle.r8(ofs + 4);
+        let mut ofs = ofs + 5;
+        let mut super_page = 0;
+        while ofs < super_len {
+            let num_ofs = self.handle.r8(ofs);
+            ofs += 1;
+            if num_ofs & 0x80 != 0 {
+                super_page += 256 * usize::from(num_ofs & 0x7f);
+                continue;
+            }
+            for _ in 0..=num_ofs {
+                let offset = super_page | usize::from(self.handle.r8(ofs));
+                ofs += 1;
+                let mut subofs = offset;
+                let mut sub_offset = u32::from(data[subofs]) | u32::from(data[subofs + 1]) << 8;
+                subofs += 2;
+                let num_bytes = if super_type == 0 || super_type == 1 {
+                    sub_offset += mapped;
+                    super_type + 2
+                } else if super_type < 14 {
+                    // INTERSEG1-12
+                    let segnum = u16::from(data[subofs]);
+                    if let Some(sub) = seg_map.get(&segnum) {
+                        sub_offset += sub;
+                    }
+                    3
+                } else if super_type < 26 {
+                    // INTERSEG13-14
+                    let segnum = u16::from(super_type - 13);
+                    if let Some(sub) = seg_map.get(&segnum) {
+                        sub_offset += sub;
+                    }
+                    2
+                } else {
+                    // INTERSEG25-36
+                    let segnum = u16::from(super_type - 25);
+                    if let Some(sub) = seg_map.get(&segnum) {
+                        sub_offset += sub;
+                    }
+                    sub_offset >>= 16;
+                    2
+                };
+                patch(data, offset, num_bytes, sub_offset);
+            }
+            super_page += 256;
+        }
+        ofs
+    }
+}
+
+fn map_segments(segments: &mut Vec<Segment>) -> Result<(), &'static str> {
+    // use a memory map that denotes runs of available ram
+    let mut memory = vec![
+        0x300,     // min
+        0x7f_0000, // max
+    ];
+    // first map any segments that know where they belong
+    for seg in segments.iter_mut() {
+        seg.map(&mut memory, false)?;
+        memory.sort_unstable();
+    }
+
+    // now map everything else by first fit
+    for seg in segments.iter_mut() {
+        seg.map(&mut memory, true)?;
+        memory.sort_unstable();
+    }
+
+    // create a direct page if it doesn't exist
+    let mut found = false;
+    for seg in segments.iter() {
+        if seg.is_dps() {
+            found = true;
+        }
+    }
+    if !found {
+        let mut seg = Segment::default();
+        seg.init_dps();
+        seg.map(&mut memory, true)?;
+        segments.push(seg);
+    }
+
+    Ok(())
 }
 
 fn patch(data: &mut [u8], offset: usize, num_bytes: u8, value: u32) {

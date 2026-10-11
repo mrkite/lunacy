@@ -6,147 +6,173 @@ General BASIC viewer
 */
 
 use crate::{
-    lunacy::{Context, gestalt},
-    widgets::Widget,
+    lunacy::{Context, Message, gestalt},
+    screen::{Color, Point, Rect, Screen},
+    widgets::{KeyMap, Scroll, Widget},
 };
-use eframe::egui::{self, Color32, Galley, Key, Pos2, Rect, Sense};
-use std::{cmp, io::Write, sync::Arc};
+use crossterm::event::{KeyCode, KeyModifiers};
+use std::io::Write;
 
-const TEXT_COLOR: Color32 = Color32::from_rgb(0xba, 0x9c, 0x7e);
+const FG: Color = Some(0xba_9c_7e);
+const BG: Color = Some(0x00_00_01);
 
 struct Line {
-    number: usize,
+    number: i32,
     text: String,
 }
-struct RenderedLine {
-    height: f32,
-    number: usize,
-    text: Arc<Galley>,
-}
 
+#[derive(Default)]
 pub struct Basic {
-    id_salt: String,
+    bounds: Rect,
+    scroll: Scroll,
     lines: Vec<Line>,
-    wrapped: Vec<RenderedLine>,
-    flown_width: f32,
-    flown_height: f32,
+    wrapped: Vec<Line>,
+    flown_width: i32,
     cursor: usize,
-    jump_cursor: Option<usize>,
     search: Option<String>,
 }
 
 impl Basic {
-    pub fn new(id_salt: &str) -> Self {
-        Self {
-            id_salt: id_salt.to_string(),
-            lines: vec![],
-            wrapped: vec![],
-            flown_width: 0.0,
-            flown_height: 0.0,
-            cursor: 0,
-            jump_cursor: None,
-            search: None,
-        }
-    }
-
-    pub fn add(&mut self, line_num: usize, line: String) {
+    pub fn add(&mut self, line_num: i32, line: &str) {
         self.lines.push(Line {
             number: line_num,
-            text: format!("{:-8} {}", line_num, line),
+            text: format!("{line_num:-8} {line}"),
         });
     }
 
-    fn reflow(&mut self, ui: &mut egui::Ui) {
-        let font_id = egui::TextStyle::Monospace.resolve(ui.style());
-        self.wrapped.clear();
-        self.flown_height = 0.0;
-        for line in self.lines.iter() {
-            let text = ui.painter().layout(
-                line.text.clone(),
-                font_id.clone(),
-                Color32::PLACEHOLDER,
-                self.flown_width,
-            );
-            let height = text.size().y;
-            self.flown_height += height;
-            self.wrapped.push(RenderedLine {
-                number: line.number,
-                height,
-                text,
-            });
+    fn scroll_to_cursor(&mut self) {
+        if !self.lines.is_empty() {
+            self.cursor = self.cursor.clamp(0, self.wrapped.len().saturating_sub(1));
+            if let Ok(cursor) = i32::try_from(self.cursor) {
+                if cursor < self.scroll.get() {
+                    self.scroll.set(cursor);
+                }
+                let page = self.bounds.h().saturating_sub(1);
+                if cursor >= self.scroll.get() + page {
+                    self.scroll.set(cursor.saturating_sub(page));
+                }
+            }
+        }
+    }
+
+    fn flow(&mut self) {
+        self.flown_width = self.bounds.w();
+        if self.flown_width != 0 {
+            self.wrapped.clear();
+            let flown = self.flown_width;
+
+            for line in &self.lines {
+                let mut wrap = String::default();
+                let mut x = 0;
+                for ch in line.text.chars() {
+                    wrap.push(ch);
+                    x += 1;
+                    if x == flown {
+                        self.wrapped.push(Line {
+                            number: line.number,
+                            text: wrap.clone(),
+                        });
+                        wrap.clear();
+                        x = 0;
+                    }
+                }
+                self.wrapped.push(Line {
+                    number: line.number,
+                    text: wrap,
+                });
+            }
+        }
+        self.scroll.set_range(
+            0,
+            i32::try_from(self.wrapped.len()).unwrap_or(i32::MAX),
+            self.bounds.h(),
+        );
+    }
+
+    fn status(&self, ctx: &Context) {
+        if let Some(line) = self.lines.get(self.cursor) {
+            ctx.post(Message::Status(format!("Line {}", line.number)));
         }
     }
 }
 
 impl Widget for Basic {
-    fn ui(&mut self, ui: &mut egui::Ui, _ctx: Context) {
-        egui::ScrollArea::vertical()
-            .id_salt(&self.id_salt)
-            .show_viewport(ui, |ui, visible| {
-                let baserect = ui.available_rect_before_wrap();
-                if baserect.width() != self.flown_width {
-                    self.flown_width = baserect.width();
-                    self.reflow(ui);
-                }
-                let minrect = baserect.with_max_y(baserect.top() + self.flown_height);
-                ui.allocate_rect(minrect, Sense::hover());
-
-                ui.input(|i| {
-                    if i.key_pressed(Key::ArrowUp) || i.key_pressed(Key::K) {
-                        self.jump_cursor = Some(self.cursor.saturating_sub(1));
-                    }
-                    if i.key_pressed(Key::ArrowDown) || i.key_pressed(Key::J) {
-                        self.jump_cursor = Some(cmp::min(
-                            self.cursor.saturating_add(1),
-                            self.wrapped.len().saturating_sub(1),
-                        ));
-                    }
-                    if i.key_pressed(Key::PageUp) || (i.key_pressed(Key::K) && i.modifiers.shift) {
-                        self.jump_cursor = Some(self.cursor.saturating_sub(20));
-                    }
-                    if i.key_pressed(Key::PageDown) || (i.key_pressed(Key::J) && i.modifiers.shift)
-                    {
-                        self.jump_cursor = Some(cmp::min(
-                            self.cursor.saturating_add(20),
-                            self.wrapped.len().saturating_sub(1),
-                        ));
-                    }
-                });
-
-                let mut pos = baserect.left_top();
-                for (idx, galley) in self.wrapped.iter().enumerate() {
-                    let rect = Rect {
-                        min: pos,
-                        max: Pos2 {
-                            x: baserect.right(),
-                            y: pos.y + galley.height,
-                        },
-                    };
-
-                    if self.jump_cursor.take_if(|cursor| *cursor == idx).is_some() {
-                        self.cursor = idx;
-                        ui.scroll_to_rect(rect, None);
-                    }
-
-                    if pos.y - baserect.top() < visible.bottom()
-                        && pos.y + galley.height - baserect.top() > visible.top()
-                    {
-                        if self.cursor == idx {
-                            ui.painter().rect_filled(rect, 0, TEXT_COLOR);
-                            ui.painter()
-                                .galley(pos, galley.text.clone(), Color32::WHITE);
-                        } else {
-                            ui.painter().galley(pos, galley.text.clone(), TEXT_COLOR);
-                        }
-                    }
-                    pos.y += galley.height;
-                }
-            });
+    fn layout(&mut self, constraint: &Rect) {
+        let without_scroll = constraint.remove_scroll();
+        if self.bounds == without_scroll {
+            // only reflow if we need to
+            return;
+        }
+        self.bounds = without_scroll;
+        self.scroll.layout(&constraint.to_scroll());
+        self.flow();
     }
 
-    fn status(&self, ui: &mut egui::Ui) {
-        if let Some(line) = self.lines.get(self.cursor) {
-            ui.label(format!("Line {}", line.number));
+    fn draw(&self, s: &mut Screen, origin: &Point, clip: &Rect) {
+        self.scroll.draw(s, origin, clip);
+        let range = clip.intersect(&self.bounds.offset(origin));
+        let top = self.scroll.get();
+
+        for y in range.t..range.b {
+            let row = (y - self.bounds.t) + top;
+            if let Ok(idx) = usize::try_from(row)
+                && let Some(line) = self.wrapped.get(idx)
+            {
+                let (fg, bg) = if idx == self.cursor {
+                    (BG, FG)
+                } else {
+                    (FG, BG)
+                };
+                let mut x = self.bounds.l;
+                for ch in line.text.chars() {
+                    if x >= range.l && x < range.r {
+                        s.draw(x, y, ch, fg, bg);
+                    }
+                    x += 1;
+                }
+                while x >= range.l && x < range.r {
+                    s.draw(x, y, ' ', fg, bg);
+                    x += 1;
+                }
+            } else {
+                for x in range.l..range.r {
+                    s.draw(x, y, ' ', FG, BG);
+                }
+            }
+        }
+    }
+
+    fn key(&mut self, code: KeyCode, _modifiers: KeyModifiers, ctx: &Context) -> bool {
+        let page = isize::try_from(self.bounds.h().saturating_sub(1)).unwrap_or(1);
+
+        match code {
+            KeyCode::Up | KeyCode::Char('k') => self.cursor = self.cursor.saturating_sub(1),
+            KeyCode::Down | KeyCode::Char('j') => self.cursor = self.cursor.saturating_add(1),
+            KeyCode::PageUp | KeyCode::Char('K') => {
+                self.cursor = self.cursor.saturating_sub_signed(page);
+            }
+            KeyCode::PageDown | KeyCode::Char('J') => {
+                self.cursor = self.cursor.saturating_add_signed(page);
+            }
+            KeyCode::Home => self.cursor = 0,
+            KeyCode::End => self.cursor = self.wrapped.len(),
+            _ => return false,
+        }
+        self.scroll_to_cursor();
+        self.status(ctx);
+        true
+    }
+
+    fn mouse(&mut self, pt: &Point, is_down: bool, ctx: &Context) -> bool {
+        if is_down && self.bounds.inside(pt.x, pt.y) {
+            if let Ok(cursor) = usize::try_from(self.scroll.get() + pt.y - self.bounds.t) {
+                self.cursor = cursor;
+                self.scroll_to_cursor();
+                self.status(ctx);
+            }
+            true
+        } else {
+            self.scroll.mouse(pt, is_down, ctx)
         }
     }
 
@@ -158,56 +184,66 @@ impl Widget for Basic {
         mask
     }
 
-    fn jump(&mut self, to: usize, _ctx: Context) {
-        self.jump_cursor = Some(0);
+    fn jump(&mut self, to: usize, ctx: &Context) {
+        let addr = u32::try_from(to).unwrap_or_default().cast_signed();
+        self.cursor = 0;
         for (idx, line) in self.wrapped.iter().enumerate() {
-            self.jump_cursor = Some(idx);
-            if line.number >= to {
-                return;
+            self.cursor = idx;
+            if line.number >= addr {
+                break;
             }
         }
+        self.scroll_to_cursor();
+        self.status(ctx);
     }
 
-    fn find(&mut self, key: &str, ctx: Context) {
+    fn find(&mut self, key: &str, ctx: &Context) {
         self.search = Some(key.to_string());
         self.find_next(ctx);
     }
 
-    fn find_next(&mut self, _ctx: Context) {
+    fn find_next(&mut self, ctx: &Context) {
         if let Some(search) = self.search.as_ref() {
-            for cursor in self.cursor + 1..self.lines.len() {
-                if let Some(row) = self.lines.get(cursor)
+            for cursor in self.cursor.saturating_add(1)..self.wrapped.len() {
+                if let Some(row) = self.wrapped.get(cursor)
                     && row.text.contains(search)
                 {
-                    self.jump_cursor = Some(cursor);
+                    self.cursor = cursor;
+                    self.scroll_to_cursor();
+                    self.status(ctx);
                     return;
                 }
             }
         }
-        // not found
+        ctx.post(Message::NotFound);
     }
 
-    fn find_prev(&mut self, _ctx: Context) {
+    fn find_prev(&mut self, ctx: &Context) {
         if let Some(search) = self.search.as_ref() {
             for cursor in (0..self.cursor.saturating_sub(1)).rev() {
                 if let Some(row) = self.lines.get(cursor)
                     && row.text.contains(search)
                 {
-                    self.jump_cursor = Some(cursor);
+                    self.cursor = cursor;
+                    self.scroll_to_cursor();
+                    self.status(ctx);
                     return;
                 }
             }
         }
-        // not found
+        ctx.post(Message::NotFound);
     }
 
-    fn save(&self, out: &mut std::fs::File, _ctx: Context) -> Result<(), std::io::Error> {
-        for line in self.lines.iter() {
-            let raw = line.text.as_bytes();
-            out.write_all(raw)?;
-            let nl = "\n".as_bytes();
-            out.write_all(nl)?;
+    fn export(&self, out: &mut std::fs::File) -> Result<(), std::io::Error> {
+        for line in &self.lines {
+            writeln!(out, "{}", line.text)?;
         }
         Ok(())
+    }
+
+    fn get_key_map(&self) -> KeyMap {
+        let mut m = KeyMap::default();
+        m.insert("a↓↑|jk", "scroll");
+        m
     }
 }

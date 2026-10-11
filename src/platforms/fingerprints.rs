@@ -4,35 +4,33 @@ Custom API calls
 
 */
 
-use std::{collections::HashMap, hash::Hash};
-
-#[derive(Eq)]
-pub enum Print {
-    Byte(u8),
-    Wild,
-}
-impl PartialEq for Print {
-    fn eq(&self, other: &Self) -> bool {
-        match self {
-            Print::Byte(b) => match other {
-                Print::Byte(ob) => b == ob,
-                Print::Wild => true,
-            },
-            Print::Wild => true,
-        }
-    }
-}
-impl Hash for Print {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        match self {
-            Print::Byte(v) => v.hash(state),
-            Print::Wild => "wildcard".hash(state),
-        }
-    }
-}
+use std::collections::{HashMap, hash_map::Entry};
 
 #[derive(Default)]
 pub struct Fingerprint {
-    pub next: HashMap<Print, Self>,
+    next: HashMap<u8, Self>,
+    wild: HashMap<bool, Self>,
     pub name: Option<String>,
+}
+
+impl Fingerprint {
+    pub fn next(&self, byte: u8) -> Option<&Self> {
+        if self.is_wild() {
+            self.wild.get(&true)
+        } else {
+            self.next.get(&byte)
+        }
+    }
+
+    pub fn next_entry(&mut self, byte: u8) -> Entry<'_, u8, Self> {
+        self.next.entry(byte)
+    }
+
+    pub fn next_wild(&mut self) -> Entry<'_, bool, Self> {
+        self.wild.entry(true)
+    }
+
+    pub fn is_wild(&self) -> bool {
+        !self.wild.is_empty()
+    }
 }

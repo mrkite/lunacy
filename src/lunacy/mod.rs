@@ -4,36 +4,35 @@ Main Lunacy application
 @copyright 2026 Sean Kasun
 
 */
+
+mod calculator;
 mod crumbs;
+mod export;
 mod expparser;
-mod file;
+mod filepicker;
 mod find;
+mod handle;
+mod help;
 mod jump;
+mod status;
 mod view;
 
+use crate::lunacy::calculator::Calculator;
+use crate::lunacy::crumbs::Crumbs;
+use crate::lunacy::export::Export;
+use crate::lunacy::find::Find;
+use crate::lunacy::help::Help;
 use crate::lunacy::jump::Jump;
-use crate::lunacy::{crumbs::Crumbs, find::Find};
-use eframe::egui;
-pub use expparser::ExpParser;
-pub use file::File;
-use std::{
-    path::Path,
-    sync::mpsc::{Receiver, Sender},
-};
-
-const RECENTS_KEY: &str = "recents";
-
-#[derive(Clone)]
-pub struct Context {
-    tx: Sender<Message>,
-    ctx: egui::Context,
-}
-impl Context {
-    pub fn post(&self, message: Message) {
-        _ = self.tx.send(message);
-        self.ctx.request_repaint();
-    }
-}
+use crate::lunacy::status::Status;
+use crate::screen::{self, Point, Rect};
+use crate::widgets::{Widget, Windowable};
+use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers, MouseEventKind};
+pub use filepicker::FilePicker;
+use futures::StreamExt;
+pub use handle::Handle;
+use std::sync::mpsc::{Receiver, Sender};
+use std::time::Duration;
+use tokio::time::sleep;
 
 pub mod gestalt {
     pub const EXPORT: u8 = 1;
@@ -41,345 +40,330 @@ pub mod gestalt {
     pub const FIND: u8 = 4;
     pub const FIND_NEXT: u8 = 8;
     pub const FIND_PREV: u8 = 0x10;
-    pub const MENU: u8 = 0x20;
+    pub const FOCUS: u8 = 0x20;
 }
 
-#[derive(Default, PartialEq)]
+#[derive(Default, PartialEq, Eq)]
 pub enum Message {
     #[default]
     None,
-    Open(File),
-    AddRecent(String),
+    NotFound,
+    Open(Handle),
     Jump(usize),
+    Status(String),
     Find(String),
-    FindNext,
-    FindPrev,
-    Save(String),
+    Export(String),
+    Refresh,
+    Resize(u16, u16),
     Error(String),
+    Quit,
+}
+
+#[derive(Clone)]
+pub struct Context {
+    tx: Sender<Message>,
+}
+
+impl Context {
+    pub fn post(&self, message: Message) {
+        _ = self.tx.send(message);
+    }
 }
 
 pub struct Lunacy {
+    bounds: Rect,
     crumbs: Crumbs,
-    recents: Vec<String>,
-    jump: Option<Jump>,
-    find: Option<Find>,
-    cmdline: Option<String>,
+    status: Status,
+    calculator: Calculator,
+    jump: Jump,
+    find: Find,
+    help: Help,
+    export: Export,
     tx: Sender<Message>,
     rx: Receiver<Message>,
 }
 
-impl eframe::App for Lunacy {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        let ctx = Context {
-            tx: self.tx.clone(),
-            ctx: ui.ctx().clone(),
-        };
-        if let Some(file) = self.cmdline.take() {
-            self.open_recent(&file, ctx.clone());
-        }
-        if let Ok(message) = self.rx.try_recv() {
-            self.handle_message(message, ctx.clone());
-        }
-
-        self.menu_bar(ui, ctx.clone());
-
-        egui::Panel::bottom("status").show(ui, |ui| self.crumbs.status(ui));
-
-        egui::CentralPanel::default().show(ui, |ui| {
-            self.crumbs.ui(ui, ctx.clone());
-        });
-
-        self.jump.take_if(|jump| jump.prompt(ui, ctx.clone()));
-        self.find.take_if(|find| find.prompt(ui, ctx.clone()));
-    }
-
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, RECENTS_KEY, &self.recents);
-    }
-}
-
 impl Lunacy {
-    pub fn new(cc: &eframe::CreationContext, cmdline: Option<String>) -> Self {
-        let recents = if let Some(storage) = cc.storage {
-            eframe::get_value(storage, RECENTS_KEY).unwrap_or_default()
-        } else {
-            vec![]
-        };
+    pub fn new(filename: &str) -> std::io::Result<Self> {
         let (tx, rx) = std::sync::mpsc::channel();
-        Self {
+        _ = tx.send(Message::Open(Handle::new_from_disk(filename)?));
+        Ok(Self {
+            bounds: Rect::default(),
             crumbs: Crumbs::default(),
-            recents,
-            jump: None,
-            find: None,
-            cmdline,
+            status: Status::default(),
+            calculator: Calculator::default(),
+            jump: Jump::default(),
+            find: Find::default(),
+            help: Help::default(),
+            export: Export::default(),
             tx,
             rx,
+        })
+    }
+
+    pub async fn run(&mut self) {
+        let mut screen = screen::init().expect("failed to load terminal library");
+        let mut uistream = EventStream::new();
+        let mut clip = screen.get_bounds().clone();
+        self.layout(&clip);
+        let mut refresh = true;
+        let ctx = Context {
+            tx: self.tx.clone(),
+        };
+        loop {
+            if refresh {
+                refresh = false;
+                self.update_status();
+                self.draw(&mut screen, &Point::new(0, 0), &clip);
+                screen.flip();
+            }
+            tokio::select! {
+                message = self.check_messages() => {
+                    match message {
+                        Message::Quit => break,
+                        Message::Refresh => screen.refresh(),
+                        Message::Resize(w, h) => {
+                            screen.resize(w, h);
+                            clip = screen.get_bounds().clone();
+                            self.layout(&clip);
+                        }
+                        m => self.handle_message(m, &ctx),
+                    }
+                    refresh = true;
+                }
+                event = uistream.next() => {
+                    match event {
+                        Some(Ok(event)) => if self.handle_ui(&event, &ctx) {
+                            refresh = true;
+                        },
+                        Some(Err(e)) => eprintln!("error: {e}"),
+                        None => break,
+                    }
+                }
+            }
         }
     }
 
-    fn handle_message(&mut self, m: Message, ctx: Context) {
+    pub fn shutdown() {
+        screen::restore();
+    }
+
+    fn handle_ui(&mut self, event: &Event, ctx: &Context) -> bool {
+        match event {
+            Event::Key(event) => {
+                if event.kind == KeyEventKind::Press {
+                    self.status.clear();
+                    self.key(event.code, event.modifiers, ctx);
+                    true
+                } else {
+                    false
+                }
+            }
+            Event::Mouse(event) => match event.kind {
+                MouseEventKind::ScrollDown => self.key(KeyCode::PageDown, event.modifiers, ctx),
+                MouseEventKind::ScrollUp => self.key(KeyCode::PageUp, event.modifiers, ctx),
+                MouseEventKind::ScrollLeft => self.key(KeyCode::BackTab, event.modifiers, ctx),
+                MouseEventKind::ScrollRight => self.key(KeyCode::Tab, event.modifiers, ctx),
+                MouseEventKind::Down(_) | MouseEventKind::Drag(_) => self.mouse(
+                    &Point::new(i32::from(event.column), i32::from(event.row)),
+                    true,
+                    ctx,
+                ),
+                MouseEventKind::Up(_) => self.mouse(
+                    &Point::new(i32::from(event.column), i32::from(event.row)),
+                    false,
+                    ctx,
+                ),
+                MouseEventKind::Moved => false,
+            },
+            Event::Resize(w, h) => {
+                ctx.post(Message::Resize(*w, *h));
+                true
+            }
+            _ => false,
+        }
+    }
+
+    fn update_status(&mut self) {
+        let mut keys = self.crumbs.get_key_map();
+        let flags = self.crumbs.gestalt();
+        if flags & gestalt::JUMP != 0 {
+            keys.insert("xg", "goto");
+        }
+        if flags & gestalt::FIND != 0 {
+            keys.insert("x/", "find");
+        }
+        if flags & gestalt::FIND_NEXT != 0 {
+            keys.insert("xn", "find next");
+        }
+        if flags & gestalt::FIND_PREV != 0 {
+            keys.insert("xp", "find prev");
+        }
+        if flags & gestalt::EXPORT != 0 {
+            keys.insert("ye", "export");
+        }
+        keys.insert("z?", "help");
+        // windows take focus and replace all keybinds
+        if self.jump.visible() {
+            keys = self.jump.get_key_map();
+        }
+        if self.find.visible() {
+            keys = self.find.get_key_map();
+        }
+        if self.export.visible() {
+            keys = self.export.get_key_map();
+        }
+        self.status.show_keys(&keys);
+        if !self.help.visible() {
+            self.help.show_keys(&keys);
+        }
+    }
+
+    fn handle_message(&mut self, m: Message, ctx: &Context) {
         match m {
             Message::Open(file) => self.crumbs.push(file, ctx),
-            Message::AddRecent(name) => {
-                if let Some(index) = self.recents.iter().position(|value| value.eq(&name)) {
-                    self.recents.remove(index);
-                }
-                self.recents.push(name);
-                self.recents.rotate_right(1); // move to front
-                if self.recents.len() > 9 {
-                    self.recents.resize(9, "".into());
-                }
-            }
-            Message::Jump(to) => {
-                self.crumbs.jump(to, ctx);
-            }
-            Message::Find(val) => {
-                self.crumbs.find(&val, ctx);
-            }
-            Message::FindNext => {
-                self.crumbs.find_next(ctx);
-            }
-            Message::FindPrev => {
-                self.crumbs.find_prev(ctx);
-            }
-            Message::Save(file) => {
-                if let Err(msg) = self.try_save(&file, ctx.clone()) {
-                    ctx.post(Message::Error(msg.to_string()));
+            Message::Jump(to) => self.crumbs.jump(to, ctx),
+            Message::Find(val) => self.crumbs.find(&val, ctx),
+            Message::Export(file) => {
+                if let Err(err) = self.try_export(&file) {
+                    ctx.post(Message::Error(err.to_string()));
+                } else {
+                    ctx.post(Message::Status("exported.".to_string()));
                 }
             }
-            Message::Error(msg) => {
-                eprintln!("Error: {}", msg);
-            }
-            Message::None => {}
+            Message::NotFound => self.status.show_error("not found"),
+            Message::Error(msg) => self.status.show_error(&msg),
+            Message::Status(msg) => self.status.show_message(&msg),
+            _ => self.status.show_error("unhandled message"),
         }
     }
 
-    fn pick_file(&self, ctx: Context) {
-        let task = rfd::AsyncFileDialog::new().pick_file();
-
-        tokio::spawn(async move {
-            if let Some(file) = task.await {
-                let fullname = file.path().to_str().unwrap().to_string();
-                ctx.post(Message::AddRecent(fullname));
-                ctx.post(Message::Open(load_file(file).await));
-            }
-        });
-    }
-
-    fn open_recent(&self, name: &str, ctx: Context) {
-        let filename = name.to_owned();
-        tokio::spawn(async move {
-            match File::new_from_disk(&filename) {
-                Ok(file) => {
-                    ctx.post(Message::AddRecent(filename));
-                    ctx.post(Message::Open(file));
-                }
-                Err(err) => ctx.post(Message::Error(err.to_string())),
-            }
-        });
-    }
-
-    fn save_file(&self, ctx: Context, fname: &str) {
-        let task = rfd::AsyncFileDialog::new().set_file_name(fname).save_file();
-
-        tokio::spawn(async move {
-            if let Some(file) = task.await {
-                let fullname = file.path().to_str().unwrap().to_string();
-                ctx.post(Message::Save(fullname));
-            }
-        });
-    }
-
-    fn try_save(&self, fname: &str, ctx: Context) -> Result<(), std::io::Error> {
+    fn try_export(&self, fname: &str) -> Result<(), std::io::Error> {
         let mut out = std::fs::File::create(fname)?;
-        self.crumbs.save(&mut out, ctx)
+        self.crumbs.export(&mut out)
     }
 
-    fn menu_bar(&mut self, ui: &mut egui::Ui, ctx: Context) {
-        let open_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::O);
-        let save_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::S);
-        let close_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::W);
-        let quit_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::Q);
-        let jump_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::G);
-        let find_shortcut = egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::F);
-        let find_next_shortcut =
-            egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::N);
-        let find_prev_shortcut =
-            egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, egui::Key::P);
-
-        let keys = vec![
-            egui::Key::Num1,
-            egui::Key::Num2,
-            egui::Key::Num3,
-            egui::Key::Num4,
-            egui::Key::Num5,
-            egui::Key::Num6,
-            egui::Key::Num7,
-            egui::Key::Num8,
-            egui::Key::Num9,
-        ];
-        let recents: Vec<(String, egui::KeyboardShortcut)> = self
-            .recents
-            .iter()
-            .zip(keys)
-            .map(|(recent, key)| {
-                (
-                    recent.clone(),
-                    egui::KeyboardShortcut::new(egui::Modifiers::COMMAND, key),
-                )
-            })
-            .collect();
-
-        if ui.input_mut(|i| i.consume_shortcut(&open_shortcut)) {
-            self.pick_file(ctx.clone());
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&save_shortcut))
-            && self.crumbs.gestalt() & gestalt::EXPORT != 0
-        {
-            self.save_file(ctx.clone(), self.crumbs.get_name());
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&close_shortcut)) && self.crumbs.can_close() {
-            self.crumbs.close();
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&quit_shortcut)) {
-            ui.send_viewport_cmd(egui::ViewportCommand::Close);
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&jump_shortcut))
-            && self.crumbs.gestalt() & gestalt::JUMP != 0
-        {
-            self.jump = Some(Jump::default());
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&find_shortcut))
-            && self.crumbs.gestalt() & gestalt::FIND != 0
-        {
-            self.find = Some(Find::default());
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&find_next_shortcut))
-            && self.crumbs.gestalt() & gestalt::FIND_NEXT != 0
-        {
-            ctx.post(Message::FindNext);
-        }
-        if ui.input_mut(|i| i.consume_shortcut(&find_prev_shortcut))
-            && self.crumbs.gestalt() & gestalt::FIND_PREV != 0
-        {
-            ctx.post(Message::FindPrev);
-        }
-        for recent in recents.iter() {
-            if ui.input_mut(|i| i.consume_shortcut(&recent.1)) {
-                self.open_recent(&recent.0, ctx.clone());
+    async fn check_messages(&self) -> Message {
+        loop {
+            if let Ok(message) = self.rx.try_recv() {
+                return message;
             }
+            sleep(Duration::from_secs(1)).await; // yield
+            //            yield_now().await;
         }
-
-        egui::Panel::top("menubar").show(ui, |ui| {
-            egui::MenuBar::new().ui(ui, |ui| {
-                ui.menu_button("File", |ui| {
-                    if ui
-                        .add(
-                            egui::Button::new("Open...")
-                                .shortcut_text(ui.ctx().format_shortcut(&open_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        self.pick_file(ctx.clone());
-                    }
-                    ui.menu_button("Recents", |ui| {
-                        for recent in recents.iter() {
-                            let path = Path::new(&recent.0).file_name().unwrap();
-                            if ui
-                                .add(
-                                    egui::Button::new(path.to_str().unwrap())
-                                        .shortcut_text(ui.ctx().format_shortcut(&recent.1)),
-                                )
-                                .clicked()
-                            {
-                                self.open_recent(&recent.0, ctx.clone());
-                            }
-                        }
-                    });
-                    if ui
-                        .add_enabled(
-                            self.crumbs.can_close(),
-                            egui::Button::new("Close")
-                                .shortcut_text(ui.ctx().format_shortcut(&close_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        self.crumbs.close();
-                    }
-                    ui.separator();
-                    if ui
-                        .add_enabled(
-                            self.crumbs.gestalt() & gestalt::EXPORT != 0,
-                            egui::Button::new("Save...")
-                                .shortcut_text(ui.ctx().format_shortcut(&save_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        self.save_file(ctx.clone(), self.crumbs.get_name());
-                    }
-                    ui.separator();
-                    if ui
-                        .add(
-                            egui::Button::new("Quit")
-                                .shortcut_text(ui.ctx().format_shortcut(&quit_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        ui.send_viewport_cmd(egui::ViewportCommand::Close);
-                    }
-                });
-                ui.menu_button("View", |ui| {
-                    if ui
-                        .add_enabled(
-                            self.crumbs.gestalt() & gestalt::JUMP != 0,
-                            egui::Button::new("Jump...")
-                                .shortcut_text(ui.ctx().format_shortcut(&jump_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        self.jump = Some(Jump::default());
-                    }
-                    ui.separator();
-                    if ui
-                        .add_enabled(
-                            self.crumbs.gestalt() & gestalt::FIND != 0,
-                            egui::Button::new("Find...")
-                                .shortcut_text(ui.ctx().format_shortcut(&find_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        self.find = Some(Find::default());
-                    }
-                    if ui
-                        .add_enabled(
-                            self.crumbs.gestalt() & gestalt::FIND_NEXT != 0,
-                            egui::Button::new("Find Next")
-                                .shortcut_text(ui.ctx().format_shortcut(&find_next_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        ctx.post(Message::FindNext);
-                    }
-                    if ui
-                        .add_enabled(
-                            self.crumbs.gestalt() & gestalt::FIND_PREV != 0,
-                            egui::Button::new("Find Prev")
-                                .shortcut_text(ui.ctx().format_shortcut(&find_prev_shortcut)),
-                        )
-                        .clicked()
-                    {
-                        ctx.post(Message::FindPrev);
-                    }
-                });
-                if self.crumbs.gestalt() & gestalt::MENU != 0 {
-                    self.crumbs.menu(ui, ctx);
-                }
-            });
-        });
     }
 }
 
-async fn load_file(handle: rfd::FileHandle) -> File {
-    let data = handle.read().await;
-    File::new_from_array(&data, &handle.file_name(), "")
+impl Widget for Lunacy {
+    fn layout(&mut self, constraint: &Rect) {
+        let mut statusrect = constraint.clone();
+        statusrect.t = statusrect.b - 1;
+        self.status.layout(&statusrect);
+        self.bounds = constraint.clone();
+        self.bounds.b -= 1;
+        self.crumbs.layout(&self.bounds);
+        self.calculator.layout(&self.bounds);
+        self.help.layout(&self.bounds);
+        self.jump.layout(&self.bounds);
+        self.find.layout(&self.bounds);
+        self.export.layout(&self.bounds);
+    }
+
+    fn draw(&self, s: &mut screen::Screen, origin: &Point, clip: &Rect) {
+        self.crumbs.draw(s, origin, clip);
+        self.status.draw(s, origin, clip);
+        if self.calculator.visible() {
+            self.calculator.draw(s, origin, clip);
+        }
+        if self.jump.visible() {
+            self.jump.draw(s, origin, clip);
+        }
+        if self.find.visible() {
+            self.find.draw(s, origin, clip);
+        }
+        if self.export.visible() {
+            self.export.draw(s, origin, clip);
+        }
+        if self.help.visible() {
+            self.help.draw(s, origin, clip);
+        }
+    }
+
+    fn key(&mut self, code: KeyCode, modifiers: KeyModifiers, ctx: &Context) -> bool {
+        // global ctl-c handler
+        if code == KeyCode::Char('c') && modifiers == KeyModifiers::CONTROL {
+            ctx.post(Message::Quit);
+        }
+        if code == KeyCode::Char('l') && modifiers == KeyModifiers::CONTROL {
+            ctx.post(Message::Refresh);
+        }
+        if self.help.visible() {
+            return self.help.key(code, modifiers, ctx);
+        }
+        if self.calculator.visible() {
+            return self.calculator.key(code, modifiers, ctx);
+        }
+        if self.jump.visible() {
+            return self.jump.key(code, modifiers, ctx);
+        }
+        if self.find.visible() {
+            return self.find.key(code, modifiers, ctx);
+        }
+        if self.export.visible() {
+            return self.export.key(code, modifiers, ctx);
+        }
+        if !self.crumbs.key(code, modifiers, ctx) {
+            match code {
+                KeyCode::Char('?') => self.help.show(),
+                KeyCode::Char('$') => self.calculator.show(),
+                KeyCode::Char('g') => {
+                    if self.crumbs.gestalt() & gestalt::JUMP != 0 {
+                        self.jump.show();
+                    }
+                }
+                KeyCode::Char('/') => {
+                    if self.crumbs.gestalt() & gestalt::FIND != 0 {
+                        self.find.show();
+                    }
+                }
+                KeyCode::Char('n') => {
+                    if self.crumbs.gestalt() & gestalt::FIND_NEXT != 0 {
+                        self.crumbs.find_next(ctx);
+                    }
+                }
+                KeyCode::Char('p') => {
+                    if self.crumbs.gestalt() & gestalt::FIND_PREV != 0 {
+                        self.crumbs.find_prev(ctx);
+                    }
+                }
+                KeyCode::Char('e') => {
+                    if self.crumbs.gestalt() & gestalt::EXPORT != 0 {
+                        self.export.set(self.crumbs.get_name());
+                        self.export.show();
+                    }
+                }
+                _ => return false,
+            }
+        }
+        true
+    }
+
+    fn mouse(&mut self, pt: &Point, is_down: bool, ctx: &Context) -> bool {
+        if self.help.visible() {
+            return self.help.mouse(pt, is_down, ctx);
+        }
+        if self.calculator.visible() {
+            return self.calculator.mouse(pt, is_down, ctx);
+        }
+        if self.jump.visible() {
+            return self.jump.mouse(pt, is_down, ctx);
+        }
+        if self.find.visible() {
+            return self.find.mouse(pt, is_down, ctx);
+        }
+        if self.export.visible() {
+            return self.export.mouse(pt, is_down, ctx);
+        }
+        self.crumbs.mouse(pt, is_down, ctx)
+    }
 }

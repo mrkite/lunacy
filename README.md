@@ -1,12 +1,11 @@
 # Lunacy
 
-An inspector for retro platforms.  Explore the contents of old disk images.  Written
-in Rust.
+An terminal-based inspector for retro platforms.  Explore the contents of old disk images.  Written in Rust.
 
 ![Screenshot of Amiga Disk Contents](/screenshots/amiga.png)
 
 Opening a supported disk format will show a tree view of the disk's contents.  You can
-then select individual files and open them in new tabs.
+then select individual files and open them.
 
 ![Screenshot of Basic listing](/screenshots/basic.png)
 
@@ -14,10 +13,9 @@ Open a supported BASIC program and it will show the source, which can then be sa
 as a text file.  Special characters will be translated into their unicode
 equivalents.
 
-![Screenshot of ILBM view](/screenshots/ilbm.png)
+![Screenshot of disassembly](/screenshots/disasm.png)
 
-Open a supported image format and it will show the image, with a slider that allows
-for up to 10x zoom.  You can then save the image as a PNG.
+There is simplified support of 68k, 6502, and 16-bit x86 disassembly.
 
 ![Screenshot of Hex dump](/screenshots/hex.png)
 
@@ -32,13 +30,11 @@ also be the default view if the file type is unknown.
   - BASIC
 - Amiga
   - Amiga Disk File (ADF)
-  - Interleaved Bitmap (ILBM)
 - Amstrad CPC
   - CPM filesystem (DSK)
 - Apple II
   - DOS 3.3 filesystem
   - ProDOS filesytem
-  - Super HiRes and Preferred Format Pictures
   - Applesoft BASIC
   - Integer BASIC
 - Atari ST
@@ -69,10 +65,15 @@ also be the default view if the file type is unknown.
 
 Adding support for new formats and filesystems is simple.  It uses a "plugin-style"
 structure (unfortunately not actual plugins since Rust doesn't have a standard ABI),
-and provides several widgets to make showing file trees or images simple.
+and provides several widgets to make showing file trees simple.
 
 ## Compile on unix
 ```sh
 cargo build --release
 cargo install --path . --root /usr/local 
+```
+
+## Lint
+```sh
+cargo clippy -- -W clippy::pedantic
 ```

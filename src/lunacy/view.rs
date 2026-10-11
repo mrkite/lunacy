@@ -4,13 +4,18 @@ File view for Lunacy
 @copyright 2026 Sean Kasun
 
 */
-use super::file::File;
+
 use crate::{
-    lunacy::Context,
+    lunacy::{Context, Handle},
     plugins::foreach_plugin,
-    widgets::{ErrorView, Widget},
+    screen::{Color, Point, Rect, Screen},
+    widgets::{KeyMap, Label, Widget},
 };
-use eframe::egui;
+use crossterm::event::{KeyCode, KeyModifiers};
+use std::io::{Error, ErrorKind};
+
+const ERROR: Color = Some(0xc0_60_60);
+const BG: Color = None;
 
 struct OpenFile {
     name: String,
@@ -18,120 +23,161 @@ struct OpenFile {
 }
 
 pub struct View {
+    bounds: Rect,
     supported: Vec<OpenFile>,
-    selected: usize,
-    file: File,
+    selected: Option<usize>,
+    handle: Handle,
 }
 
 impl View {
-    pub fn new(file: File, ctx: Context) -> Self {
+    pub fn new(handle: Handle, ctx: &Context) -> Self {
         let mut supported = vec![];
-        let mut selected = 0;
+        let mut selected = None;
         let mut maxval = 0;
         foreach_plugin(|plugin| {
-            if let Some(val) = plugin.supports(&file) {
+            if let Some(val) = plugin.supports(&handle) {
                 if val > maxval {
                     maxval = val;
-                    selected = supported.len();
+                    selected = Some(supported.len());
                 }
                 supported.push(OpenFile {
                     name: plugin.get_name().to_string(),
-                    widget: match plugin.create(&file, ctx.clone()) {
+                    widget: match plugin.create(&handle, ctx) {
                         Ok(widget) => widget,
-                        Err(err) => Box::new(ErrorView::new(err.into())),
+                        Err(err) => Box::new(Label::new(err).with_style(ERROR, BG)),
                     },
                 });
             }
         });
         Self {
+            bounds: Rect::default(),
             supported,
             selected,
-            file,
+            handle,
         }
     }
 
     pub fn get_name(&self) -> &str {
-        self.file.get_name()
+        self.handle.get_name()
     }
 
     pub fn get_plugin(&self) -> &str {
-        if let Some(sel) = self.supported.get(self.selected) {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get(v)) {
             &sel.name
         } else {
             "---"
         }
     }
 
-    pub fn status(&self, ui: &mut egui::Ui) {
-        if let Some(sel) = self.supported.get(self.selected) {
-            sel.widget.status(ui);
+    fn layout_child(&mut self) {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v)) {
+            sel.widget.layout(&self.bounds);
+        }
+    }
+}
+
+impl Widget for View {
+    fn layout(&mut self, constraint: &Rect) {
+        constraint.clone_into(&mut self.bounds);
+        self.layout_child();
+    }
+
+    fn draw(&self, s: &mut Screen, origin: &Point, clip: &Rect) {
+        let range = clip.intersect(&self.bounds.offset(origin));
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get(v)) {
+            sel.widget.draw(s, origin, &range);
         }
     }
 
-    pub fn gestalt(&self) -> u8 {
-        if let Some(sel) = self.supported.get(self.selected) {
-            sel.widget.gestalt()
+    fn key(&mut self, code: KeyCode, modifiers: KeyModifiers, ctx: &Context) -> bool {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v)) {
+            if sel.widget.key(code, modifiers, ctx) {
+                return true;
+            }
+            match code {
+                KeyCode::Char('[') => {
+                    if let Some(selected) = self.selected {
+                        self.selected = Some(if selected == 0 {
+                            self.supported.len().saturating_sub(1)
+                        } else {
+                            selected - 1
+                        });
+                    }
+                    self.layout_child();
+                    true
+                }
+                KeyCode::Char(']') => {
+                    if let Some(selected) = self.selected {
+                        self.selected = Some(selected + 1);
+                        if self.selected == Some(self.supported.len()) {
+                            self.selected = Some(0);
+                        }
+                    }
+                    self.layout_child();
+                    true
+                }
+                _ => false,
+            }
         } else {
-            0
+            false
         }
     }
 
-    pub fn jump(&mut self, to: usize, ctx: Context) {
-        if let Some(sel) = self.supported.get_mut(self.selected) {
+    fn mouse(&mut self, pt: &Point, is_down: bool, ctx: &Context) -> bool {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v))
+            && sel.widget.mouse(pt, is_down, ctx)
+        {
+            return true;
+            // TODO: check if mouse clicked on dropdown
+        }
+        false
+    }
+
+    fn gestalt(&self) -> u8 {
+        self.selected
+            .and_then(|v| self.supported.get(v))
+            .map_or(0, |sel| sel.widget.gestalt())
+    }
+
+    fn jump(&mut self, to: usize, ctx: &Context) {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v)) {
             sel.widget.jump(to, ctx);
         }
     }
 
-    pub fn find(&mut self, val: &str, ctx: Context) {
-        if let Some(sel) = self.supported.get_mut(self.selected) {
+    fn find(&mut self, val: &str, ctx: &Context) {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v)) {
             sel.widget.find(val, ctx);
         }
     }
 
-    pub fn find_next(&mut self, ctx: Context) {
-        if let Some(sel) = self.supported.get_mut(self.selected) {
+    fn find_next(&mut self, ctx: &Context) {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v)) {
             sel.widget.find_next(ctx);
         }
     }
 
-    pub fn find_prev(&mut self, ctx: Context) {
-        if let Some(sel) = self.supported.get_mut(self.selected) {
+    fn find_prev(&mut self, ctx: &Context) {
+        if let Some(sel) = self.selected.and_then(|v| self.supported.get_mut(v)) {
             sel.widget.find_prev(ctx);
         }
     }
 
-    pub fn menu(&mut self, ui: &mut egui::Ui, ctx: Context) {
-        if let Some(sel) = self.supported.get_mut(self.selected) {
-            sel.widget.menu(ui, ctx);
-        }
+    fn export(&self, out: &mut std::fs::File) -> Result<(), std::io::Error> {
+        self.selected
+            .and_then(|v| self.supported.get(v))
+            .map_or_else(
+                || Err(Error::from(ErrorKind::Unsupported)),
+                |sel| sel.widget.export(out),
+            )
     }
 
-    pub fn save(&self, out: &mut std::fs::File, ctx: Context) -> Result<(), std::io::Error> {
-        if let Some(sel) = self.supported.get(self.selected) {
-            sel.widget.save(out, ctx)
-        } else {
-            Err(std::io::Error::new(
-                std::io::ErrorKind::Unsupported,
-                "unsupported",
-            ))
-        }
-    }
-
-    pub fn ui(&mut self, ui: &mut egui::Ui, ctx: Context) {
-        if let Some(sel) = self.supported.get_mut(self.selected) {
-            sel.widget.ui(ui, ctx);
-        }
-    }
-
-    pub fn dropdown(&mut self, ui: &mut egui::Ui, _ctx: Context) {
-        let mut sel = self.selected;
-        egui::ComboBox::from_label("")
-            .selected_text(self.get_plugin())
-            .show_ui(ui, |ui| {
-                for (idx, plugin) in self.supported.iter().enumerate() {
-                    ui.selectable_value(&mut sel, idx, &plugin.name);
-                }
-            });
-        self.selected = sel;
+    fn get_key_map(&self) -> KeyMap {
+        let mut keys = self
+            .selected
+            .and_then(|v| self.supported.get(v))
+            .map_or_else(KeyMap::default, |sel| sel.widget.get_key_map());
+        keys.insert("w[|]", "cycle view");
+        keys
     }
 }

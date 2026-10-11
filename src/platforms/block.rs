@@ -25,7 +25,7 @@ pub struct BlockCache {
 
 impl BlockCache {
     pub fn get(&mut self, addr: u32) -> BlockPtr {
-        for b in self.cache.iter() {
+        for b in &self.cache {
             if b.borrow().address == addr {
                 return b.clone();
             }

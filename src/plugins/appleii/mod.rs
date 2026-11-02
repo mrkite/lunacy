@@ -12,6 +12,8 @@ mod int;
 mod omf;
 mod prodos;
 mod prodos_files;
+mod resources;
+mod resparser;
 mod sys;
 mod woz;
 
@@ -24,6 +26,7 @@ pub fn register_plugins() {
     register_plugin(int::Int {});
     register_plugin(omf::Omf {});
     register_plugin(prodos::Prodos {});
+    register_plugin(resources::Resources {});
     register_plugin(sys::Sys {});
     register_plugin(woz::Woz {});
 

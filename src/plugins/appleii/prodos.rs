@@ -256,20 +256,27 @@ impl Parser {
 
         if data_storage == 5 {
             let gsos = self.get_block(usize::from(key));
-            entry.data = Some(FileId {
-                storage: gsos.r8(0),
-                key: usize::from(gsos.r16(1)),
-                len: gsos.r24(5) as usize,
-                name: entry.name.clone(),
-                mime: format!("prodos/{:02x}:{:04x}", entry.filetype, entry.aux),
-            });
-            entry.res = Some(FileId {
-                storage: gsos.r8(0x100),
-                key: usize::from(gsos.r16(0x101)),
-                len: gsos.r24(0x105) as usize,
-                name: format!("{} [res]", entry.name),
-                mime: "prodos/res".to_string(),
-            });
+            let data_len = gsos.r24(5) as usize;
+            entry.data = None;
+            if data_len > 0 {
+                entry.data = Some(FileId {
+                    storage: gsos.r8(0),
+                    key: usize::from(gsos.r16(1)),
+                    len: data_len,
+                    name: entry.name.clone(),
+                    mime: format!("prodos/{:02x}:{:04x}", entry.filetype, entry.aux),
+                });
+            }
+            let res_len = gsos.r24(0x105) as usize;
+            if res_len > 0 {
+                entry.res = Some(FileId {
+                    storage: gsos.r8(0x100),
+                    key: usize::from(gsos.r16(0x101)),
+                    len: res_len,
+                    name: format!("{} [res]", entry.name),
+                    mime: "prodos/res".to_string(),
+                });
+            }
         }
         entry
     }

@@ -60,6 +60,7 @@ mod seg_op {
     pub const DONE: u8 = 0x00;
     pub const RELOC: u8 = 0xe2;
     pub const INTERSEG: u8 = 0xe3;
+    pub const EXPR: u8 = 0xeb;
     pub const DS: u8 = 0xf1;
     pub const LCONST: u8 = 0xf2;
     pub const CRELOC: u8 = 0xf5;
@@ -273,6 +274,13 @@ impl Parser {
                         let start = (pc - seg.mapped) as usize;
                         data[start..start + count].copy_from_slice(v);
                         pc += u32::try_from(count).unwrap_or_default();
+                    }
+                    seg_op::EXPR => {
+                        // 00 = end of expression
+                        while self.handle.r8(ofs) != 0 {
+                            ofs += 1;
+                        }
+                        ofs += 1; // and eat the space
                     }
                     seg_op::CRELOC => ofs = self.parse_creloc(ofs, seg.mapped, &mut data),
                     seg_op::CINTERSEG => ofs = self.parse_cinterseg(ofs, &seg_map, &mut data),

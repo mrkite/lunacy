@@ -24,7 +24,7 @@ use std::{
 
 pub struct Dos {
     api: Api,
-    disassembly: Disassembly,
+    disassembly: Disassembly<u32>,
     platform: DosPlatform,
     header: MZHeader,
     picker: FilePicker,
@@ -298,7 +298,7 @@ struct DosPlatform {
     labels: HashMap<u32, String>,
 }
 
-impl Platform for DosPlatform {
+impl Platform<u32> for DosPlatform {
     fn address(&self, address: u32) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
@@ -318,7 +318,7 @@ impl Platform for DosPlatform {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine {
+    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine<u32> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
@@ -336,7 +336,7 @@ impl Platform for DosPlatform {
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u32>,
     ) -> Result<Instruction, &'static str> {
         self.cpu.decode(handle, offset, state)
     }

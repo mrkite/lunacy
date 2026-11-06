@@ -31,7 +31,7 @@ impl Widget for LabelWin {
         for label in &self.labels {
             lw = cmp::max(lw, label.min_size().w);
         }
-        let mut cl = self.window.get_bounds().clone();
+        let mut cl = self.window.get_bounds();
         for (label, entry) in self.labels.iter_mut().zip(&mut self.entries) {
             cl.b = cl.t + 1;
             cl.l = self.window.get_bounds().l;
@@ -104,11 +104,9 @@ impl Widget for LabelWin {
     }
 
     fn get_key_map(&self) -> KeyMap {
-        if let Some(entry) = self.entries.get(self.focus) {
-            entry.get_key_map()
-        } else {
-            KeyMap::default()
-        }
+        self.entries
+            .get(self.focus)
+            .map_or_else(KeyMap::default, |entry| entry.get_key_map())
     }
 }
 
@@ -131,7 +129,7 @@ impl LabelWin {
         self.entries[0].set(addr);
         self.entries[1].set("");
     }
-    pub fn take(&mut self) -> Option<(String, String)> {
+    pub const fn take(&mut self) -> Option<(String, String)> {
         self.submitted.take()
     }
 }

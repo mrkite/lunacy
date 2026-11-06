@@ -5,26 +5,27 @@ Represents a continuous block of code with only 1 entrance and exit
 
 */
 
+use crate::cpus::Address;
 use std::{cell::RefCell, rc::Rc};
 
 #[derive(Ord, PartialOrd, PartialEq, Eq)]
-pub struct Block {
-    pub address: u32,
-    pub length: u32,
-    pub branch_len: u32,
-    pub preds: Vec<BlockPtr>,
-    pub succs: Vec<BlockPtr>,
+pub struct Block<ADDR: Address> {
+    pub address: ADDR,
+    pub length: usize,
+    pub branch_len: usize,
+    pub preds: Vec<BlockPtr<ADDR>>,
+    pub succs: Vec<BlockPtr<ADDR>>,
 }
 
-type BlockPtr = Rc<RefCell<Block>>;
+type BlockPtr<ADDR> = Rc<RefCell<Block<ADDR>>>;
 
 #[derive(Default)]
-pub struct BlockCache {
-    cache: Vec<BlockPtr>,
+pub struct BlockCache<ADDR: Address> {
+    cache: Vec<BlockPtr<ADDR>>,
 }
 
-impl BlockCache {
-    pub fn get(&mut self, addr: u32) -> BlockPtr {
+impl<ADDR: Address> BlockCache<ADDR> {
+    pub fn get(&mut self, addr: ADDR) -> BlockPtr<ADDR> {
         for b in &self.cache {
             if b.borrow().address == addr {
                 return b.clone();
@@ -45,7 +46,7 @@ impl BlockCache {
         self.cache.sort();
     }
 
-    pub fn iter(&self) -> std::slice::Iter<'_, BlockPtr> {
+    pub fn iter(&self) -> std::slice::Iter<'_, BlockPtr<ADDR>> {
         self.cache.iter()
     }
 }

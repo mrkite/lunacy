@@ -5,8 +5,6 @@ x86 disassembler
 
 */
 
-use std::collections::HashMap;
-
 use crate::{
     cpus::{
         Cpu, CpuLine, CpuState, InstType, Instruction, Operand,
@@ -14,6 +12,7 @@ use crate::{
     },
     lunacy::Handle,
 };
+use std::collections::HashMap;
 
 mod opcodes;
 
@@ -32,7 +31,7 @@ impl State86 {
     }
 }
 
-impl CpuState for State86 {
+impl CpuState<u32> for State86 {
     fn jump(&mut self, addr: u32) {
         self.seg = u16::try_from((addr >> 4) & 0xffff).unwrap_or_default();
         self.ofs = u16::try_from(addr & 0xf).unwrap_or_default();
@@ -342,13 +341,13 @@ impl Default for Cpu86 {
     }
 }
 
-impl Cpu for Cpu86 {
+impl Cpu<u32> for Cpu86 {
     #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u32>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State86>() else {
             return Err("x86 disassembler called without a x86 state");
@@ -660,7 +659,7 @@ impl Cpu for Cpu86 {
         Ok(Instruction {
             name,
             inst_type: opcode.i,
-            length: u32::try_from(length).unwrap_or_default(),
+            length,
             raw,
             operands: sub,
         })
@@ -670,7 +669,7 @@ impl Cpu for Cpu86 {
         address: u32,
         inst: &Instruction,
         lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine {
+    ) -> CpuLine<u32> {
         let Some(sub) = inst.operands.as_any().downcast_ref::<Operands86>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -741,7 +740,7 @@ impl Cpu for Cpu86 {
     }
 }
 
-fn exp_ptr(sub: &Operands86, arg: &Arg, out: &mut CpuLine) {
+fn exp_ptr(sub: &Operands86, arg: &Arg, out: &mut CpuLine<u32>) {
     if sub.flags & flags::BYTE != 0 {
         out.operand.push_str("byte ptr ");
     }

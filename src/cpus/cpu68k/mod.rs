@@ -19,12 +19,12 @@ pub struct State68k {
 }
 
 impl State68k {
-    pub fn new(addr: u32) -> Self {
+    pub const fn new(addr: u32) -> Self {
         Self { addr }
     }
 }
 
-impl CpuState for State68k {
+impl CpuState<u32> for State68k {
     fn jump(&mut self, addr: u32) {
         self.addr = addr;
     }
@@ -95,13 +95,13 @@ impl Default for Cpu68k {
     }
 }
 
-impl Cpu for Cpu68k {
+impl Cpu<u32> for Cpu68k {
     #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u32>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State68k>() else {
             return Err("68k disassembler called without a 68k state");
@@ -322,14 +322,13 @@ impl Cpu for Cpu68k {
 
                 if found {
                     let length = offset - start_offset;
-                    let ins_len = u32::try_from(length).unwrap_or_default();
-                    state.addr += ins_len;
+                    state.addr += u32::try_from(length).unwrap_or_default();
                     let raw = handle.read(start_offset, length).to_vec();
 
                     return Ok(Instruction {
                         name: op.n.to_string(),
                         inst_type: op.i,
-                        length: ins_len,
+                        length,
                         raw,
                         operands: sub,
                     });
@@ -350,7 +349,7 @@ impl Cpu for Cpu68k {
             return Ok(Instruction {
                 name: "db".to_owned(),
                 inst_type: InstType::Normal,
-                length: u32::try_from(length).unwrap_or_default(),
+                length,
                 raw,
                 operands: sub,
             });
@@ -364,7 +363,7 @@ impl Cpu for Cpu68k {
         address: u32,
         inst: &Instruction,
         lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine {
+    ) -> CpuLine<u32> {
         let Some(sub) = inst.operands.as_any().downcast_ref::<Operands68k>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -609,7 +608,7 @@ fn parse_ea(
     }
 }
 
-fn reg_list(list: u32, out: &mut CpuLine) {
+fn reg_list(list: u32, out: &mut CpuLine<u32>) {
     let mut start = None;
     let mut end = None;
     let mut multi = false;

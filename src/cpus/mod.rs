@@ -22,10 +22,46 @@ pub use cpu65816::Cpu65816;
 pub use cpu65816::Operand65816;
 pub use cpu65816::State65816;
 use std::any::Any;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Sub;
 
-pub trait CpuState {
-    fn jump(&mut self, addr: u32);
-    fn address(&self) -> u32;
+pub trait Address:
+    Add<Output = Self>
+    + AddAssign
+    + Sub<Output = Self>
+    + Eq
+    + PartialEq
+    + Ord
+    + PartialOrd
+    + Default
+    + Copy
+{
+    fn as_usize(&self) -> usize;
+    fn from_usize(value: usize) -> Self;
+}
+
+impl Address for u32 {
+    fn as_usize(&self) -> usize {
+        usize::try_from(*self).unwrap_or(usize::MAX)
+    }
+    fn from_usize(value: usize) -> Self {
+        Self::try_from(value).unwrap_or(Self::MAX)
+    }
+}
+
+impl Address for u16 {
+    fn as_usize(&self) -> usize {
+        usize::from(*self)
+    }
+    fn from_usize(value: usize) -> Self {
+        Self::try_from(value).unwrap_or(Self::MAX)
+    }
+}
+
+pub trait CpuState<ADDR: Address> {
+    fn jump(&mut self, addr: ADDR);
+    fn address(&self) -> ADDR;
     fn as_any(&mut self) -> &mut dyn Any;
 }
 
@@ -48,33 +84,33 @@ pub trait Operand {
 pub struct Instruction {
     pub name: String,
     pub inst_type: InstType,
-    pub length: u32,
+    pub length: usize,
     pub raw: Vec<u8>,
     pub operands: Box<dyn Operand>,
 }
 
 #[derive(Default, Clone)]
-pub struct CpuLine {
-    pub address: u32,
+pub struct CpuLine<ADDR: Address> {
+    pub address: ADDR,
     pub hex: String,
     pub opcode: String,
     pub operand: String,
     pub comment: String,
-    pub target: Option<u32>,
+    pub target: Option<ADDR>,
 }
 
-pub trait Cpu {
+pub trait Cpu<ADDR: Address> {
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<ADDR>,
     ) -> Result<Instruction, &'static str>;
-    fn target(&self, inst: &Instruction) -> Option<u32>;
+    fn target(&self, inst: &Instruction) -> Option<ADDR>;
     fn disassemble(
         &self,
-        address: u32,
+        address: ADDR,
         inst: &Instruction,
-        lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine;
+        lookup: &dyn Fn(ADDR) -> Option<String>,
+    ) -> CpuLine<ADDR>;
 }

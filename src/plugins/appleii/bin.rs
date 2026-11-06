@@ -27,7 +27,7 @@ impl Plugin for Bin {
         let mut iie = IIe::new(handle.get_name());
         let dest = handle.r16(0);
         let len = usize::from(handle.r16(2));
-        iie.add_section("main", u32::from(dest), handle.read(4, len));
+        iie.add_section("main", dest, handle.read(4, len));
         iie.add_entry(State6502::new(dest))?;
         iie.disassemble();
         iie.jump(dest.into(), ctx);

@@ -6,7 +6,7 @@ General Disassembly Viewer widget
 */
 
 use crate::{
-    cpus::{CpuLine, CpuState, InstType, Instruction},
+    cpus::{Address, CpuLine, CpuState, InstType, Instruction},
     lunacy::{Context, Handle, Message, gestalt},
     platforms::{BlockCache, Platform},
     screen::{Color, Point, Rect, Screen},
@@ -31,16 +31,16 @@ const DIVIDER_COLOR: Color = Some(0x27_44_72);
 const BG: Color = Some(0x00_00_01);
 const DIVIDER: char = '│';
 
-struct Section {
-    start: u32,
+struct Section<ADDR: Address> {
+    start: ADDR,
     handle: Handle,
 }
 
-enum Render {
+enum Render<ADDR: Address> {
     Head(String),
-    Asm(CpuLine),
-    Ref(u32, Vec<u32>),
-    Hex(u32, u32),
+    Asm(CpuLine<ADDR>),
+    Ref(ADDR, Vec<ADDR>),
+    Hex(ADDR, ADDR),
 }
 
 #[derive(Default, PartialEq)]
@@ -52,22 +52,22 @@ enum Search {
 }
 
 #[derive(Default)]
-pub struct Disassembly {
+pub struct Disassembly<ADDR: Address> {
     bounds: Rect,
     search: Search,
     scroll: Scroll,
     cursorx: usize,
     cursory: usize,
-    labels: BTreeSet<u32>,
-    branches: BTreeMap<u32, u32>,
-    sections: Vec<Section>,
-    insts: BTreeMap<u32, Instruction>,
-    lines: Vec<Render>,
+    labels: BTreeSet<ADDR>,
+    branches: BTreeMap<ADDR, ADDR>,
+    sections: Vec<Section<ADDR>>,
+    insts: BTreeMap<ADDR, Instruction>,
+    lines: Vec<Render<ADDR>>,
     stack: Vec<(usize, usize)>,
 }
 
-impl Disassembly {
-    pub fn add_section(&mut self, name: &str, start: u32, data: &[u8]) {
+impl<ADDR: Address> Disassembly<ADDR> {
+    pub fn add_section(&mut self, name: &str, start: ADDR, data: &[u8]) {
         self.sections.push(Section {
             start,
             handle: Handle::new_from_array(data, name, ""),
@@ -76,8 +76,8 @@ impl Disassembly {
 
     pub fn add_entry(
         &mut self,
-        state: impl CpuState + Clone,
-        platform: &impl Platform,
+        state: impl CpuState<ADDR> + Clone,
+        platform: &impl Platform<ADDR>,
     ) -> Result<(), &'static str> {
         // TODO if state is outside of the current address space.. error out
         self.labels.insert(state.address());
@@ -91,7 +91,7 @@ impl Disassembly {
                         addr,
                         platform.decode(
                             &section.handle,
-                            (addr - section.start) as usize,
+                            (addr - section.start).as_usize(),
                             &mut state,
                         )?,
                     );
@@ -130,7 +130,7 @@ impl Disassembly {
         Ok(())
     }
 
-    pub fn disassemble(&mut self, platform: &impl Platform) {
+    pub fn disassemble(&mut self, platform: &impl Platform<ADDR>) {
         self.lines.clear();
         let mut blocks = BlockCache::default();
         // always start at a label
@@ -152,7 +152,7 @@ impl Disassembly {
                 {
                     // label was earliest or no branch at all
                     address = *label;
-                    let len = address - block.borrow().address;
+                    let len = address.as_usize() - block.borrow().address.as_usize();
                     block.borrow_mut().length = len;
                     let next = blocks.get(address);
                     next.borrow_mut().preds.push(block.clone());
@@ -164,7 +164,7 @@ impl Disassembly {
                     // branch was earliest, equal, or no label at all
                     let b = &self.insts[branch.1];
                     block.borrow_mut().branch_len = b.length;
-                    let len = branch.0 - block.borrow().address;
+                    let len = branch.0.as_usize() - block.borrow().address.as_usize();
                     block.borrow_mut().length = len;
                     if b.inst_type != InstType::Return
                         && b.inst_type != InstType::Invalid
@@ -208,7 +208,8 @@ impl Disassembly {
                 } else {
                     // no more labels or branches
                     let last_key = self.insts.last_key_value().unwrap();
-                    let len = last_key.0 + last_key.1.length - block.borrow().address;
+                    let len = last_key.0.as_usize() + last_key.1.length
+                        - block.borrow().address.as_usize();
                     block.borrow_mut().length = len;
                     done = true;
                 }
@@ -219,31 +220,28 @@ impl Disassembly {
         for (idx, section) in self.sections.iter().enumerate() {
             self.lines
                 .push(Render::Head(format!("Section {}", idx + 1)));
-            self.lines.extend(
-                self.dis_section(
-                    section.start,
-                    section
-                        .start
-                        .saturating_add(u32::try_from(section.handle.len()).unwrap_or(u32::MAX)),
-                    &blocks,
-                    platform,
-                ),
-            );
+            self.lines.extend(self.dis_section(
+                section.start,
+                section.start + ADDR::from_usize(section.handle.len()),
+                &blocks,
+                platform,
+            ));
         }
     }
 
     fn dis_section(
         &self,
-        from: u32,
-        to: u32,
-        blocks: &BlockCache,
-        platform: &impl Platform,
-    ) -> Vec<Render> {
+        from: ADDR,
+        to: ADDR,
+        blocks: &BlockCache<ADDR>,
+        platform: &impl Platform<ADDR>,
+    ) -> Vec<Render<ADDR>> {
         let mut lines = vec![];
         let mut address = from;
         for b in blocks.iter() {
             let b = b.borrow();
-            if b.address + b.length <= address {
+            let end = b.address + ADDR::from_usize(b.length);
+            if end <= address {
                 continue;
             }
             if address < b.address {
@@ -255,21 +253,24 @@ impl Disassembly {
                 let mut preds = vec![];
                 for pred in &b.preds {
                     let pred = pred.borrow();
-                    if pred.address + pred.length != b.address {
-                        preds.push(pred.address + pred.length - pred.branch_len);
+                    if pred.address + ADDR::from_usize(pred.length) != b.address {
+                        preds.push(
+                            pred.address + ADDR::from_usize(pred.length)
+                                - ADDR::from_usize(pred.branch_len),
+                        );
                     }
                 }
                 if !preds.is_empty() {
                     lines.push(Render::Ref(address, preds));
                 }
             }
-            while address < to && address < b.address + b.length {
+            while address < to && address < end {
                 lines.push(Render::Asm(
                     platform.disassemble(address, &self.insts[&address]),
                 ));
-                address += self.insts[&address].length;
+                address += ADDR::from_usize(self.insts[&address].length);
             }
-            if address < b.address + b.length {
+            if address < end {
                 break;
             }
         }
@@ -279,41 +280,32 @@ impl Disassembly {
         lines
     }
 
-    fn dump_hex(&self, from: u32, to: u32) -> Vec<Render> {
+    fn dump_hex(&self, from: ADDR, to: ADDR) -> Vec<Render<ADDR>> {
         let mut lines = vec![];
         if self.get_address(from).is_some() {
-            let skip = from & 0xf;
-            let from = if skip != 0 {
-                let end = cmp::min(to, from + 16 - skip);
+            let skip = from.as_usize() & 0xf;
+            let mut from = from;
+
+            while from < to {
+                let end = cmp::min(to, from + ADDR::from_usize(16 - skip));
                 lines.push(Render::Hex(from, end));
-                end
-            } else {
-                from
-            };
-            for from in (from..to).step_by(16) {
-                let end = cmp::min(to, from + 16);
-                lines.push(Render::Hex(from, end));
+                from = end;
             }
         }
         lines
     }
 
-    fn get_address(&self, addr: u32) -> Option<&Section> {
+    fn get_address(&self, addr: ADDR) -> Option<&Section<ADDR>> {
         self.sections
             .iter()
-            .find(|&s| {
-                addr >= s.start
-                    && addr
-                        < s.start
-                            .saturating_add(u32::try_from(s.handle.len()).unwrap_or(u32::MAX))
-            })
+            .find(|&s| addr >= s.start && addr < s.start + ADDR::from_usize(s.handle.len()))
             .map(|v| v as _)
     }
 
     pub fn export(
         &self,
         out: &mut std::fs::File,
-        platform: &impl Platform,
+        platform: &impl Platform<ADDR>,
     ) -> Result<(), std::io::Error> {
         for line in &self.lines {
             match line {
@@ -342,9 +334,9 @@ impl Disassembly {
                 }
                 Render::Hex(from, to) => {
                     if let Some(section) = self.get_address(*from) {
-                        let offset = (from - section.start) as usize;
-                        let skip = usize::try_from(*from & 0xf).unwrap_or_default();
-                        let end = usize::try_from(((*to - 1) & 0xf) + 1).unwrap_or_default();
+                        let offset = (*from - section.start).as_usize();
+                        let skip = from.as_usize() & 0xf;
+                        let end = ((to.as_usize() - 1) & 0xf) + 1;
                         let addr = platform.address(*from);
                         write!(out, "{addr} | ")?;
                         let mut ascii = String::new();
@@ -383,7 +375,13 @@ impl Disassembly {
         self.scroll_to_cursor();
     }
 
-    pub fn draw(&self, s: &mut Screen, origin: &Point, clip: &Rect, platform: &impl Platform) {
+    pub fn draw(
+        &self,
+        s: &mut Screen,
+        origin: &Point,
+        clip: &Rect,
+        platform: &impl Platform<ADDR>,
+    ) {
         self.scroll.draw(s, origin, clip);
         let range = clip.intersect(&self.bounds.offset(origin));
 
@@ -412,14 +410,14 @@ impl Disassembly {
         }
     }
 
-    pub fn key(&mut self, code: KeyCode, ctx: &Context, platform: &impl Platform) -> bool {
+    pub fn key(&mut self, code: KeyCode, ctx: &Context, platform: &impl Platform<ADDR>) -> bool {
         let page = isize::try_from(self.bounds.h().saturating_sub(1)).unwrap_or(1);
         match code {
             KeyCode::Up | KeyCode::Char('k') => self.cursory = self.cursory.saturating_sub(1),
             KeyCode::Down | KeyCode::Char('j') => self.cursory = self.cursory.saturating_add(1),
             KeyCode::Left | KeyCode::Char('h') => match self.lines.get(self.cursory) {
                 Some(Render::Hex(from, _)) => {
-                    if self.cursorx > (from & 0xf) as usize {
+                    if self.cursorx > from.as_usize() & 0xf {
                         self.cursorx -= 1;
                     } else {
                         self.cursory = self.cursory.saturating_sub(1);
@@ -437,7 +435,7 @@ impl Disassembly {
             },
             KeyCode::Right | KeyCode::Char('l') => match self.lines.get(self.cursory) {
                 Some(Render::Hex(_, to)) => {
-                    if self.cursorx < ((to - 1) & 0xf) as usize {
+                    if self.cursorx < (to.as_usize() - 1) & 0xf {
                         self.cursorx = self.cursorx.saturating_add(1);
                     } else {
                         self.cursorx = 0;
@@ -498,7 +496,7 @@ impl Disassembly {
         pt: &Point,
         is_down: bool,
         ctx: &Context,
-        platform: &impl Platform,
+        platform: &impl Platform<ADDR>,
     ) -> bool {
         if self.bounds.inside(pt.x, pt.y) {
             self.cursory =
@@ -551,16 +549,16 @@ impl Disassembly {
         }
     }
 
-    fn status(&self, ctx: &Context, platform: &impl Platform) {
+    fn status(&self, ctx: &Context, platform: &impl Platform<ADDR>) {
         if let Some(addr) = self.cursor_to_address() {
             ctx.post(Message::Status(platform.address(addr)));
         }
     }
 
-    fn cursor_to_address(&self) -> Option<u32> {
+    fn cursor_to_address(&self) -> Option<ADDR> {
         self.lines.get(self.cursory).and_then(|line| match line {
             Render::Asm(line) => Some(line.address),
-            Render::Hex(from, _) => Some(*from + u32::try_from(self.cursorx).unwrap_or_default()),
+            Render::Hex(from, _) => Some(*from + ADDR::from_usize(self.cursorx)),
             _ => None,
         })
     }
@@ -573,7 +571,7 @@ impl Disassembly {
         mask
     }
 
-    pub fn jump(&mut self, dest: u32, ctx: &Context, platform: &impl Platform) {
+    pub fn jump(&mut self, dest: ADDR, ctx: &Context, platform: &impl Platform<ADDR>) {
         self.stack.push((self.cursorx, self.cursory));
         self.cursory = 0;
         self.cursorx = 0;
@@ -586,7 +584,7 @@ impl Disassembly {
                     }
                 }
                 Render::Hex(_, to) if dest < *to => {
-                    self.cursorx = (dest & 0xf) as usize;
+                    self.cursorx = dest.as_usize() & 0xf;
                     break;
                 }
                 _ => {}
@@ -596,7 +594,7 @@ impl Disassembly {
         self.status(ctx, platform);
     }
 
-    pub fn find(&mut self, key: &str, ctx: &Context, platform: &impl Platform) {
+    pub fn find(&mut self, key: &str, ctx: &Context, platform: &impl Platform<ADDR>) {
         if key.is_empty() {
             self.search = Search::None;
         } else {
@@ -638,7 +636,7 @@ impl Disassembly {
         }
     }
 
-    pub fn find_next(&mut self, ctx: &Context, platform: &impl Platform) {
+    pub fn find_next(&mut self, ctx: &Context, platform: &impl Platform<ADDR>) {
         match &self.search {
             Search::Str(search) => {
                 let next_hex = self.find_next_hex(search.as_bytes());
@@ -693,22 +691,23 @@ impl Disassembly {
         }
     }
 
-    fn find_next_hex(&self, search: &[u8]) -> Option<u32> {
+    fn find_next_hex(&self, search: &[u8]) -> Option<ADDR> {
         if let Some(from) = self.cursor_to_address()
             && let Some(section) = self.get_address(from)
             && let Some(cursor) = section.handle.find(
-                usize::try_from(from.saturating_add(1).saturating_sub(section.start))
-                    .unwrap_or_default(),
+                from.as_usize()
+                    .saturating_add(1)
+                    .saturating_sub(section.start.as_usize()),
                 search,
             )
         {
-            Some(u32::try_from(cursor).unwrap_or_default() + section.start)
+            Some(ADDR::from_usize(cursor) + section.start)
         } else {
             None
         }
     }
 
-    pub fn find_prev(&mut self, ctx: &Context, platform: &impl Platform) {
+    pub fn find_prev(&mut self, ctx: &Context, platform: &impl Platform<ADDR>) {
         match &self.search {
             Search::Str(search) => {
                 let prev_hex = self.find_prev_hex(search.as_bytes());
@@ -763,15 +762,15 @@ impl Disassembly {
         }
     }
 
-    fn find_prev_hex(&self, search: &[u8]) -> Option<u32> {
+    fn find_prev_hex(&self, search: &[u8]) -> Option<ADDR> {
         if let Some(from) = self.cursor_to_address()
             && let Some(section) = self.get_address(from)
             && let Some(cursor) = section.handle.rfind(
-                usize::try_from(from.saturating_sub(section.start)).unwrap_or_default(),
+                from.as_usize().saturating_sub(section.start.as_usize()),
                 search,
             )
         {
-            Some(u32::try_from(cursor).unwrap_or_default() + section.start)
+            Some(ADDR::from_usize(cursor) + section.start)
         } else {
             None
         }
@@ -789,25 +788,19 @@ impl Disassembly {
         m
     }
 
-    pub fn can_disassemble(&self) -> Option<u32> {
+    pub fn can_disassemble(&self) -> Option<ADDR> {
         if let Some(Render::Hex(from, _)) = self.lines.get(self.cursory) {
-            Some(
-                from + u32::try_from(self.cursorx)
-                    .unwrap_or_default()
-                    .saturating_sub(*from & 0xf),
-            )
+            Some(*from + ADDR::from_usize(self.cursorx.saturating_sub(from.as_usize() & 0xf)))
         } else {
             None
         }
     }
 
-    pub fn cur_address(&self) -> Option<u32> {
+    pub fn cur_address(&self) -> Option<ADDR> {
         match self.lines.get(self.cursory) {
-            Some(Render::Hex(from, _)) => Some(
-                from + u32::try_from(self.cursorx)
-                    .unwrap_or_default()
-                    .saturating_sub(*from & 0xf),
-            ),
+            Some(Render::Hex(from, _)) => {
+                Some(*from + ADDR::from_usize(self.cursorx.saturating_sub(from.as_usize() & 0xf)))
+            }
             Some(Render::Asm(line)) => {
                 if let Some(target) = line.target {
                     Some(target)
@@ -827,7 +820,7 @@ impl Disassembly {
                 Some(Render::Hex(from, to)) => {
                     self.cursorx = self
                         .cursorx
-                        .clamp((*from & 0xf) as usize, ((*to - 1) & 0xf) as usize);
+                        .clamp(from.as_usize() & 0xf, (to.as_usize() - 1) & 0xf);
                 }
                 Some(Render::Ref(_, refs)) => self.cursorx = self.cursorx.clamp(0, refs.len()),
                 _ => self.cursorx = 0,
@@ -850,7 +843,7 @@ impl Disassembly {
         s: &mut Screen,
         origin: &Point,
         range: &Rect,
-        platform: &impl Platform,
+        platform: &impl Platform<ADDR>,
     ) {
         let row = y - (self.bounds.t + origin.y) + self.scroll.get();
         if let Ok(idx) = usize::try_from(row)
@@ -926,16 +919,16 @@ impl Disassembly {
         s: &mut Screen,
         origin: &Point,
         range: &Rect,
-        platform: &impl Platform,
+        platform: &impl Platform<ADDR>,
     ) {
         let row = y - (self.bounds.t + origin.y) + self.scroll.get();
         if let Ok(idx) = usize::try_from(row)
             && let Some(Render::Hex(from, to)) = self.lines.get(idx)
             && let Some(section) = self.get_address(*from)
         {
-            let offset = (from - section.start) as usize;
-            let skip = usize::try_from(*from & 0xf).unwrap_or_default();
-            let end = usize::try_from(((*to - 1) & 0xf) + 1).unwrap_or_default();
+            let offset = (*from - section.start).as_usize();
+            let skip = from.as_usize() & 0xf;
+            let end = ((to.as_usize() - 1) & 0xf) + 1;
             let addr = platform.address(*from);
             let addr_len = i32::try_from(addr.len()).unwrap_or(i32::MAX);
             let hex_len = addr_len + 52; // 61
@@ -1015,7 +1008,7 @@ impl Disassembly {
         s: &mut Screen,
         origin: &Point,
         range: &Rect,
-        platform: &impl Platform,
+        platform: &impl Platform<ADDR>,
     ) {
         let row = y - (self.bounds.t + origin.y) + self.scroll.get();
         if let Ok(idx) = usize::try_from(row)

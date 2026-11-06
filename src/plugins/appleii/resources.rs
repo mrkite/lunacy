@@ -19,7 +19,7 @@ use std::{collections::HashMap, rc::Rc, sync::LazyLock};
 pub struct Resources {}
 
 impl Plugin for Resources {
-    fn get_name(&self) -> &str {
+    fn get_name(&self) -> &'static str {
         "Apple/Resources"
     }
 
@@ -37,8 +37,8 @@ impl Plugin for Resources {
         let mut treegrid = TreeGrid::new(&["ID", "Length"]);
         let mut keys = vec![];
         for key in entries.keys() {
-            if let Some(res_type) = TYPES.get(&key) {
-                keys.push((format!("{}", res_type), key));
+            if let Some(res_type) = TYPES.get(key) {
+                keys.push((res_type.to_string(), key));
             } else {
                 keys.push((format!("${key:x}"), key));
             }

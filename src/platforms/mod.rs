@@ -6,7 +6,7 @@ Platforms for disassembly
 */
 
 use crate::{
-    cpus::{CpuLine, CpuState, Instruction},
+    cpus::{Address, CpuLine, CpuState, Instruction},
     lunacy::Handle,
 };
 
@@ -28,14 +28,14 @@ pub use iie::IIe;
 pub use iigs::IIgs;
 pub use mac::Mac;
 
-pub trait Platform {
-    fn address(&self, address: u32) -> String;
+pub trait Platform<ADDR: Address> {
+    fn address(&self, address: ADDR) -> String;
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<ADDR>,
     ) -> Result<Instruction, &'static str>;
-    fn target(&self, inst: &Instruction) -> Option<u32>;
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine;
+    fn target(&self, inst: &Instruction) -> Option<ADDR>;
+    fn disassemble(&self, address: ADDR, inst: &Instruction) -> CpuLine<ADDR>;
 }

@@ -23,7 +23,7 @@ use std::{
 };
 
 pub struct IIe {
-    disassembly: Disassembly,
+    disassembly: Disassembly<u16>,
     platform: IIePlatform,
     picker: FilePicker,
     label: LabelWin,
@@ -40,7 +40,7 @@ impl IIe {
             label: LabelWin::default(),
         }
     }
-    pub fn add_section(&mut self, name: &str, start: u32, data: &[u8]) {
+    pub fn add_section(&mut self, name: &str, start: u16, data: &[u8]) {
         self.disassembly.add_section(name, start, data);
     }
 
@@ -110,7 +110,7 @@ impl Widget for IIe {
     }
 
     fn jump(&mut self, to: usize, ctx: &Context) {
-        if let Ok(addr) = u32::try_from(to) {
+        if let Ok(addr) = u16::try_from(to) {
             self.disassembly.jump(addr, ctx, &self.platform);
         }
     }
@@ -156,7 +156,6 @@ impl Widget for IIe {
         match code {
             KeyCode::Char('d') => {
                 if let Some(addr) = self.disassembly.can_disassemble() {
-                    let addr = (addr & 0xffff) as u16;
                     let state = State6502::new(addr);
                     if let Err(err) = self.disassembly.add_entry(state, &self.platform) {
                         ctx.post(Message::Error(err.to_string()));
@@ -240,29 +239,27 @@ pub struct IIePlatform {
     #[serde(skip)]
     cpu: Cpu6502,
     entries: Vec<u16>,
-    labels: HashMap<u32, String>,
+    labels: HashMap<u16, String>,
 }
 
-impl Platform for IIePlatform {
-    fn address(&self, address: u32) -> String {
+impl Platform<u16> for IIePlatform {
+    fn address(&self, address: u16) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
         }
         format!("{address:04x}")
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<u16> {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine {
+    fn disassemble(&self, address: u16, inst: &Instruction) -> CpuLine<u16> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
             }
-            u16::try_from(addr).map_or(None, |addr| {
-                ADDRESSES.get(&addr).map(|name| format!(" ;{name}"))
-            })
+            ADDRESSES.get(&addr).map(|name| format!(" ;{name}"))
         })
     }
 
@@ -270,7 +267,7 @@ impl Platform for IIePlatform {
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u16>,
     ) -> Result<Instruction, &'static str> {
         self.cpu.decode(handle, offset, state)
     }
@@ -282,7 +279,7 @@ impl IIePlatform {
     }
 
     pub fn add_label(&mut self, addr: &str, label: &str) {
-        let mut ofs: u32 = 0;
+        let mut ofs: u16 = 0;
         for ch in addr.chars() {
             if ch.is_ascii_hexdigit() {
                 let nib = if ch > '9' {
@@ -291,7 +288,7 @@ impl IIePlatform {
                     ch as u8 & 0xf
                 };
                 ofs <<= 4;
-                ofs |= u32::from(nib);
+                ofs |= u16::from(nib);
             }
         }
         self.labels.insert(ofs, label.to_string());

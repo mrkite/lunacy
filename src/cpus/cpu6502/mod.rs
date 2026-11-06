@@ -22,17 +22,17 @@ pub struct State6502 {
 }
 
 impl State6502 {
-    pub fn new(addr: u16) -> Self {
+    pub const fn new(addr: u16) -> Self {
         Self { addr }
     }
 }
 
-impl CpuState for State6502 {
-    fn jump(&mut self, addr: u32) {
-        self.addr = (addr & 0xffff) as u16;
+impl CpuState<u16> for State6502 {
+    fn jump(&mut self, addr: u16) {
+        self.addr = addr;
     }
-    fn address(&self) -> u32 {
-        u32::from(self.addr)
+    fn address(&self) -> u16 {
+        self.addr
     }
     fn as_any(&mut self) -> &mut dyn std::any::Any {
         self
@@ -73,12 +73,12 @@ impl Operand6502 {
 #[derive(Default)]
 pub struct Cpu6502 {}
 
-impl Cpu for Cpu6502 {
+impl Cpu<u16> for Cpu6502 {
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u16>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State6502>() else {
             return Err("6502 disassembler called without a 6502 state");
@@ -94,9 +94,9 @@ impl Cpu for Cpu6502 {
         }
         let mode = &opcode.a;
         let length = SIZES[mode];
-        let addr = u32::from(state.addr) + length;
+        let addr = state.addr + u16::try_from(length).unwrap_or_default();
         state.jump(addr);
-        if start_offset + length as usize >= handle.len() {
+        if start_offset + length >= handle.len() {
             return Err("end of file reached");
         }
 
@@ -148,13 +148,12 @@ impl Cpu for Cpu6502 {
                 operand.oper_type = OperType::IndY;
             }
             Addressing::Rel => {
-                operand.oper = ((addr & 0xffff) as u16)
-                    .wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()));
+                operand.oper = addr.wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()));
                 operand.oper_type = OperType::Abs;
             }
         }
 
-        let raw = handle.read(start_offset, length as usize).to_vec();
+        let raw = handle.read(start_offset, length).to_vec();
 
         Ok(Instruction {
             name: opcode.n.to_string(),
@@ -167,10 +166,10 @@ impl Cpu for Cpu6502 {
 
     fn disassemble(
         &self,
-        address: u32,
+        address: u16,
         inst: &Instruction,
-        lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine {
+        lookup: &dyn Fn(u16) -> Option<String>,
+    ) -> CpuLine<u16> {
         let Some(operand) = inst.operands.as_any().downcast_ref::<Operand6502>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -196,49 +195,49 @@ impl Cpu for Cpu6502 {
         match operand.oper_type {
             OperType::Imm => {
                 out.operand = format!("#{}", operand.to_hex());
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::Abs => {
                 out.operand = operand.to_hex();
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::AbsX => {
                 out.operand = format!("{}, x", operand.to_hex());
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::AbsY => {
                 out.operand = format!("{}, y", operand.to_hex());
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::Ind => {
                 out.operand = format!("({})", operand.to_hex());
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::IndX => {
                 out.operand = format!("({}, x)", operand.to_hex());
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::IndY => {
                 out.operand = format!("({}), y", operand.to_hex());
-                out.comment = lookup(u32::from(operand.oper)).unwrap_or_default();
+                out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::None => {}
         }
         out
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<u16> {
         if let Some(opr) = inst.operands.as_any().downcast_ref::<Operand6502>()
             && (opr.oper_type == OperType::Imm || opr.oper_type == OperType::Abs)
         {
-            Some(u32::from(opr.oper))
+            Some(opr.oper)
         } else {
             None
         }
     }
 }
 
-static SIZES: LazyLock<HashMap<Addressing, u32>> = LazyLock::new(|| {
+static SIZES: LazyLock<HashMap<Addressing, usize>> = LazyLock::new(|| {
     let mut m = HashMap::new();
     m.insert(Addressing::Imp, 1);
     m.insert(Addressing::Imm, 2);

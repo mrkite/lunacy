@@ -12,7 +12,7 @@ use crate::{
     },
     lunacy::Handle,
 };
-use std::{collections::HashMap, sync::LazyLock};
+use std::{collections::HashMap, fmt, sync::LazyLock};
 
 mod opcodes;
 
@@ -33,12 +33,12 @@ pub struct State65816 {
 }
 
 impl State65816 {
-    pub fn new(addr: u32, flags: u32) -> Self {
+    pub const fn new(addr: u32, flags: u32) -> Self {
         Self { addr, flags }
     }
 }
 
-impl CpuState for State65816 {
+impl CpuState<u32> for State65816 {
     fn jump(&mut self, addr: u32) {
         self.addr = addr;
     }
@@ -89,26 +89,37 @@ impl Operand for Operand65816 {
         self
     }
 }
-impl Operand65816 {
-    fn to_hex(&self) -> String {
-        if (self.oper & !0xff) == !0xff {
-            format!("$-{:02x}", !self.oper + 1)
-        } else if (self.oper & !0xff) == 0 {
-            format!("${:02x}", self.oper)
-        } else if (self.oper & !0xffff) == !0xffff {
-            format!("$-{:04x}", !self.oper + 1)
-        } else if (self.oper & !0xffff) == 0 {
-            format!("${:04x}", self.oper)
-        } else if (self.oper & !0xff_ffff) == 0 {
-            format!("${:02x}/{:04x}", self.oper >> 16, self.oper & 0xffff)
-        } else if (self.oper & 0x8000_0000) != 0 {
-            format!("$-{:08x}", !self.oper + 1)
-        } else {
-            format!("${:08x}", self.oper)
+impl fmt::Display for Operand65816 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.oper_type {
+            Opr::Imm => write!(f, "#{}", to_hex(self.oper)),
+            Opr::Abs => write!(f, "{}", to_hex(self.oper)),
+            Opr::AbsB => write!(f, "B:{}", to_hex(self.oper)),
+            Opr::AbsD => write!(f, "D:{}", to_hex(self.oper)),
+            Opr::AbsX => write!(f, "{}, x", to_hex(self.oper)),
+            Opr::AbsXB => write!(f, "B:{}, x", to_hex(self.oper)),
+            Opr::AbsXD => write!(f, "D:{}, x", to_hex(self.oper)),
+            Opr::AbsY => write!(f, "{}, y", to_hex(self.oper)),
+            Opr::AbsYB => write!(f, "B:{}, y", to_hex(self.oper)),
+            Opr::AbsYD => write!(f, "D:{}, y", to_hex(self.oper)),
+            Opr::AbsS => write!(f, "{}, s", to_hex(self.oper)),
+            Opr::Ind => write!(f, "({})", to_hex(self.oper)),
+            Opr::IndB => write!(f, "(B:{})", to_hex(self.oper)),
+            Opr::IndD => write!(f, "(D:{})", to_hex(self.oper)),
+            Opr::IndX => write!(f, "({}, x)", to_hex(self.oper)),
+            Opr::IndXB => write!(f, "(B:{}, x)", to_hex(self.oper)),
+            Opr::IndXD => write!(f, "(D:{}, x)", to_hex(self.oper)),
+            Opr::IndY => write!(f, "({}), y", to_hex(self.oper)),
+            Opr::IndL => write!(f, "[{}]", to_hex(self.oper)),
+            Opr::IndLY => write!(f, "[{}], y", to_hex(self.oper)),
+            Opr::IndS => write!(f, "({}, s), y", to_hex(self.oper)),
+            Opr::Bank => write!(f, "{:02x}, {:02x}", self.oper >> 8, self.oper & 0xff),
+            Opr::None => Ok(()),
         }
     }
-
-    pub fn or(&mut self, byte: u32) {
+}
+impl Operand65816 {
+    pub const fn or(&mut self, byte: u32) {
         self.oper_type = Opr::Imm;
         self.oper |= byte;
     }
@@ -117,13 +128,13 @@ impl Operand65816 {
 #[derive(Default)]
 pub struct Cpu65816 {}
 
-impl Cpu for Cpu65816 {
+impl Cpu<u32> for Cpu65816 {
     #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u32>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State65816>() else {
             return Err("65816 disassembler called without a 65816 state");
@@ -147,7 +158,7 @@ impl Cpu for Cpu65816 {
             SIZES[mode]
         };
 
-        state.addr += length;
+        state.addr += u32::try_from(length).unwrap_or_default();
         state.flags &= flags::FLAGS; // clear changed flags
         let old_flags = state.flags;
 
@@ -315,9 +326,7 @@ impl Cpu for Cpu65816 {
         if (state.flags ^ old_flags) & flags::M8 != 0 {
             state.flags |= flags::M8_CHANGED;
         }
-        let raw = handle
-            .read(start_offset, usize::try_from(length).unwrap_or_default())
-            .to_vec();
+        let raw = handle.read(start_offset, length).to_vec();
 
         Ok(Instruction {
             name: opcode.n.to_string(),
@@ -333,7 +342,7 @@ impl Cpu for Cpu65816 {
         address: u32,
         inst: &Instruction,
         lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine {
+    ) -> CpuLine<u32> {
         let Some(operand) = inst.operands.as_any().downcast_ref::<Operand65816>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -360,31 +369,7 @@ impl Cpu for Cpu65816 {
         while out.hex.chars().count() < 13 {
             out.hex.push(' ');
         }
-        out.operand = match operand.oper_type {
-            Opr::Imm => format!("#{}", operand.to_hex()),
-            Opr::Abs => operand.to_hex(),
-            Opr::AbsB => format!("B:{}", operand.to_hex()),
-            Opr::AbsD => format!("D:{}", operand.to_hex()),
-            Opr::AbsX => format!("{}, x", operand.to_hex()),
-            Opr::AbsXB => format!("B:{}, x", operand.to_hex()),
-            Opr::AbsXD => format!("D:{}, x", operand.to_hex()),
-            Opr::AbsY => format!("{}, y", operand.to_hex()),
-            Opr::AbsYB => format!("B:{}, y", operand.to_hex()),
-            Opr::AbsYD => format!("D:{}, y", operand.to_hex()),
-            Opr::AbsS => format!("{}, s", operand.to_hex()),
-            Opr::Ind => format!("({})", operand.to_hex()),
-            Opr::IndB => format!("(B:{})", operand.to_hex()),
-            Opr::IndD => format!("(D:{})", operand.to_hex()),
-            Opr::IndX => format!("({}, x)", operand.to_hex()),
-            Opr::IndXB => format!("(B:{}, x)", operand.to_hex()),
-            Opr::IndXD => format!("(D:{}, x)", operand.to_hex()),
-            Opr::IndY => format!("({}), y", operand.to_hex()),
-            Opr::IndL => format!("[{}]", operand.to_hex()),
-            Opr::IndLY => format!("[{}], y", operand.to_hex()),
-            Opr::IndS => format!("({}, s), y", operand.to_hex()),
-            Opr::Bank => format!("{:02x}, {:02x}", operand.oper >> 8, operand.oper & 0xff),
-            Opr::None => String::new(),
-        };
+        out.operand = operand.to_string();
         if let Some(cmt) = lookup(operand.oper) {
             out.comment = cmt;
         }
@@ -423,7 +408,7 @@ impl Cpu for Cpu65816 {
     }
 }
 
-static SIZES: LazyLock<HashMap<Addressing, u32>> = LazyLock::new(|| {
+static SIZES: LazyLock<HashMap<Addressing, usize>> = LazyLock::new(|| {
     let mut m = HashMap::new();
     m.insert(Addressing::Imp, 1);
     m.insert(Addressing::Imm, 2);
@@ -456,3 +441,21 @@ static SIZES: LazyLock<HashMap<Addressing, u32>> = LazyLock::new(|| {
 const HEX: [char; 16] = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 ];
+
+fn to_hex(val: u32) -> String {
+    if (val & !0xff) == !0xff {
+        format!("$-{:02x}", !val + 1)
+    } else if (val & !0xff) == 0 {
+        format!("${:02x}", val)
+    } else if (val & !0xffff) == !0xffff {
+        format!("$-{:04x}", !val + 1)
+    } else if (val & !0xffff) == 0 {
+        format!("${:04x}", val)
+    } else if (val & !0xff_ffff) == 0 {
+        format!("${:02x}/{:04x}", val >> 16, val & 0xffff)
+    } else if (val & 0x8000_0000) != 0 {
+        format!("$-{:08x}", !val + 1)
+    } else {
+        format!("${:08x}", val)
+    }
+}

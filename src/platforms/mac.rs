@@ -24,7 +24,7 @@ use std::{
 pub struct Mac {
     api: Api,
     a5: HashMap<u32, u32>,
-    disassembly: Disassembly,
+    disassembly: Disassembly<u32>,
     platform: MacPlatform,
     picker: FilePicker,
     label: LabelWin,
@@ -287,7 +287,7 @@ impl MacPlatform {
     }
 }
 
-impl Platform for MacPlatform {
+impl Platform<u32> for MacPlatform {
     fn address(&self, address: u32) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
@@ -299,7 +299,7 @@ impl Platform for MacPlatform {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine {
+    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine<u32> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
@@ -312,7 +312,7 @@ impl Platform for MacPlatform {
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState,
+        state: &mut dyn CpuState<u32>,
     ) -> Result<Instruction, &'static str> {
         let mut p = &self.prints;
         let mut pofs = offset;
@@ -320,8 +320,8 @@ impl Platform for MacPlatform {
             pofs += 1;
             if let Some(name) = &child.name {
                 let length = pofs - offset;
-                let ins_len = u32::try_from(length).unwrap_or_default();
-                let addr = state.address() + ins_len;
+                let ins_len = length;
+                let addr = state.address() + u32::try_from(ins_len).unwrap_or_default();
                 state.jump(addr);
                 return Ok(Instruction {
                     name: name.to_owned(),

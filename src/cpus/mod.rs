@@ -42,10 +42,10 @@ pub trait Address:
     + PartialOrd
     + Default
     + Display
+    + TryFrom<String>
     + Copy
 {
     fn as_usize(&self) -> usize;
-    fn parse(s: &str) -> Result<Self, &'static str>;
 }
 
 pub trait CpuState<ADDR: Address> {

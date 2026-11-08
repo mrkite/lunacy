@@ -13,7 +13,8 @@ use std::{
     ops::{Add, AddAssign, Sub},
 };
 
-#[derive(Clone, Copy, Hash, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "String", into = "String")]
 pub enum Address65816 {
     Normal(u32),
     B(u16),
@@ -166,20 +167,30 @@ impl Sub<usize> for Address65816 {
     }
 }
 
-impl Address for Address65816 {
-    fn as_usize(&self) -> usize {
+impl Display for Address65816 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Normal(v) => usize::try_from(*v).unwrap_or(usize::MAX),
-            Self::B(v) => usize::from(*v),
-            Self::D(v) => usize::from(*v),
+            Self::Normal(v) => write!(f, "{:02x}/{:04x}", v >> 16, v & 0xffff),
+            Self::B(v) => write!(f, "B:{v:04x}"),
+            Self::D(v) => write!(f, "D:{v:02x}"),
         }
     }
-    fn parse(s: &str) -> Result<Self, &'static str> {
+}
+
+impl Into<String> for Address65816 {
+    fn into(self) -> String {
+        self.to_string()
+    }
+}
+
+impl TryFrom<String> for Address65816 {
+    type Error = &'static str;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
         let mut bank: u32 = 0;
         let mut ofs: u32 = 0;
         let mut is_special = false;
 
-        for ch in s.chars() {
+        for ch in value.chars() {
             if ch.is_ascii_hexdigit() {
                 let nib = if ch > '9' {
                     (ch as u8 & 0xf) + 9
@@ -224,16 +235,6 @@ impl Address for Address65816 {
     }
 }
 
-impl Display for Address65816 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Normal(v) => write!(f, "{:02x}/{:04x}", v >> 16, v & 0xffff),
-            Self::B(v) => write!(f, "B:{v:04x}"),
-            Self::D(v) => write!(f, "D:{v:02x}"),
-        }
-    }
-}
-
 impl Address65816 {
     pub const fn k(self) -> u32 {
         match self {
@@ -245,6 +246,16 @@ impl Address65816 {
     pub const fn or(&mut self, byte: u32) {
         if let Self::Normal(v) = self {
             *v |= byte;
+        }
+    }
+}
+
+impl Address for Address65816 {
+    fn as_usize(&self) -> usize {
+        match self {
+            Self::Normal(v) => usize::try_from(*v).unwrap_or(usize::MAX),
+            Self::B(v) => usize::from(*v),
+            Self::D(v) => usize::from(*v),
         }
     }
 }

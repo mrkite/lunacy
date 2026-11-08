@@ -49,13 +49,11 @@ impl Sub<usize> for Address68k {
     }
 }
 
-impl Address for Address68k {
-    fn as_usize(&self) -> usize {
-        usize::try_from(self.0).unwrap_or(usize::MAX)
-    }
-    fn parse(s: &str) -> Result<Self, &'static str> {
+impl TryFrom<String> for Address68k {
+    type Error = &'static str;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
         let mut ofs: u32 = 0;
-        for ch in s.chars() {
+        for ch in value.chars() {
             if ch.is_ascii_hexdigit() {
                 let nib = if ch > '9' {
                     (ch as u8 & 0xf) + 9
@@ -69,6 +67,12 @@ impl Address for Address68k {
             }
         }
         Ok(Self(ofs))
+    }
+}
+
+impl Address for Address68k {
+    fn as_usize(&self) -> usize {
+        usize::try_from(self.0).unwrap_or(usize::MAX)
     }
 }
 

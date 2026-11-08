@@ -37,7 +37,7 @@ impl<ADDR: Address> Windowable for LabelWin<ADDR> {
     }
 }
 
-impl<ADDR: Address> Widget for LabelWin<ADDR> {
+impl<ADDR: Address<Error = &'static str>> Widget for LabelWin<ADDR> {
     fn layout(&mut self, constraint: &Rect) {
         self.window.layout(constraint);
         let mut lw = 0;
@@ -97,7 +97,7 @@ impl<ADDR: Address> Widget for LabelWin<ADDR> {
                 true
             }
             KeyCode::Enter => {
-                match ADDR::parse(self.entries[0].get()) {
+                match ADDR::try_from(self.entries[0].get().to_string()) {
                     Ok(addr) => {
                         self.hide();
                         self.submitted = Some((addr, self.entries[1].get().to_string()));

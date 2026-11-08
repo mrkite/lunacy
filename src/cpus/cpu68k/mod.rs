@@ -9,26 +9,28 @@ use crate::{
     cpus::{self, Cpu, CpuLine, CpuState, InstType, Instruction, cpu68k::opcodes::OPCODES},
     lunacy::Handle,
 };
+pub use address::Address68k;
 use std::collections::HashMap;
 
+mod address;
 mod opcodes;
 
 #[derive(Clone)]
 pub struct State68k {
-    pub addr: u32,
+    pub addr: Address68k,
 }
 
 impl State68k {
-    pub const fn new(addr: u32) -> Self {
+    pub const fn new(addr: Address68k) -> Self {
         Self { addr }
     }
 }
 
-impl CpuState<u32> for State68k {
-    fn jump(&mut self, addr: u32) {
+impl CpuState<Address68k> for State68k {
+    fn jump(&mut self, addr: Address68k) {
         self.addr = addr;
     }
-    fn address(&self) -> u32 {
+    fn address(&self) -> Address68k {
         self.addr
     }
     fn as_any(&mut self) -> &mut dyn std::any::Any {
@@ -95,13 +97,13 @@ impl Default for Cpu68k {
     }
 }
 
-impl Cpu<u32> for Cpu68k {
+impl Cpu<Address68k> for Cpu68k {
     #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u32>,
+        state: &mut dyn CpuState<Address68k>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State68k>() else {
             return Err("68k disassembler called without a 68k state");
@@ -308,7 +310,7 @@ impl Cpu<u32> for Cpu68k {
                                 rel = i32::from(handle.r16be(offset).cast_signed());
                                 offset += 2;
                             }
-                            op.constant = state.addr.wrapping_add_signed(rel) + 2;
+                            op.constant = state.addr.0.wrapping_add_signed(rel) + 2;
                         }
                         '\'' => {
                             let ch = it.next().unwrap();
@@ -322,7 +324,7 @@ impl Cpu<u32> for Cpu68k {
 
                 if found {
                     let length = offset - start_offset;
-                    state.addr += u32::try_from(length).unwrap_or_default();
+                    state.addr += length;
                     let raw = handle.read(start_offset, length).to_vec();
 
                     return Ok(Instruction {
@@ -337,7 +339,7 @@ impl Cpu<u32> for Cpu68k {
         }
         if (opcode & 0xf000) == 0xa000 {
             let length = offset - start_offset;
-            state.addr += u32::try_from(length).unwrap_or_default();
+            state.addr += length;
             let raw = handle.read(start_offset, length).to_vec();
             let mut sub = Box::new(Operands68k::default());
             let op = Operand {
@@ -360,10 +362,10 @@ impl Cpu<u32> for Cpu68k {
     #[allow(clippy::too_many_lines)]
     fn disassemble(
         &self,
-        address: u32,
+        address: Address68k,
         inst: &Instruction,
-        lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine<u32> {
+        lookup: &dyn Fn(Address68k) -> Option<String>,
+    ) -> CpuLine<Address68k> {
         let Some(sub) = inst.operands.as_any().downcast_ref::<Operands68k>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -493,11 +495,11 @@ impl Cpu<u32> for Cpu68k {
         out
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<Address68k> {
         if let Some(sub) = inst.operands.as_any().downcast_ref::<Operands68k>() {
             for opr in &sub.operands {
-                if opr.oper_type == Opr::Imm || opr.oper_type == Opr::Abs {
-                    return Some(opr.constant);
+                if opr.oper_type == Opr::Abs {
+                    return Some(Address68k(opr.constant));
                 }
             }
         }
@@ -516,7 +518,7 @@ fn parse_ea(
     size: char,
     handle: &Handle,
     offset: &mut usize,
-    address: u32,
+    address: Address68k,
 ) {
     match mode {
         0 => {
@@ -570,14 +572,14 @@ fn parse_ea(
                 op.oper_type = Opr::Abs;
                 let rel = i32::from(handle.r16be(*offset).cast_signed());
                 *offset += 2;
-                op.constant = address.wrapping_add_signed(rel) + 2;
+                op.constant = address.0.wrapping_add_signed(rel) + 2;
             }
             3 => {
                 op.oper_type = Opr::RegIndDisp;
                 let imm = handle.r16be(*offset);
                 *offset += 2;
                 let rel = i32::from((imm & 0xff) as i8);
-                op.constant = address.wrapping_add_signed(rel) + 2;
+                op.constant = address.0.wrapping_add_signed(rel) + 2;
                 op.reg = (imm >> 12) as u8 & 0xf;
                 op.width = if (imm & 0x800) == 0x800 { 2 } else { 1 };
             }
@@ -608,7 +610,7 @@ fn parse_ea(
     }
 }
 
-fn reg_list(list: u32, out: &mut CpuLine<u32>) {
+fn reg_list(list: u32, out: &mut CpuLine<Address68k>) {
     let mut start = None;
     let mut end = None;
     let mut multi = false;
@@ -668,9 +670,9 @@ fn to_fourcc(val: u32) -> String {
     s
 }
 
-fn to_hex(val: u32, lookup: &dyn Fn(u32) -> Option<String>) -> String {
+fn to_hex(val: u32, lookup: &dyn Fn(Address68k) -> Option<String>) -> String {
     // check if address lookup here
-    if let Some(cmt) = lookup(val) {
+    if let Some(cmt) = lookup(Address68k(val)) {
         return cmt;
     }
     if can_fourcc(val) {

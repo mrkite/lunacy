@@ -5,7 +5,7 @@ Apple IIgs : OMF executable or library
 */
 
 use crate::{
-    cpus::State65816,
+    cpus::{Address65816, State65816},
     lunacy::{Context, Handle},
     platforms::IIgs,
     plugins::Plugin,
@@ -34,7 +34,7 @@ impl Plugin for Omf {
         let parser = Parser::new(handle);
         let segments = parser.parse()?;
         for seg in &segments {
-            iigs.add_section(&seg.name, seg.mapped, &seg.data);
+            iigs.add_section(&seg.name, Address65816::Normal(seg.mapped), &seg.data);
         }
         let mut top = None;
         for seg in &segments {
@@ -43,7 +43,10 @@ impl Plugin for Omf {
                     top = Some(seg.mapped + seg.entry);
                 }
                 // code
-                iigs.add_entry(State65816::new(seg.mapped + seg.entry, 0))?;
+                iigs.add_entry(State65816::new(
+                    Address65816::Normal(seg.mapped + seg.entry),
+                    0,
+                ))?;
             }
         }
         iigs.disassemble();

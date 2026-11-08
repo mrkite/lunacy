@@ -5,6 +5,7 @@
 
 */
 
+mod address;
 mod opcodes;
 
 use crate::{
@@ -14,24 +15,25 @@ use crate::{
     },
     lunacy::Handle,
 };
-use std::{collections::HashMap, sync::LazyLock};
+pub use address::Address6502;
+use std::{collections::HashMap, fmt::Display, sync::LazyLock};
 
 #[derive(Clone, Default, PartialEq, Eq, Hash)]
 pub struct State6502 {
-    pub addr: u16,
+    pub addr: Address6502,
 }
 
 impl State6502 {
-    pub const fn new(addr: u16) -> Self {
+    pub const fn new(addr: Address6502) -> Self {
         Self { addr }
     }
 }
 
-impl CpuState<u16> for State6502 {
-    fn jump(&mut self, addr: u16) {
+impl CpuState<Address6502> for State6502 {
+    fn jump(&mut self, addr: Address6502) {
         self.addr = addr;
     }
-    fn address(&self) -> u16 {
+    fn address(&self) -> Address6502 {
         self.addr
     }
     fn as_any(&mut self) -> &mut dyn std::any::Any {
@@ -39,8 +41,9 @@ impl CpuState<u16> for State6502 {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Default, PartialEq)]
 enum OperType {
+    #[default]
     None,
     Imm,
     Abs,
@@ -51,21 +54,23 @@ enum OperType {
     IndY,
 }
 
+#[derive(Default)]
 struct Operand6502 {
     pub oper_type: OperType,
-    pub oper: u16,
+    pub oper: Address6502,
 }
 impl Operand for Operand6502 {
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
-impl Operand6502 {
-    fn to_hex(&self) -> String {
-        if (self.oper & 0xff00) == 0 {
-            format!("${:02x}", self.oper)
+
+impl Display for Operand6502 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if (self.oper.0 & 0xff00) == 0 {
+            write!(f, "${:02x}", self.oper.0)
         } else {
-            format!("${:04x}", self.oper)
+            write!(f, "${:04x}", self.oper.0)
         }
     }
 }
@@ -73,12 +78,12 @@ impl Operand6502 {
 #[derive(Default)]
 pub struct Cpu6502 {}
 
-impl Cpu<u16> for Cpu6502 {
+impl Cpu<Address6502> for Cpu6502 {
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u16>,
+        state: &mut dyn CpuState<Address6502>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State6502>() else {
             return Err("6502 disassembler called without a 6502 state");
@@ -94,61 +99,61 @@ impl Cpu<u16> for Cpu6502 {
         }
         let mode = &opcode.a;
         let length = SIZES[mode];
-        let addr = state.addr + u16::try_from(length).unwrap_or_default();
+        let addr = state.addr + length;
         state.jump(addr);
         if start_offset + length >= handle.len() {
             return Err("end of file reached");
         }
 
-        let mut operand = Box::new(Operand6502 {
-            oper_type: OperType::None,
-            oper: 0,
-        });
+        let mut operand = Box::new(Operand6502::default());
 
         match mode {
             Addressing::Imp => operand.oper_type = OperType::None,
             Addressing::Imm => {
-                operand.oper = u16::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = OperType::Imm;
             }
             Addressing::Abs => {
-                operand.oper = handle.r16(offset);
+                operand.oper = handle.r16(offset).into();
                 operand.oper_type = OperType::Abs;
             }
             Addressing::Abx => {
-                operand.oper = handle.r16(offset);
+                operand.oper = handle.r16(offset).into();
                 operand.oper_type = OperType::AbsX;
             }
             Addressing::Aby => {
-                operand.oper = handle.r16(offset);
+                operand.oper = handle.r16(offset).into();
                 operand.oper_type = OperType::AbsY;
             }
             Addressing::Zp => {
-                operand.oper = u16::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = OperType::Abs;
             }
             Addressing::Zpx => {
-                operand.oper = u16::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = OperType::AbsX;
             }
             Addressing::Zpy => {
-                operand.oper = u16::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = OperType::AbsY;
             }
             Addressing::Ind => {
-                operand.oper = handle.r16(offset);
+                operand.oper = handle.r16(offset).into();
                 operand.oper_type = OperType::Ind;
             }
             Addressing::Inx => {
-                operand.oper = u16::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = OperType::IndX;
             }
             Addressing::Iny => {
-                operand.oper = u16::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = OperType::IndY;
             }
             Addressing::Rel => {
-                operand.oper = addr.wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()));
+                operand.oper = addr
+                    .0
+                    .wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()))
+                    .into();
                 operand.oper_type = OperType::Abs;
             }
         }
@@ -166,10 +171,10 @@ impl Cpu<u16> for Cpu6502 {
 
     fn disassemble(
         &self,
-        address: u16,
+        address: Address6502,
         inst: &Instruction,
-        lookup: &dyn Fn(u16) -> Option<String>,
-    ) -> CpuLine<u16> {
+        lookup: &dyn Fn(Address6502) -> Option<String>,
+    ) -> CpuLine<Address6502> {
         let Some(operand) = inst.operands.as_any().downcast_ref::<Operand6502>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -194,31 +199,31 @@ impl Cpu<u16> for Cpu6502 {
         }
         match operand.oper_type {
             OperType::Imm => {
-                out.operand = format!("#{}", operand.to_hex());
+                out.operand = format!("#{operand}");
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::Abs => {
-                out.operand = operand.to_hex();
+                out.operand = operand.to_string();
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::AbsX => {
-                out.operand = format!("{}, x", operand.to_hex());
+                out.operand = format!("{operand}, x");
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::AbsY => {
-                out.operand = format!("{}, y", operand.to_hex());
+                out.operand = format!("{operand}, y");
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::Ind => {
-                out.operand = format!("({})", operand.to_hex());
+                out.operand = format!("({operand})");
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::IndX => {
-                out.operand = format!("({}, x)", operand.to_hex());
+                out.operand = format!("({operand}, x)");
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::IndY => {
-                out.operand = format!("({}), y", operand.to_hex());
+                out.operand = format!("({operand}), y");
                 out.comment = lookup(operand.oper).unwrap_or_default();
             }
             OperType::None => {}
@@ -226,7 +231,7 @@ impl Cpu<u16> for Cpu6502 {
         out
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u16> {
+    fn target(&self, inst: &Instruction) -> Option<Address6502> {
         if let Some(opr) = inst.operands.as_any().downcast_ref::<Operand6502>()
             && (opr.oper_type == OperType::Imm || opr.oper_type == OperType::Abs)
         {

@@ -6,7 +6,10 @@ IIgs platform
 */
 
 use crate::{
-    cpus::{Cpu, Cpu65816, CpuLine, CpuState, InstType, Instruction, Operand65816, State65816},
+    cpus::{
+        Address65816, Cpu, Cpu65816, CpuLine, CpuState, InstType, Instruction, Operand65816,
+        State65816,
+    },
     lunacy::{Context, FilePicker, Handle, Message},
     platforms::{Platform, api::Api, fingerprints::Fingerprint, labelwin::LabelWin},
     screen::{Point, Rect, Screen},
@@ -23,10 +26,10 @@ use std::{
 
 pub struct IIgs {
     api: Api,
-    disassembly: Disassembly<u32>,
+    disassembly: Disassembly<Address65816>,
     platform: IIgsPlatform,
     picker: FilePicker,
-    label: LabelWin,
+    label: LabelWin<Address65816>,
 }
 
 impl IIgs {
@@ -43,7 +46,7 @@ impl IIgs {
             label: LabelWin::default(),
         }
     }
-    pub fn add_section(&mut self, name: &str, start: u32, data: &[u8]) {
+    pub fn add_section(&mut self, name: &str, start: Address65816, data: &[u8]) {
         self.disassembly.add_section(name, start, data);
     }
 
@@ -123,7 +126,8 @@ impl Widget for IIgs {
 
     fn jump(&mut self, to: usize, ctx: &Context) {
         if let Ok(addr) = u32::try_from(to) {
-            self.disassembly.jump(addr, ctx, &self.platform);
+            self.disassembly
+                .jump(Address65816::Normal(addr), ctx, &self.platform);
         }
     }
 
@@ -160,7 +164,7 @@ impl Widget for IIgs {
         if self.label.visible() {
             return if self.label.key(code, modifiers, ctx) {
                 if let Some((addr, label)) = self.label.take() {
-                    self.platform.add_label(&addr, &label);
+                    self.platform.add_label(addr, &label);
                     self.disassembly.disassemble(&self.platform);
                 }
                 true
@@ -185,11 +189,7 @@ impl Widget for IIgs {
                 }
             }
             KeyCode::Char('\'') => {
-                if let Some(addr) = self.disassembly.cur_address() {
-                    self.label.set(&self.platform.address(addr));
-                } else {
-                    self.label.set("");
-                }
+                self.label.set(self.disassembly.cur_address());
                 self.label.show();
                 true
             }
@@ -267,8 +267,8 @@ struct IIgsPlatform {
     cpu: Cpu65816,
     #[serde(skip)]
     prints: Fingerprint,
-    entries: Vec<(u32, u32)>,
-    labels: HashMap<u32, String>,
+    entries: Vec<(Address65816, u32)>,
+    labels: HashMap<Address65816, String>,
 }
 
 impl IIgsPlatform {
@@ -282,19 +282,19 @@ impl IIgsPlatform {
     }
 }
 
-impl Platform<u32> for IIgsPlatform {
-    fn address(&self, address: u32) -> String {
+impl Platform<Address65816> for IIgsPlatform {
+    fn address(&self, address: Address65816) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
         }
-        format!("{:02x}/{:04x}", address >> 16, address & 0xffff)
+        address.to_string()
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<Address65816> {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine<u32> {
+    fn disassemble(&self, address: Address65816, inst: &Instruction) -> CpuLine<Address65816> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
@@ -307,7 +307,7 @@ impl Platform<u32> for IIgsPlatform {
         &self,
         file: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u32>,
+        state: &mut dyn CpuState<Address65816>,
     ) -> Result<Instruction, &'static str> {
         let mut p = &self.prints;
         let mut pofs = offset;
@@ -341,27 +341,10 @@ impl Platform<u32> for IIgsPlatform {
 }
 
 impl IIgsPlatform {
-    pub fn add_entry(&mut self, addr: u32, flags: u32) {
+    pub fn add_entry(&mut self, addr: Address65816, flags: u32) {
         self.entries.push((addr, flags));
     }
-    pub fn add_label(&mut self, addr: &str, label: &str) {
-        let mut bank: u32 = 0;
-        let mut ofs: u32 = 0;
-        for ch in addr.chars() {
-            if ch.is_ascii_hexdigit() {
-                let nib = if ch > '9' {
-                    (ch as u8 & 0xf) + 9
-                } else {
-                    ch as u8 & 0xf
-                };
-                ofs <<= 4;
-                ofs |= u32::from(nib);
-            } else if ch == '/' {
-                bank = ofs << 16;
-                ofs = 0;
-            }
-        }
-        let abs = bank | ofs;
-        self.labels.insert(abs, label.to_string());
+    pub fn add_label(&mut self, addr: Address65816, label: &str) {
+        self.labels.insert(addr, label.to_string());
     }
 }

@@ -6,7 +6,7 @@ Apple II : Binary executable
 */
 
 use crate::{
-    cpus::State6502,
+    cpus::{Address6502, State6502},
     lunacy::{Context, Handle},
     platforms::IIe,
     plugins::Plugin,
@@ -27,8 +27,8 @@ impl Plugin for Bin {
         let mut iie = IIe::new(handle.get_name());
         let dest = handle.r16(0);
         let len = usize::from(handle.r16(2));
-        iie.add_section("main", dest, handle.read(4, len));
-        iie.add_entry(State6502::new(dest))?;
+        iie.add_section("main", Address6502(dest), handle.read(4, len));
+        iie.add_entry(State6502::new(Address6502(dest)))?;
         iie.disassemble();
         iie.jump(dest.into(), ctx);
         Ok(Box::new(iie))

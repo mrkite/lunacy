@@ -6,7 +6,9 @@ Mac platform
 */
 
 use crate::{
-    cpus::{Cpu, Cpu68k, CpuLine, CpuState, InstType, Instruction, Operands68k, State68k},
+    cpus::{
+        Address68k, Cpu, Cpu68k, CpuLine, CpuState, InstType, Instruction, Operands68k, State68k,
+    },
     lunacy::{Context, FilePicker, Handle, Message},
     platforms::{Platform, api::Api, fingerprints::Fingerprint, labelwin::LabelWin},
     screen::{Point, Rect, Screen},
@@ -24,10 +26,10 @@ use std::{
 pub struct Mac {
     api: Api,
     a5: HashMap<u32, u32>,
-    disassembly: Disassembly<u32>,
+    disassembly: Disassembly<Address68k>,
     platform: MacPlatform,
     picker: FilePicker,
-    label: LabelWin,
+    label: LabelWin<Address68k>,
 }
 
 impl Mac {
@@ -45,7 +47,7 @@ impl Mac {
             label: LabelWin::default(),
         }
     }
-    pub fn add_section(&mut self, name: &str, start: u32, data: &[u8]) {
+    pub fn add_section(&mut self, name: &str, start: Address68k, data: &[u8]) {
         self.disassembly.add_section(name, start, data);
     }
 
@@ -129,7 +131,7 @@ impl Widget for Mac {
 
     fn jump(&mut self, to: usize, ctx: &Context) {
         if let Ok(addr) = u32::try_from(to) {
-            self.disassembly.jump(addr, ctx, &self.platform);
+            self.disassembly.jump(Address68k(addr), ctx, &self.platform);
         }
     }
 
@@ -166,7 +168,7 @@ impl Widget for Mac {
         if self.label.visible() {
             return if self.label.key(code, modifiers, ctx) {
                 if let Some((addr, label)) = self.label.take() {
-                    self.platform.add_label(&addr, &label);
+                    self.platform.add_label(addr, &label);
                     self.disassembly.disassemble(&self.platform);
                 }
                 true
@@ -190,11 +192,7 @@ impl Widget for Mac {
                 }
             }
             KeyCode::Char('\'') => {
-                if let Some(addr) = self.disassembly.cur_address() {
-                    self.label.set(&self.platform.address(addr));
-                } else {
-                    self.label.set("");
-                }
+                self.label.set(self.disassembly.cur_address());
                 self.label.show();
                 true
             }
@@ -272,8 +270,8 @@ struct MacPlatform {
     cpu: Cpu68k,
     #[serde(skip)]
     prints: Fingerprint,
-    entries: Vec<u32>,
-    labels: HashMap<u32, String>,
+    entries: Vec<Address68k>,
+    labels: HashMap<Address68k, String>,
 }
 
 impl MacPlatform {
@@ -287,19 +285,19 @@ impl MacPlatform {
     }
 }
 
-impl Platform<u32> for MacPlatform {
-    fn address(&self, address: u32) -> String {
+impl Platform<Address68k> for MacPlatform {
+    fn address(&self, address: Address68k) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
         }
-        format!("{address:06x}")
+        address.to_string()
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<Address68k> {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine<u32> {
+    fn disassemble(&self, address: Address68k, inst: &Instruction) -> CpuLine<Address68k> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
@@ -312,7 +310,7 @@ impl Platform<u32> for MacPlatform {
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u32>,
+        state: &mut dyn CpuState<Address68k>,
     ) -> Result<Instruction, &'static str> {
         let mut p = &self.prints;
         let mut pofs = offset;
@@ -320,13 +318,12 @@ impl Platform<u32> for MacPlatform {
             pofs += 1;
             if let Some(name) = &child.name {
                 let length = pofs - offset;
-                let ins_len = length;
-                let addr = state.address() + u32::try_from(ins_len).unwrap_or_default();
+                let addr = state.address() + length;
                 state.jump(addr);
                 return Ok(Instruction {
                     name: name.to_owned(),
                     inst_type: InstType::Special,
-                    length: ins_len,
+                    length,
                     raw: handle.read(offset, length).to_vec(),
                     operands: Box::new(Operands68k::default()),
                 });
@@ -338,22 +335,10 @@ impl Platform<u32> for MacPlatform {
 }
 
 impl MacPlatform {
-    pub fn add_entry(&mut self, addr: u32) {
+    pub fn add_entry(&mut self, addr: Address68k) {
         self.entries.push(addr);
     }
-    pub fn add_label(&mut self, addr: &str, label: &str) {
-        let mut ofs: u32 = 0;
-        for ch in addr.chars() {
-            if ch.is_ascii_hexdigit() {
-                let nib = if ch > '9' {
-                    (ch as u8 & 0xf) + 9
-                } else {
-                    ch as u8 & 0xf
-                };
-                ofs <<= 4;
-                ofs |= u32::from(nib);
-            }
-        }
-        self.labels.insert(ofs, label.to_string());
+    pub fn add_label(&mut self, addr: Address68k, label: &str) {
+        self.labels.insert(addr, label.to_string());
     }
 }

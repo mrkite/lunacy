@@ -12,32 +12,31 @@ use crate::{
     },
     lunacy::Handle,
 };
+pub use address::Address86;
 use std::collections::HashMap;
 
+mod address;
 mod opcodes;
 
 #[derive(Clone)]
 pub struct State86 {
-    pub seg: u16,
-    pub ofs: u16,
+    pub addr: Address86,
 }
 
 impl State86 {
-    pub fn new(addr: u32) -> Self {
+    pub const fn new(seg: u16, ofs: u16) -> Self {
         Self {
-            seg: u16::try_from((addr >> 4) & 0xffff).unwrap_or_default(),
-            ofs: u16::try_from(addr & 0xf).unwrap_or_default(),
+            addr: Address86 { seg, ofs },
         }
     }
 }
 
-impl CpuState<u32> for State86 {
-    fn jump(&mut self, addr: u32) {
-        self.seg = u16::try_from((addr >> 4) & 0xffff).unwrap_or_default();
-        self.ofs = u16::try_from(addr & 0xf).unwrap_or_default();
+impl CpuState<Address86> for State86 {
+    fn jump(&mut self, addr: Address86) {
+        self.addr = addr;
     }
-    fn address(&self) -> u32 {
-        (u32::from(self.seg) << 4) + u32::from(self.ofs)
+    fn address(&self) -> Address86 {
+        self.addr
     }
     fn as_any(&mut self) -> &mut dyn std::any::Any {
         self
@@ -65,12 +64,14 @@ struct Arg {
     disp: u32,
 }
 
-impl From<&Arg> for u32 {
+impl From<&Arg> for Address86 {
     fn from(val: &Arg) -> Self {
         match val.typ {
-            Opr::Abs => (Self::from(val.seg) << 4) + Self::from(val.ofs),
-            Opr::Imm => val.disp,
-            _ => 0,
+            Opr::Abs => Self {
+                seg: val.seg,
+                ofs: val.ofs,
+            },
+            _ => Self::default(),
         }
     }
 }
@@ -341,13 +342,13 @@ impl Default for Cpu86 {
     }
 }
 
-impl Cpu<u32> for Cpu86 {
+impl Cpu<Address86> for Cpu86 {
     #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u32>,
+        state: &mut dyn CpuState<Address86>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State86>() else {
             return Err("x86 disassembler called without a x86 state");
@@ -445,14 +446,14 @@ impl Cpu<u32> for Cpu86 {
                         }
                         'x' => sub.args.push(Arg::reg(REGNAMES[REGOFS[width]])),
                         'v' => {
-                            let ofs = state.ofs + handle.r16(offset);
+                            let ofs = state.addr.ofs + handle.r16(offset);
                             offset += 2;
                             let seg = if width == 4 {
                                 let seg = handle.r16(offset);
                                 offset += 2;
                                 seg
                             } else {
-                                state.seg
+                                state.addr.seg
                             };
                             let ofs = ofs.wrapping_add(
                                 u16::try_from(offset - start_offset).unwrap_or_default(),
@@ -559,16 +560,18 @@ impl Cpu<u32> for Cpu86 {
                     match ch {
                         'b' => {
                             let ofs = state
+                                .addr
                                 .ofs
                                 .wrapping_add_signed(i16::from(handle.r8(offset).cast_signed()));
                             offset += 1;
                             let ofs = ofs.wrapping_add(
                                 u16::try_from(offset - start_offset).unwrap_or_default(),
                             );
-                            sub.args.push(Arg::seg_ofs(state.seg, ofs));
+                            sub.args.push(Arg::seg_ofs(state.addr.seg, ofs));
                         }
                         'v' => {
                             let ofs = state
+                                .addr
                                 .ofs
                                 .wrapping_add_signed(handle.r16(offset).cast_signed());
                             offset += 2;
@@ -577,7 +580,7 @@ impl Cpu<u32> for Cpu86 {
                                 offset += 2;
                                 seg
                             } else {
-                                state.seg
+                                state.addr.seg
                             };
                             let ofs = ofs.wrapping_add(
                                 u16::try_from(offset - start_offset).unwrap_or_default(),
@@ -654,7 +657,7 @@ impl Cpu<u32> for Cpu86 {
         let mut name = String::new();
         name.push_str(opcode.name);
         let length = offset - start_offset;
-        state.ofs += u16::try_from(length).unwrap_or_default();
+        state.addr += length;
         let raw = handle.read(start_offset, length).to_vec();
         Ok(Instruction {
             name,
@@ -664,12 +667,13 @@ impl Cpu<u32> for Cpu86 {
             operands: sub,
         })
     }
+
     fn disassemble(
         &self,
-        address: u32,
+        address: Address86,
         inst: &Instruction,
-        lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine<u32> {
+        lookup: &dyn Fn(Address86) -> Option<String>,
+    ) -> CpuLine<Address86> {
         let Some(sub) = inst.operands.as_any().downcast_ref::<Operands86>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -728,10 +732,11 @@ impl Cpu<u32> for Cpu86 {
         }
         out
     }
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+
+    fn target(&self, inst: &Instruction) -> Option<Address86> {
         if let Some(sub) = inst.operands.as_any().downcast_ref::<Operands86>() {
             for arg in &sub.args {
-                if arg.typ == Opr::Imm || arg.typ == Opr::Abs {
+                if arg.typ == Opr::Abs {
                     return Some(arg.into());
                 }
             }
@@ -740,7 +745,7 @@ impl Cpu<u32> for Cpu86 {
     }
 }
 
-fn exp_ptr(sub: &Operands86, arg: &Arg, out: &mut CpuLine<u32>) {
+fn exp_ptr(sub: &Operands86, arg: &Arg, out: &mut CpuLine<Address86>) {
     if sub.flags & flags::BYTE != 0 {
         out.operand.push_str("byte ptr ");
     }

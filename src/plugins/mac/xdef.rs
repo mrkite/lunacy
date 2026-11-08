@@ -5,7 +5,7 @@ Mac : xDEF disassembly
 */
 
 use crate::{
-    cpus::State68k,
+    cpus::{Address68k, State68k},
     lunacy::{Context, Handle},
     platforms::Mac,
     plugins::Plugin,
@@ -28,8 +28,8 @@ impl Plugin for Xdef {
 
     fn create(&self, handle: &Handle, _ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
         let mut mac = Mac::new(handle.get_name());
-        mac.add_section("", 0x10000, handle.read(0, handle.len()));
-        mac.add_entry(State68k::new(0x10000))?;
+        mac.add_section("", Address68k(0x10000), handle.read(0, handle.len()));
+        mac.add_entry(State68k::new(Address68k(0x10000)))?;
         mac.disassemble();
         Ok(Box::new(mac))
     }

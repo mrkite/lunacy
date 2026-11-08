@@ -6,7 +6,7 @@ Dos : 16-bit MZ EXE
 */
 
 use crate::{
-    cpus::{CpuState, State86},
+    cpus::{Address, Address86, CpuState, State86},
     lunacy::{Context, Handle},
     platforms::Dos,
     plugins::Plugin,
@@ -33,10 +33,8 @@ impl Plugin for Mz {
         let parser = Parser::new(handle);
         let top = parser.parse(&mut dos)?;
         dos.disassemble();
-        if let Some(top) = top
-            && let Ok(addr) = usize::try_from(top)
-        {
-            dos.jump(addr, ctx);
+        if let Some(top) = top {
+            dos.jump(top.as_usize(), ctx);
         }
         Ok(Box::new(dos))
     }
@@ -53,7 +51,7 @@ impl Parser {
         }
     }
 
-    fn parse(&self, dos: &mut Dos) -> Result<Option<u32>, &'static str> {
+    fn parse(&self, dos: &mut Dos) -> Result<Option<Address86>, &'static str> {
         let base = 0x1000;
         let header = Header::new(&self.handle);
         dos.set_mz(header.to_list());
@@ -81,11 +79,13 @@ impl Parser {
         }
         let entry = (usize::from(header.initial_cs) << 4) + usize::from(header.initial_ip);
         let mut top = None;
-        dos.add_section("code", u32::from(base) << 4, &image);
+        dos.add_section("code", Address86 { seg: base, ofs: 0 }, &image);
         if entry < len {
             let state = State86 {
-                seg: header.initial_cs + base,
-                ofs: header.initial_ip,
+                addr: Address86 {
+                    seg: header.initial_cs + base,
+                    ofs: header.initial_ip,
+                },
             };
             top = Some(state.address());
             dos.add_entry(state)?;

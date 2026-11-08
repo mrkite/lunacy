@@ -12,8 +12,10 @@ use crate::{
     },
     lunacy::Handle,
 };
+pub use address::Address65816;
 use std::{collections::HashMap, fmt, sync::LazyLock};
 
+mod address;
 mod opcodes;
 
 mod flags {
@@ -28,21 +30,21 @@ mod flags {
 
 #[derive(Clone, Default)]
 pub struct State65816 {
-    pub addr: u32,
+    pub addr: Address65816,
     pub flags: u32,
 }
 
 impl State65816 {
-    pub const fn new(addr: u32, flags: u32) -> Self {
+    pub const fn new(addr: Address65816, flags: u32) -> Self {
         Self { addr, flags }
     }
 }
 
-impl CpuState<u32> for State65816 {
-    fn jump(&mut self, addr: u32) {
+impl CpuState<Address65816> for State65816 {
+    fn jump(&mut self, addr: Address65816) {
         self.addr = addr;
     }
-    fn address(&self) -> u32 {
+    fn address(&self) -> Address65816 {
         self.addr
     }
     fn as_any(&mut self) -> &mut dyn std::any::Any {
@@ -56,21 +58,11 @@ enum Opr {
     None,
     Imm,
     Abs,
-    AbsB,
-    AbsD,
     AbsX,
-    AbsXB,
-    AbsXD,
     AbsY,
-    AbsYB,
-    AbsYD,
     AbsS,
     Ind,
-    IndB,
-    IndD,
     IndX,
-    IndXB,
-    IndXD,
     IndY,
     IndL,
     IndLY,
@@ -81,7 +73,7 @@ enum Opr {
 #[derive(Default)]
 pub struct Operand65816 {
     oper_type: Opr,
-    oper: u32,
+    oper: Address65816,
     flags: u32,
 }
 impl Operand for Operand65816 {
@@ -92,49 +84,46 @@ impl Operand for Operand65816 {
 impl fmt::Display for Operand65816 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.oper_type {
-            Opr::Imm => write!(f, "#{}", to_hex(self.oper)),
-            Opr::Abs => write!(f, "{}", to_hex(self.oper)),
-            Opr::AbsB => write!(f, "B:{}", to_hex(self.oper)),
-            Opr::AbsD => write!(f, "D:{}", to_hex(self.oper)),
-            Opr::AbsX => write!(f, "{}, x", to_hex(self.oper)),
-            Opr::AbsXB => write!(f, "B:{}, x", to_hex(self.oper)),
-            Opr::AbsXD => write!(f, "D:{}, x", to_hex(self.oper)),
-            Opr::AbsY => write!(f, "{}, y", to_hex(self.oper)),
-            Opr::AbsYB => write!(f, "B:{}, y", to_hex(self.oper)),
-            Opr::AbsYD => write!(f, "D:{}, y", to_hex(self.oper)),
-            Opr::AbsS => write!(f, "{}, s", to_hex(self.oper)),
-            Opr::Ind => write!(f, "({})", to_hex(self.oper)),
-            Opr::IndB => write!(f, "(B:{})", to_hex(self.oper)),
-            Opr::IndD => write!(f, "(D:{})", to_hex(self.oper)),
-            Opr::IndX => write!(f, "({}, x)", to_hex(self.oper)),
-            Opr::IndXB => write!(f, "(B:{}, x)", to_hex(self.oper)),
-            Opr::IndXD => write!(f, "(D:{}, x)", to_hex(self.oper)),
-            Opr::IndY => write!(f, "({}), y", to_hex(self.oper)),
-            Opr::IndL => write!(f, "[{}]", to_hex(self.oper)),
-            Opr::IndLY => write!(f, "[{}], y", to_hex(self.oper)),
-            Opr::IndS => write!(f, "({}, s), y", to_hex(self.oper)),
-            Opr::Bank => write!(f, "{:02x}, {:02x}", self.oper >> 8, self.oper & 0xff),
+            Opr::Imm => write!(f, "#{}", self.oper),
+            Opr::Abs => write!(f, "{}", self.oper),
+            Opr::AbsX => write!(f, "{}, x", self.oper),
+            Opr::AbsY => write!(f, "{}, y", self.oper),
+            Opr::AbsS => write!(f, "{}, s", self.oper),
+            Opr::Ind => write!(f, "({})", self.oper),
+            Opr::IndX => write!(f, "({}, x)", self.oper),
+            Opr::IndY => write!(f, "({}), y", self.oper),
+            Opr::IndL => write!(f, "[{}]", self.oper),
+            Opr::IndLY => write!(f, "[{}], y", self.oper),
+            Opr::IndS => write!(f, "({}, s), y", self.oper),
+            Opr::Bank => {
+                if let Address65816::Normal(v) = self.oper {
+                    write!(f, "{:02x}, {:02x}", v >> 8, v & 0xff)
+                } else {
+                    Ok(())
+                }
+            }
             Opr::None => Ok(()),
         }
     }
 }
+
 impl Operand65816 {
     pub const fn or(&mut self, byte: u32) {
         self.oper_type = Opr::Imm;
-        self.oper |= byte;
+        self.oper.or(byte);
     }
 }
 
 #[derive(Default)]
 pub struct Cpu65816 {}
 
-impl Cpu<u32> for Cpu65816 {
+impl Cpu<Address65816> for Cpu65816 {
     #[allow(clippy::too_many_lines)]
     fn decode(
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u32>,
+        state: &mut dyn CpuState<Address65816>,
     ) -> Result<Instruction, &'static str> {
         let Some(state) = state.as_any().downcast_mut::<State65816>() else {
             return Err("65816 disassembler called without a 65816 state");
@@ -158,153 +147,150 @@ impl Cpu<u32> for Cpu65816 {
             SIZES[mode]
         };
 
-        state.addr += u32::try_from(length).unwrap_or_default();
+        state.addr += length;
         state.flags &= flags::FLAGS; // clear changed flags
         let old_flags = state.flags;
 
-        let mut operand = Box::new(Operand65816 {
-            oper_type: Opr::None,
-            oper: 0,
-            flags: 0,
-        });
+        let mut operand = Box::new(Operand65816::default());
 
         match mode {
             Addressing::Imm => {
-                operand.oper = u32::from(handle.r8(offset));
+                let flags = handle.r8(offset);
+                operand.oper = flags.into();
                 operand.oper_type = Opr::Imm;
                 if op == 0xe2 {
-                    state.flags |= operand.oper & flags::FLAGS;
+                    state.flags |= u32::from(flags) & flags::FLAGS;
                 } else if op == 0xc2 {
-                    state.flags &= !operand.oper;
+                    state.flags &= !u32::from(flags);
                 }
             }
             Addressing::ImmM => {
                 if state.flags & flags::M8 == 0 {
-                    operand.oper = u32::from(handle.r16(offset));
+                    operand.oper = handle.r16(offset).into();
                 } else {
-                    operand.oper = u32::from(handle.r8(offset));
+                    operand.oper = handle.r8(offset).into();
                 }
                 operand.oper_type = Opr::Imm;
             }
             Addressing::ImmX => {
                 if state.flags & flags::X8 == 0 {
-                    operand.oper = u32::from(handle.r16(offset));
+                    operand.oper = handle.r16(offset).into();
                 } else {
-                    operand.oper = u32::from(handle.r8(offset));
+                    operand.oper = handle.r8(offset).into();
                 }
                 operand.oper_type = Opr::Imm;
             }
             Addressing::Imms => {
-                operand.oper = u32::from(handle.r16(offset));
+                operand.oper = handle.r16(offset).into();
                 operand.oper_type = Opr::Imm;
             }
             Addressing::Abs => {
-                operand.oper = u32::from(handle.r16(offset));
+                let addr = handle.r16(offset);
+                operand.oper_type = Opr::Abs;
                 if opcode.i == InstType::Jump || opcode.i == InstType::Call {
-                    operand.oper |= state.addr & 0xff_0000; // K
-                    operand.oper_type = Opr::Abs;
+                    operand.oper = Address65816::Normal(state.addr.k() | u32::from(addr));
                 } else {
-                    operand.oper_type = Opr::AbsB;
+                    operand.oper = Address65816::B(addr);
                 }
             }
             Addressing::Abl => {
-                operand.oper = handle.r24(offset);
+                operand.oper = handle.r24(offset).into();
                 operand.oper_type = Opr::Abs;
             }
             Addressing::Abx => {
-                operand.oper = u32::from(handle.r16(offset));
+                let addr = handle.r16(offset);
+                operand.oper_type = Opr::AbsX;
                 if opcode.i == InstType::Jump || opcode.i == InstType::Call {
-                    operand.oper |= state.addr & 0xff_0000; // K
-                    operand.oper_type = Opr::AbsX;
+                    operand.oper = Address65816::Normal(state.addr.k() | u32::from(addr));
                 } else {
-                    operand.oper_type = Opr::AbsXB;
+                    operand.oper = Address65816::B(addr);
                 }
             }
             Addressing::Aby => {
-                operand.oper = u32::from(handle.r16(offset));
+                let addr = handle.r16(offset);
+                operand.oper_type = Opr::AbsY;
                 if opcode.i == InstType::Jump || opcode.i == InstType::Call {
-                    operand.oper |= state.addr & 0xff_0000; // K
-                    operand.oper_type = Opr::AbsY;
+                    operand.oper = Address65816::Normal(state.addr.k() | u32::from(addr));
                 } else {
-                    operand.oper_type = Opr::AbsYB;
+                    operand.oper = Address65816::B(addr);
                 }
             }
             Addressing::Ablx => {
-                operand.oper = handle.r24(offset);
+                operand.oper = handle.r24(offset).into();
                 operand.oper_type = Opr::AbsX;
             }
             Addressing::Aix => {
-                operand.oper = u32::from(handle.r16(offset));
+                let addr = handle.r16(offset);
+                operand.oper_type = Opr::IndX;
                 if opcode.i == InstType::Jump || opcode.i == InstType::Call {
-                    operand.oper |= state.addr & 0xff_0000; // K
-                    operand.oper_type = Opr::IndX;
+                    operand.oper = Address65816::Normal(state.addr.k() | u32::from(addr));
                 } else {
-                    operand.oper_type = Opr::IndXB;
+                    operand.oper = Address65816::B(addr);
                 }
             }
             Addressing::Zp => {
-                operand.oper = u32::from(handle.r8(offset));
-                operand.oper_type = Opr::AbsD;
+                operand.oper = Address65816::D(handle.r8(offset));
+                operand.oper_type = Opr::Abs;
             }
             Addressing::Zpx => {
-                operand.oper = u32::from(handle.r8(offset));
-                operand.oper_type = Opr::AbsXD;
+                operand.oper = Address65816::D(handle.r8(offset));
+                operand.oper_type = Opr::AbsX;
             }
             Addressing::Zpy => {
-                operand.oper = u32::from(handle.r8(offset));
-                operand.oper_type = Opr::AbsYD;
+                operand.oper = Address65816::D(handle.r8(offset));
+                operand.oper_type = Opr::AbsY;
             }
             Addressing::Zps => {
-                operand.oper = u32::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = Opr::AbsS;
             }
             Addressing::Ind => {
-                operand.oper = u32::from(handle.r16(offset));
+                let addr = handle.r16(offset);
+                operand.oper_type = Opr::Ind;
                 if opcode.i == InstType::Jump || opcode.i == InstType::Call {
-                    operand.oper |= state.addr & 0xff_0000; // K
-                    operand.oper_type = Opr::Ind;
+                    operand.oper = Address65816::Normal(state.addr.k() | u32::from(addr));
                 } else {
-                    operand.oper_type = Opr::IndB;
+                    operand.oper = Address65816::B(addr);
                 }
             }
             Addressing::Inz => {
-                operand.oper = u32::from(handle.r8(offset));
-                operand.oper_type = Opr::IndD;
+                operand.oper = Address65816::D(handle.r8(offset));
+                operand.oper_type = Opr::Ind;
             }
             Addressing::Inl => {
-                operand.oper = u32::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = Opr::IndL;
             }
             Addressing::Inx => {
-                operand.oper = u32::from(handle.r8(offset));
-                operand.oper_type = Opr::IndXD;
+                operand.oper = Address65816::D(handle.r8(offset));
+                operand.oper_type = Opr::IndX;
             }
             Addressing::Iny => {
-                operand.oper = u32::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = Opr::IndY;
             }
             Addressing::Inly => {
-                operand.oper = u32::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = Opr::IndLY;
             }
             Addressing::Ins => {
-                operand.oper = u32::from(handle.r8(offset));
+                operand.oper = handle.r8(offset).into();
                 operand.oper_type = Opr::IndS;
             }
             Addressing::Rel => {
-                operand.oper = state
-                    .addr
-                    .wrapping_add_signed(i32::from(handle.r8(offset).cast_signed()));
+                operand.oper = u32::from(state.addr)
+                    .wrapping_add_signed(i32::from(handle.r8(offset).cast_signed()))
+                    .into();
                 operand.oper_type = Opr::Abs;
             }
             Addressing::Rell => {
-                operand.oper = state
-                    .addr
-                    .wrapping_add_signed(i32::from(handle.r16(offset).cast_signed()));
+                operand.oper = u32::from(state.addr)
+                    .wrapping_add_signed(i32::from(handle.r16(offset).cast_signed()))
+                    .into();
                 operand.oper_type = Opr::Abs;
             }
             Addressing::Bank => {
-                operand.oper = u32::from(handle.r16(offset));
+                operand.oper = handle.r16(offset).into();
                 operand.oper_type = Opr::Bank;
             }
             Addressing::Imp | Addressing::Db => {}
@@ -339,10 +325,10 @@ impl Cpu<u32> for Cpu65816 {
 
     fn disassemble(
         &self,
-        address: u32,
+        address: Address65816,
         inst: &Instruction,
-        lookup: &dyn Fn(u32) -> Option<String>,
-    ) -> CpuLine<u32> {
+        lookup: &dyn Fn(Address65816) -> Option<String>,
+    ) -> CpuLine<Address65816> {
         let Some(operand) = inst.operands.as_any().downcast_ref::<Operand65816>() else {
             return CpuLine {
                 opcode: "invalid operand".to_string(),
@@ -397,7 +383,7 @@ impl Cpu<u32> for Cpu65816 {
         out
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<Address65816> {
         if let Some(opr) = inst.operands.as_any().downcast_ref::<Operand65816>()
             && (opr.oper_type == Opr::Imm || opr.oper_type == Opr::Abs)
         {
@@ -441,21 +427,3 @@ static SIZES: LazyLock<HashMap<Addressing, usize>> = LazyLock::new(|| {
 const HEX: [char; 16] = [
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
 ];
-
-fn to_hex(val: u32) -> String {
-    if (val & !0xff) == !0xff {
-        format!("$-{:02x}", !val + 1)
-    } else if (val & !0xff) == 0 {
-        format!("${:02x}", val)
-    } else if (val & !0xffff) == !0xffff {
-        format!("$-{:04x}", !val + 1)
-    } else if (val & !0xffff) == 0 {
-        format!("${:04x}", val)
-    } else if (val & !0xff_ffff) == 0 {
-        format!("${:02x}/{:04x}", val >> 16, val & 0xffff)
-    } else if (val & 0x8000_0000) != 0 {
-        format!("$-{:08x}", !val + 1)
-    } else {
-        format!("${:08x}", val)
-    }
-}

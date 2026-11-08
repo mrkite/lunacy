@@ -6,7 +6,7 @@ DOS platform
 */
 
 use crate::{
-    cpus::{Cpu, Cpu86, CpuLine, CpuState, Instruction, State86},
+    cpus::{Address86, Cpu, Cpu86, CpuLine, CpuState, Instruction, State86},
     lunacy::{Context, FilePicker, Handle, Message},
     platforms::{Platform, api::Api, labelwin::LabelWin, mzheader::MZHeader},
     screen::{Point, Rect, Screen},
@@ -24,11 +24,11 @@ use std::{
 
 pub struct Dos {
     api: Api,
-    disassembly: Disassembly<u32>,
+    disassembly: Disassembly<Address86>,
     platform: DosPlatform,
     header: MZHeader,
     picker: FilePicker,
-    label: LabelWin,
+    label: LabelWin<Address86>,
 }
 
 impl Dos {
@@ -49,7 +49,7 @@ impl Dos {
         self.header.set(header);
     }
 
-    pub fn add_section(&mut self, name: &str, start: u32, data: &[u8]) {
+    pub fn add_section(&mut self, name: &str, start: Address86, data: &[u8]) {
         self.disassembly.add_section(name, start, data);
     }
 
@@ -74,7 +74,7 @@ impl Dos {
             let platform = serde_json::from_reader(reader)?;
             self.platform = platform;
             for entry in &self.platform.entries {
-                let state = State86::new(*entry);
+                let state = State86::new(entry.seg, entry.ofs);
                 self.disassembly.add_entry(state, &self.platform)?;
             }
             self.disassembly.disassemble(&self.platform);
@@ -138,7 +138,7 @@ impl Widget for Dos {
 
     fn jump(&mut self, to: usize, ctx: &Context) {
         if let Ok(to) = u32::try_from(to) {
-            self.disassembly.jump(to, ctx, &self.platform);
+            self.disassembly.jump(to.into(), ctx, &self.platform);
         }
     }
 
@@ -178,7 +178,7 @@ impl Widget for Dos {
         if self.label.visible() {
             return if self.label.key(code, modifiers, ctx) {
                 if let Some((addr, label)) = self.label.take() {
-                    self.platform.add_label(&addr, &label);
+                    self.platform.add_label(addr, &label);
                     self.disassembly.disassemble(&self.platform);
                 }
                 true
@@ -189,7 +189,7 @@ impl Widget for Dos {
         match code {
             KeyCode::Char('d') => {
                 if let Some(addr) = self.disassembly.can_disassemble() {
-                    let state = State86::new(addr);
+                    let state = State86::new(addr.seg, addr.ofs);
                     if let Err(err) = self.disassembly.add_entry(state, &self.platform) {
                         ctx.post(Message::Error(err.to_string()));
                     } else {
@@ -202,11 +202,7 @@ impl Widget for Dos {
                 }
             }
             KeyCode::Char('\'') => {
-                if let Some(addr) = self.disassembly.cur_address() {
-                    self.label.set(&self.platform.address(addr));
-                } else {
-                    self.label.set("");
-                }
+                self.label.set(self.disassembly.cur_address());
                 self.label.show();
                 true
             }
@@ -294,41 +290,36 @@ struct DosPlatform {
     #[serde(skip)]
     cpu: Cpu86,
     segments: BTreeSet<u16>,
-    entries: Vec<u32>,
-    labels: HashMap<u32, String>,
+    entries: Vec<Address86>,
+    labels: HashMap<Address86, String>,
 }
 
-impl Platform<u32> for DosPlatform {
-    fn address(&self, address: u32) -> String {
+impl Platform<Address86> for DosPlatform {
+    fn address(&self, address: Address86) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
         }
-        let min_seg = u16::try_from((address >> 4) & 0xffff).unwrap_or_default();
         let seg = self
             .segments
-            .range((Bound::Unbounded, Bound::Included(min_seg)))
+            .range((Bound::Unbounded, Bound::Included(address.seg)))
             .last();
-        seg.map_or_else(
-            || format!("{:04x}:{:04x}", address >> 4, address & 0xf),
-            |seg| format!("{:04x}:{:04x}", seg, address - (u32::from(*seg) << 4)),
-        )
+        seg.map_or_else(|| address.to_string(), |seg| address.relative(*seg))
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u32> {
+    fn target(&self, inst: &Instruction) -> Option<Address86> {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u32, inst: &Instruction) -> CpuLine<u32> {
+    fn disassemble(&self, address: Address86, inst: &Instruction) -> CpuLine<Address86> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
             }
-            let min_seg = u16::try_from((addr >> 4) & 0xffff).unwrap_or_default();
             let seg = self
                 .segments
-                .range((Bound::Unbounded, Bound::Included(min_seg)))
+                .range((Bound::Unbounded, Bound::Included(address.seg)))
                 .last();
-            seg.map(|seg| format!("{:04x}:{:04x}", seg, addr - (u32::from(*seg) << 4)))
+            seg.map(|seg| address.relative(*seg))
         })
     }
 
@@ -336,7 +327,7 @@ impl Platform<u32> for DosPlatform {
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u32>,
+        state: &mut dyn CpuState<Address86>,
     ) -> Result<Instruction, &'static str> {
         self.cpu.decode(handle, offset, state)
     }
@@ -346,27 +337,10 @@ impl DosPlatform {
     pub fn add_segment(&mut self, seg: u16) {
         self.segments.insert(seg);
     }
-    pub fn add_entry(&mut self, addr: u32) {
+    pub fn add_entry(&mut self, addr: Address86) {
         self.entries.push(addr);
     }
-    pub fn add_label(&mut self, addr: &str, label: &str) {
-        let mut seg: u32 = 0;
-        let mut ofs: u32 = 0;
-        for ch in addr.chars() {
-            if ch.is_ascii_hexdigit() {
-                let nib = if ch > '9' {
-                    (ch as u8 & 0xf) + 9
-                } else {
-                    ch as u8 & 0xf
-                };
-                ofs <<= 4;
-                ofs |= u32::from(nib);
-            } else if ch == ':' {
-                seg = ofs;
-                ofs = 0;
-            }
-        }
-        let abs = (seg << 4) + ofs;
-        self.labels.insert(abs, label.to_string());
+    pub fn add_label(&mut self, addr: Address86, label: &str) {
+        self.labels.insert(addr, label.to_string());
     }
 }

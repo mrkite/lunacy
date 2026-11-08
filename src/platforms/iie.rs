@@ -6,7 +6,7 @@ IIe platform
 */
 
 use crate::{
-    cpus::{Cpu, Cpu6502, CpuLine, CpuState, Instruction, State6502},
+    cpus::{Address6502, Cpu, Cpu6502, CpuLine, CpuState, Instruction, State6502},
     lunacy::{Context, FilePicker, Handle, Message},
     platforms::{Platform, labelwin::LabelWin},
     screen::{Point, Rect, Screen},
@@ -23,10 +23,10 @@ use std::{
 };
 
 pub struct IIe {
-    disassembly: Disassembly<u16>,
+    disassembly: Disassembly<Address6502>,
     platform: IIePlatform,
     picker: FilePicker,
-    label: LabelWin,
+    label: LabelWin<Address6502>,
 }
 
 impl IIe {
@@ -40,7 +40,7 @@ impl IIe {
             label: LabelWin::default(),
         }
     }
-    pub fn add_section(&mut self, name: &str, start: u16, data: &[u8]) {
+    pub fn add_section(&mut self, name: &str, start: Address6502, data: &[u8]) {
         self.disassembly.add_section(name, start, data);
     }
 
@@ -111,7 +111,7 @@ impl Widget for IIe {
 
     fn jump(&mut self, to: usize, ctx: &Context) {
         if let Ok(addr) = u16::try_from(to) {
-            self.disassembly.jump(addr, ctx, &self.platform);
+            self.disassembly.jump(addr.into(), ctx, &self.platform);
         }
     }
 
@@ -145,7 +145,7 @@ impl Widget for IIe {
         if self.label.visible() {
             return if self.label.key(code, modifiers, ctx) {
                 if let Some((addr, label)) = self.label.take() {
-                    self.platform.add_label(&addr, &label);
+                    self.platform.add_label(addr, &label);
                     self.disassembly.disassemble(&self.platform);
                 }
                 true
@@ -169,11 +169,7 @@ impl Widget for IIe {
                 }
             }
             KeyCode::Char('\'') => {
-                if let Some(addr) = self.disassembly.cur_address() {
-                    self.label.set(&self.platform.address(addr));
-                } else {
-                    self.label.set("");
-                }
+                self.label.set(self.disassembly.cur_address());
                 self.label.show();
                 true
             }
@@ -238,28 +234,28 @@ impl Widget for IIe {
 pub struct IIePlatform {
     #[serde(skip)]
     cpu: Cpu6502,
-    entries: Vec<u16>,
-    labels: HashMap<u16, String>,
+    entries: Vec<Address6502>,
+    labels: HashMap<Address6502, String>,
 }
 
-impl Platform<u16> for IIePlatform {
-    fn address(&self, address: u16) -> String {
+impl Platform<Address6502> for IIePlatform {
+    fn address(&self, address: Address6502) -> String {
         if let Some(addr) = self.labels.get(&address) {
             return addr.clone();
         }
-        format!("{address:04x}")
+        address.to_string()
     }
 
-    fn target(&self, inst: &Instruction) -> Option<u16> {
+    fn target(&self, inst: &Instruction) -> Option<Address6502> {
         self.cpu.target(inst)
     }
 
-    fn disassemble(&self, address: u16, inst: &Instruction) -> CpuLine<u16> {
+    fn disassemble(&self, address: Address6502, inst: &Instruction) -> CpuLine<Address6502> {
         self.cpu.disassemble(address, inst, &|addr| {
             if let Some(addr) = self.labels.get(&addr) {
                 return Some(addr.clone());
             }
-            ADDRESSES.get(&addr).map(|name| format!(" ;{name}"))
+            ADDRESSES.get(&addr.0).map(|name| format!(" ;{name}"))
         })
     }
 
@@ -267,31 +263,19 @@ impl Platform<u16> for IIePlatform {
         &self,
         handle: &Handle,
         offset: usize,
-        state: &mut dyn CpuState<u16>,
+        state: &mut dyn CpuState<Address6502>,
     ) -> Result<Instruction, &'static str> {
         self.cpu.decode(handle, offset, state)
     }
 }
 
 impl IIePlatform {
-    pub fn add_entry(&mut self, addr: u16) {
+    pub fn add_entry(&mut self, addr: Address6502) {
         self.entries.push(addr);
     }
 
-    pub fn add_label(&mut self, addr: &str, label: &str) {
-        let mut ofs: u16 = 0;
-        for ch in addr.chars() {
-            if ch.is_ascii_hexdigit() {
-                let nib = if ch > '9' {
-                    (ch as u8 & 0xf) + 9
-                } else {
-                    ch as u8 & 0xf
-                };
-                ofs <<= 4;
-                ofs |= u16::from(nib);
-            }
-        }
-        self.labels.insert(ofs, label.to_string());
+    pub fn add_label(&mut self, addr: Address6502, label: &str) {
+        self.labels.insert(addr, label.to_string());
     }
 }
 

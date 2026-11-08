@@ -11,52 +11,41 @@ mod cpu68k;
 mod cpu86;
 
 use crate::lunacy::Handle;
+pub use cpu68k::Address68k;
 pub use cpu68k::Cpu68k;
 pub use cpu68k::Operands68k;
 pub use cpu68k::State68k;
+pub use cpu86::Address86;
 pub use cpu86::Cpu86;
 pub use cpu86::State86;
+pub use cpu6502::Address6502;
 pub use cpu6502::Cpu6502;
 pub use cpu6502::State6502;
+pub use cpu65816::Address65816;
 pub use cpu65816::Cpu65816;
 pub use cpu65816::Operand65816;
 pub use cpu65816::State65816;
 use std::any::Any;
+use std::fmt::Display;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Sub;
 
 pub trait Address:
-    Add<Output = Self>
-    + AddAssign
+    Add<usize, Output = Self>
+    + AddAssign<usize>
     + Sub<Output = Self>
+    + Sub<usize, Output = Self>
     + Eq
     + PartialEq
     + Ord
     + PartialOrd
     + Default
+    + Display
     + Copy
 {
     fn as_usize(&self) -> usize;
-    fn from_usize(value: usize) -> Self;
-}
-
-impl Address for u32 {
-    fn as_usize(&self) -> usize {
-        usize::try_from(*self).unwrap_or(usize::MAX)
-    }
-    fn from_usize(value: usize) -> Self {
-        Self::try_from(value).unwrap_or(Self::MAX)
-    }
-}
-
-impl Address for u16 {
-    fn as_usize(&self) -> usize {
-        usize::from(*self)
-    }
-    fn from_usize(value: usize) -> Self {
-        Self::try_from(value).unwrap_or(Self::MAX)
-    }
+    fn parse(s: &str) -> Result<Self, &'static str>;
 }
 
 pub trait CpuState<ADDR: Address> {

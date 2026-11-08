@@ -6,7 +6,7 @@
 */
 
 use crate::{
-    cpus::State68k,
+    cpus::{Address68k, State68k},
     lunacy::{Context, Handle},
     platforms::Mac,
     plugins::{Plugin, mac::resparser::Parser},
@@ -40,7 +40,11 @@ impl Plugin for Code {
                 let c = parser.get_res("", &entry.res_type, entry.offset, entry.attr);
                 let name = format!("CODE {}{}", entry.id, entry.name);
                 // we skip the first 4 bytes
-                mac.add_section(&name, u32::from(entry.id) << 16, c.read(4, c.len() - 4));
+                mac.add_section(
+                    &name,
+                    Address68k(u32::from(entry.id) << 16),
+                    c.read(4, c.len() - 4),
+                );
             }
             if let Some(entry) = codes.first() {
                 let c = parser.get_res("", &entry.res_type, entry.offset, entry.attr);
@@ -66,7 +70,7 @@ impl Plugin for Code {
             }
         }
         let entry = first_entry.unwrap_or(0x10000);
-        mac.add_entry(State68k::new(entry))?;
+        mac.add_entry(State68k::new(Address68k(entry)))?;
         mac.disassemble();
         mac.set_a5(&a5);
         if let Ok(entry) = usize::try_from(entry) {

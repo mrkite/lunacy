@@ -5,7 +5,7 @@ Apple II : Sys executable
 */
 
 use crate::{
-    cpus::State6502,
+    cpus::{Address6502, State6502},
     lunacy::{Context, Handle},
     platforms::IIe,
     plugins::Plugin,
@@ -28,8 +28,8 @@ impl Plugin for Sys {
     }
     fn create(&self, handle: &Handle, ctx: &Context) -> Result<Box<dyn Widget>, &'static str> {
         let mut iie = IIe::new(handle.get_name());
-        iie.add_section("main", 0x2000, handle.read(0, handle.len()));
-        iie.add_entry(State6502::new(0x2000))?;
+        iie.add_section("main", Address6502(0x2000), handle.read(0, handle.len()));
+        iie.add_entry(State6502::new(Address6502(0x2000)))?;
         iie.disassemble();
         iie.jump(0x2000, ctx);
         Ok(Box::new(iie))

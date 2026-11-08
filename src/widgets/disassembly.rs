@@ -222,7 +222,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
                 .push(Render::Head(format!("Section {}", idx + 1)));
             self.lines.extend(self.dis_section(
                 section.start,
-                section.start + ADDR::from_usize(section.handle.len()),
+                section.start + section.handle.len(),
                 &blocks,
                 platform,
             ));
@@ -240,7 +240,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
         let mut address = from;
         for b in blocks.iter() {
             let b = b.borrow();
-            let end = b.address + ADDR::from_usize(b.length);
+            let end = b.address + b.length;
             if end <= address {
                 continue;
             }
@@ -253,11 +253,8 @@ impl<ADDR: Address> Disassembly<ADDR> {
                 let mut preds = vec![];
                 for pred in &b.preds {
                     let pred = pred.borrow();
-                    if pred.address + ADDR::from_usize(pred.length) != b.address {
-                        preds.push(
-                            pred.address + ADDR::from_usize(pred.length)
-                                - ADDR::from_usize(pred.branch_len),
-                        );
+                    if pred.address + pred.length != b.address {
+                        preds.push(pred.address + pred.length - pred.branch_len);
                     }
                 }
                 if !preds.is_empty() {
@@ -268,7 +265,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
                 lines.push(Render::Asm(
                     platform.disassemble(address, &self.insts[&address]),
                 ));
-                address += ADDR::from_usize(self.insts[&address].length);
+                address += self.insts[&address].length;
             }
             if address < end {
                 break;
@@ -287,7 +284,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
             let mut from = from;
 
             while from < to {
-                let end = cmp::min(to, from + ADDR::from_usize(16 - skip));
+                let end = cmp::min(to, from + (16 - skip));
                 lines.push(Render::Hex(from, end));
                 from = end;
             }
@@ -298,7 +295,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
     fn get_address(&self, addr: ADDR) -> Option<&Section<ADDR>> {
         self.sections
             .iter()
-            .find(|&s| addr >= s.start && addr < s.start + ADDR::from_usize(s.handle.len()))
+            .find(|&s| addr >= s.start && addr < s.start + s.handle.len())
             .map(|v| v as _)
     }
 
@@ -558,7 +555,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
     fn cursor_to_address(&self) -> Option<ADDR> {
         self.lines.get(self.cursory).and_then(|line| match line {
             Render::Asm(line) => Some(line.address),
-            Render::Hex(from, _) => Some(*from + ADDR::from_usize(self.cursorx)),
+            Render::Hex(from, _) => Some(*from + self.cursorx),
             _ => None,
         })
     }
@@ -701,7 +698,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
                 search,
             )
         {
-            Some(ADDR::from_usize(cursor) + section.start)
+            Some(section.start + cursor)
         } else {
             None
         }
@@ -770,7 +767,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
                 search,
             )
         {
-            Some(ADDR::from_usize(cursor) + section.start)
+            Some(section.start + cursor)
         } else {
             None
         }
@@ -790,7 +787,7 @@ impl<ADDR: Address> Disassembly<ADDR> {
 
     pub fn can_disassemble(&self) -> Option<ADDR> {
         if let Some(Render::Hex(from, _)) = self.lines.get(self.cursory) {
-            Some(*from + ADDR::from_usize(self.cursorx.saturating_sub(from.as_usize() & 0xf)))
+            Some(*from + self.cursorx.saturating_sub(from.as_usize() & 0xf))
         } else {
             None
         }
@@ -799,15 +796,11 @@ impl<ADDR: Address> Disassembly<ADDR> {
     pub fn cur_address(&self) -> Option<ADDR> {
         match self.lines.get(self.cursory) {
             Some(Render::Hex(from, _)) => {
-                Some(*from + ADDR::from_usize(self.cursorx.saturating_sub(from.as_usize() & 0xf)))
+                Some(*from + self.cursorx.saturating_sub(from.as_usize() & 0xf))
             }
-            Some(Render::Asm(line)) => {
-                if let Some(target) = line.target {
-                    Some(target)
-                } else {
-                    Some(line.address)
-                }
-            }
+            Some(Render::Asm(line)) => line
+                .target
+                .map_or(Some(line.address), |target| Some(target)),
             Some(Render::Ref(_, refs)) => refs.get(self.cursorx).copied(),
             _ => None,
         }

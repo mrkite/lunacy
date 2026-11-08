@@ -5,26 +5,39 @@ Window to add label
 
 */
 
-use std::cmp;
-
 use crate::{
+    cpus::Address,
     lunacy::Context,
-    screen::{Point, Rect, Screen},
+    screen::{Color, Point, Rect, Screen},
     widgets::{Entry, KeyMap, Label, Widget, Window, Windowable},
-    window_wrapper,
 };
 use crossterm::event::{KeyCode, KeyModifiers};
+use std::cmp;
 
-pub struct LabelWin {
+const ERROR_COLOR: Color = Some(0x88_33_33);
+
+pub struct LabelWin<ADDR: Address> {
     window: Window,
     entries: Vec<Entry>,
     labels: Vec<Label>,
+    error: Label,
     focus: usize,
-    submitted: Option<(String, String)>,
+    submitted: Option<(ADDR, String)>,
 }
-window_wrapper!(LabelWin);
 
-impl Widget for LabelWin {
+impl<ADDR: Address> Windowable for LabelWin<ADDR> {
+    fn visible(&self) -> bool {
+        self.window.visible()
+    }
+    fn show(&mut self) {
+        self.window.show();
+    }
+    fn hide(&mut self) {
+        self.window.hide();
+    }
+}
+
+impl<ADDR: Address> Widget for LabelWin<ADDR> {
     fn layout(&mut self, constraint: &Rect) {
         self.window.layout(constraint);
         let mut lw = 0;
@@ -42,6 +55,10 @@ impl Widget for LabelWin {
             entry.layout(&cl);
             cl.t = cl.b;
         }
+        cl.l = self.window.get_bounds().l;
+        cl.r = self.window.get_bounds().r;
+        cl.b = self.window.get_bounds().b;
+        self.error.layout(&cl);
     }
 
     fn draw(&self, s: &mut Screen, origin: &Point, clip: &Rect) {
@@ -51,6 +68,7 @@ impl Widget for LabelWin {
             label.draw(s, origin, &range);
             entry.draw(s, origin, &range);
         }
+        self.error.draw(s, origin, &range);
     }
 
     fn key(&mut self, code: KeyCode, modifiers: KeyModifiers, ctx: &Context) -> bool {
@@ -79,11 +97,13 @@ impl Widget for LabelWin {
                 true
             }
             KeyCode::Enter => {
-                self.hide();
-                self.submitted = Some((
-                    self.entries[0].get().to_string(),
-                    self.entries[1].get().to_string(),
-                ));
+                match ADDR::parse(self.entries[0].get()) {
+                    Ok(addr) => {
+                        self.hide();
+                        self.submitted = Some((addr, self.entries[1].get().to_string()));
+                    }
+                    Err(err) => self.error.set(err),
+                }
                 true
             }
             KeyCode::Esc | KeyCode::Backspace => {
@@ -106,30 +126,36 @@ impl Widget for LabelWin {
     fn get_key_map(&self) -> KeyMap {
         self.entries
             .get(self.focus)
-            .map_or_else(KeyMap::default, |entry| entry.get_key_map())
+            .map_or_else(KeyMap::default, Widget::get_key_map)
     }
 }
 
-impl Default for LabelWin {
+impl<ADDR: Address> Default for LabelWin<ADDR> {
     fn default() -> Self {
         let labels = vec![Label::new("Address:"), Label::new("Label:")];
         let entries = vec![Entry::default(), Entry::default().with_focus()];
         Self {
-            window: Window::new(60, 4),
+            window: Window::new(60, 5),
             labels,
             entries,
+            error: Label::new("").with_style(ERROR_COLOR, None),
             focus: 1,
             submitted: None,
         }
     }
 }
 
-impl LabelWin {
-    pub fn set(&mut self, addr: &str) {
-        self.entries[0].set(addr);
+impl<ADDR: Address> LabelWin<ADDR> {
+    pub fn set(&mut self, addr: Option<ADDR>) {
+        if let Some(addr) = addr {
+            self.entries[0].set(&addr.to_string());
+        } else {
+            self.entries[0].set("");
+        }
         self.entries[1].set("");
+        self.error.set("");
     }
-    pub const fn take(&mut self) -> Option<(String, String)> {
+    pub const fn take(&mut self) -> Option<(ADDR, String)> {
         self.submitted.take()
     }
 }

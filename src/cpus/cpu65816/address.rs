@@ -170,7 +170,13 @@ impl Sub<usize> for Address65816 {
 impl Display for Address65816 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Normal(v) => write!(f, "{:02x}/{:04x}", v >> 16, v & 0xffff),
+            Self::Normal(v) => {
+                let bank = v >> 16;
+                if bank != 0 {
+                    write!(f, "{bank:02x}/")?;
+                }
+                write!(f, "{:04x}", v & 0xffff)
+            }
             Self::B(v) => write!(f, "B:{v:04x}"),
             Self::D(v) => write!(f, "D:{v:02x}"),
         }

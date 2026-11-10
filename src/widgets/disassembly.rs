@@ -280,13 +280,14 @@ impl<ADDR: Address> Disassembly<ADDR> {
     fn dump_hex(&self, from: ADDR, to: ADDR) -> Vec<Render<ADDR>> {
         let mut lines = vec![];
         if self.get_address(from).is_some() {
-            let skip = from.as_usize() & 0xf;
+            let mut skip = from.as_usize() & 0xf;
             let mut from = from;
 
             while from < to {
                 let end = cmp::min(to, from + (16 - skip));
                 lines.push(Render::Hex(from, end));
                 from = end;
+                skip = 0;
             }
         }
         lines

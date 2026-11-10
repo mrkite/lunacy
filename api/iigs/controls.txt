@@ -17,6 +17,15 @@ CtlProc enum<u32> {
 	radioProc = $04000000,
 	scrollProc = $06000000,
 	growProc = $08000000,
+	simpleButtonTemplate = $80000000,
+	statTextTemplate = $81000000,
+	checkTemplate = $82000000,
+	lineEditTemplate = $83000000,
+	radioTemplate = $84000000,
+	scrollTemplate = $86000000,
+	growTemplate = $88000000,
+	listTemplate = $89000000,
+	pictureTemplate = $8d000000,
 }
 
 CtlDef enum<u16> {
@@ -128,6 +137,136 @@ RadioColors struct {
 	radNor: u16;
 	radSel: u16;
 	radTitle: u16;
+}
+
+simpleButtonTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	titleRef: u32;
+	colorTableRef: u32;
+	key1: u8;
+	key2: u8;
+	keyMods: u16;
+	keyModsCareBits: u16;
+}
+
+checkTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	titleRef: u32;
+	value: u16;
+	colorTableRef: u32;
+	key1: u8;
+	key2: u8;
+	keyMods: u16;
+	keyModsCareBits: u16;
+}
+
+radioTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	titleRef: u32;
+	value: u16;
+	colorTableRef: u32;
+	key1: u8;
+	key2: u8;
+	keyMods: u16;
+	keyModsCareBits: u16;
+}
+
+statTextTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	textRef: u32;
+	textSize: u16;
+	just: u16;
+}
+
+lineEditTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	maxLen: u16;
+	ivRef: u32;
+}
+
+pictureTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	picRef: u32;
+}
+
+scrollTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	dataSize: u16;
+	viewSize: u16;
+	initialThumb: u16;
+	colorRef: u32;
+}
+
+growTemplates struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	colorRef: u32;
+}
+
+listTemplate struct {
+	pCount: u16;
+	id: u32;
+	rect: Rect;
+	procRef: CtlProc;
+	flag: u16;
+	moreFlags: u16;
+	refCon: u32;
+	listSize: u16;
+	listView: u16;
+	listType: u16;
+	listStart: u16;
+	listDraw: u32;
+	listMemHeight: u16;
+	listMemSize: u16;
+	listRef: u32;
+	colorRef: u32;
 }
 
 CtlBootInit() {

@@ -312,6 +312,7 @@ impl Cpu<Address65816> for Cpu65816 {
         if (state.flags ^ old_flags) & flags::M8 != 0 {
             state.flags |= flags::M8_CHANGED;
         }
+        operand.flags = state.flags;
         let raw = handle.read(start_offset, length).to_vec();
 
         Ok(Instruction {

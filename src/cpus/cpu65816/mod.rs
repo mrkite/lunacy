@@ -258,7 +258,7 @@ impl Cpu<Address65816> for Cpu65816 {
                 operand.oper_type = Opr::Ind;
             }
             Addressing::Inl => {
-                operand.oper = handle.r8(offset).into();
+                operand.oper = Address65816::D(handle.r8(offset));
                 operand.oper_type = Opr::IndL;
             }
             Addressing::Inx => {
@@ -266,11 +266,11 @@ impl Cpu<Address65816> for Cpu65816 {
                 operand.oper_type = Opr::IndX;
             }
             Addressing::Iny => {
-                operand.oper = handle.r8(offset).into();
+                operand.oper = Address65816::D(handle.r8(offset));
                 operand.oper_type = Opr::IndY;
             }
             Addressing::Inly => {
-                operand.oper = handle.r8(offset).into();
+                operand.oper = Address65816::D(handle.r8(offset));
                 operand.oper_type = Opr::IndLY;
             }
             Addressing::Ins => {

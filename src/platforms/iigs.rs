@@ -11,7 +11,9 @@ use crate::{
         State65816,
     },
     lunacy::{Context, FilePicker, Handle, Message},
-    platforms::{Platform, api::Api, fingerprints::Fingerprint, labelwin::LabelWin},
+    platforms::{
+        Platform, api::Api, entrywin::EntryWin, fingerprints::Fingerprint, labelwin::LabelWin,
+    },
     screen::{Point, Rect, Screen},
     widgets::{Disassembly, KeyMap, Widget, Windowable},
 };
@@ -31,6 +33,7 @@ pub struct IIgs {
     platform: IIgsPlatform,
     picker: FilePicker,
     label: LabelWin<Address65816>,
+    entry: EntryWin<Address65816>,
 }
 
 impl IIgs {
@@ -45,6 +48,7 @@ impl IIgs {
             disassembly: Disassembly::default(),
             platform: IIgsPlatform::new(prints),
             label: LabelWin::default(),
+            entry: EntryWin::default(),
         }
     }
     pub fn add_section(&mut self, name: &str, start: Address65816, data: &[u8]) {
@@ -102,6 +106,7 @@ impl Widget for IIgs {
         self.disassembly.layout(constraint);
         self.picker.layout(constraint);
         self.label.layout(constraint);
+        self.entry.layout(constraint);
     }
 
     fn draw(&self, s: &mut Screen, origin: &Point, clip: &Rect) {
@@ -114,6 +119,9 @@ impl Widget for IIgs {
         }
         if self.label.visible() {
             self.label.draw(s, origin, clip);
+        }
+        if self.entry.visible() {
+            self.entry.draw(s, origin, clip);
         }
     }
 
@@ -173,17 +181,27 @@ impl Widget for IIgs {
                 false
             };
         }
-        match code {
-            KeyCode::Char('d') => {
-                if let Some(addr) = self.disassembly.can_disassemble() {
-                    // TODO: show dialog to choose cpu flags
-                    let state = State65816::new(addr, 0);
+        if self.entry.visible() {
+            return if self.entry.key(code, modifiers, ctx) {
+                if let Some((addr, flags)) = self.entry.take() {
+                    let state = State65816::new(addr, flags);
                     if let Err(err) = self.disassembly.add_entry(state, &self.platform) {
                         ctx.post(Message::Error(err.to_string()));
                     } else {
-                        self.platform.add_entry(addr, 0);
+                        self.platform.add_entry(addr, flags);
                         self.disassembly.disassemble(&self.platform);
                     }
+                }
+                true
+            } else {
+                false
+            };
+        }
+        match code {
+            KeyCode::Char('d') => {
+                if let Some(addr) = self.disassembly.can_disassemble() {
+                    self.entry.set(Some(addr));
+                    self.entry.show();
                     true
                 } else {
                     false
@@ -233,6 +251,9 @@ impl Widget for IIgs {
         if self.label.visible() {
             return self.label.mouse(pt, is_down, ctx);
         }
+        if self.entry.visible() {
+            return self.entry.mouse(pt, is_down, ctx);
+        }
         self.disassembly.mouse(pt, is_down, ctx, &self.platform)
     }
 
@@ -245,6 +266,9 @@ impl Widget for IIgs {
         }
         if self.label.visible() {
             return self.label.get_key_map();
+        }
+        if self.entry.visible() {
+            return self.entry.get_key_map();
         }
         let mut m = self.disassembly.get_key_map();
         if self.disassembly.can_disassemble().is_some() {

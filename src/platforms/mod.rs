@@ -14,6 +14,7 @@ mod api;
 mod block;
 mod definition;
 mod dos;
+mod entrywin;
 mod fingerprints;
 mod iie;
 mod iigs;

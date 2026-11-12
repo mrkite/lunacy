@@ -7,6 +7,7 @@ Base widget definition
 
 mod basic;
 mod blank;
+mod checkbox;
 mod disassembly;
 mod entry;
 mod hex;
@@ -26,6 +27,7 @@ use crate::screen::Screen;
 use crate::screen::Size;
 pub use basic::Basic;
 pub use blank::Blank;
+pub use checkbox::Checkbox;
 use crossterm::event::KeyCode;
 use crossterm::event::KeyModifiers;
 pub use disassembly::Disassembly;

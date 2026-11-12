@@ -25,6 +25,7 @@ pub use cpu65816::Address65816;
 pub use cpu65816::Cpu65816;
 pub use cpu65816::Operand65816;
 pub use cpu65816::State65816;
+pub use cpu65816::flags;
 use std::any::Any;
 use std::fmt::Display;
 use std::ops::Add;

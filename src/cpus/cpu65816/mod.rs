@@ -18,7 +18,7 @@ use std::{collections::HashMap, fmt, sync::LazyLock};
 mod address;
 mod opcodes;
 
-mod flags {
+pub mod flags {
     pub const X8: u32 = 0x10;
     pub const M8: u32 = 0x20;
     pub const EMU: u32 = 0x100;

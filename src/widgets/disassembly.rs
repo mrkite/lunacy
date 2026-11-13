@@ -227,6 +227,11 @@ impl<ADDR: Address> Disassembly<ADDR> {
                 platform,
             ));
         }
+        self.scroll.set_range(
+            0,
+            i32::try_from(self.lines.len()).unwrap_or(i32::MAX),
+            self.bounds.h(),
+        );
     }
 
     fn dis_section(
